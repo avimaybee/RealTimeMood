@@ -65,8 +65,7 @@ const OrbButton: React.FC = () => {
     };
   }, []);
 
-  const orbContainerBaseClasses = "fixed bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 ease-in-out";
-  // Removed horizontal translation from shiftClasses
+  const orbContainerBaseClasses = "fixed bottom-20 md:bottom-28 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 ease-in-out";
   const shiftClasses = isCollectiveShifting ? "translate-y-1" : "translate-y-0";
 
   return (
