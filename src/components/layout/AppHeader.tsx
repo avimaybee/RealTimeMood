@@ -25,8 +25,7 @@ const AppHeader: React.FC = () => {
   const { isCollectiveShifting } = useMood();
 
   const headerBaseClasses = "fixed top-0 left-1/2 -translate-x-1/2 mt-4 md:mt-6 p-1 z-30 frosted-glass rounded-full shadow-soft transition-transform duration-500 ease-in-out flex items-center justify-center group";
-  // Pill shape: h-11 (44px) on mobile (default buttonClasses h-10 + p-1 = h-12), md:h-16 (64px) on desktop.
-  // Use min-w for pill shape instead of fixed width.
+  // Pill shape: h-11 (44px) on mobile, md:h-16 (64px) on desktop.
   const sizeClasses = "h-11 md:h-16 min-w-[60px] md:min-w-[80px]";
   const shiftClasses = isCollectiveShifting ? "translate-y-1 -translate-x-0.5" : "translate-y-0 translate-x-0";
 

@@ -42,12 +42,12 @@ export const useDynamicColors = (currentMood: Mood) => {
         const deltaSaturation = Math.abs(startSaturation - currentMood.saturation);
         const deltaLightness = Math.abs(startLightness - currentMood.lightness);
 
-        const normDeltaHue = deltaHueAbs / 180;
-        const normDeltaSaturation = deltaSaturation / 100;
-        const normDeltaLightness = deltaLightness / 100;
+        const normDeltaHue = deltaHueAbs / 180; // Max hue change is 180
+        const normDeltaSaturation = deltaSaturation / 100; // Max sat change is 100
+        const normDeltaLightness = deltaLightness / 100; // Max light change is 100
 
         const changeMagnitude = Math.max(normDeltaHue, normDeltaSaturation, normDeltaLightness);
-        const duration = 2000 + changeMagnitude * 1000;
+        const duration = 2000 + changeMagnitude * 1000; // 2000ms base + up to 1000ms based on magnitude
 
         const animate = (timestamp: number) => {
           if (!animationStartTimeRef.current) {
@@ -64,15 +64,14 @@ export const useDynamicColors = (currentMood: Mood) => {
           root.style.setProperty('--mood-hue', hue.toFixed(2));
           root.style.setProperty('--mood-saturation', `${saturation.toFixed(2)}%`);
           root.style.setProperty('--mood-lightness', `${lightness.toFixed(2)}%`);
-          // Set numeric values for calculations in components like OrbButton
           root.style.setProperty('--mood-saturation-value', saturation.toFixed(2));
           root.style.setProperty('--mood-lightness-value', lightness.toFixed(2));
           
           lastSetHSLRef.current = { hue, saturation, lightness };
 
           const interpolatedMoodForDerived: Mood = {
-            name: currentMood.name,
-            adjective: currentMood.adjective,
+            name: currentMood.name, // Not strictly needed for derived colors, but good for consistency
+            adjective: currentMood.adjective, // Same as above
             hue,
             saturation,
             lightness
@@ -80,21 +79,27 @@ export const useDynamicColors = (currentMood: Mood) => {
           const {
             foregroundHue, foregroundSaturation, foregroundLightness,
             primaryForegroundHue, primaryForegroundSaturation, primaryForegroundLightness,
-            panelBackgroundRgba
+            panelBackgroundRgba // New variable
           } = getDerivedColors(interpolatedMoodForDerived);
 
           root.style.setProperty('--foreground-hsl', `${foregroundHue.toFixed(2)} ${foregroundSaturation.toFixed(2)}% ${foregroundLightness.toFixed(2)}%`);
           root.style.setProperty('--primary-foreground-hsl', `${primaryForegroundHue.toFixed(2)} ${primaryForegroundSaturation.toFixed(2)}% ${primaryForegroundLightness.toFixed(2)}%`);
-          root.style.setProperty('--panel-background-rgba', panelBackgroundRgba);
+          root.style.setProperty('--panel-background-rgba', panelBackgroundRgba); // Set the panel background RGB values
 
           if (progress < 1) {
             animationFrameRef.current = requestAnimationFrame(animate);
           } else {
             animationStartTimeRef.current = null; 
+            // Ensure final values are precisely set
             lastSetHSLRef.current = { hue: currentMood.hue, saturation: currentMood.saturation, lightness: currentMood.lightness };
-             // Ensure final numeric values are also set precisely
             root.style.setProperty('--mood-saturation-value', currentMood.saturation.toFixed(2));
             root.style.setProperty('--mood-lightness-value', currentMood.lightness.toFixed(2));
+            
+            // Also ensure derived colors are set to final values
+            const finalDerived = getDerivedColors(currentMood);
+            root.style.setProperty('--foreground-hsl', `${finalDerived.foregroundHue.toFixed(2)} ${finalDerived.foregroundSaturation.toFixed(2)}% ${finalDerived.foregroundLightness.toFixed(2)}%`);
+            root.style.setProperty('--primary-foreground-hsl', `${finalDerived.primaryForegroundHue.toFixed(2)} ${finalDerived.primaryForegroundSaturation.toFixed(2)}% ${finalDerived.primaryForegroundLightness.toFixed(2)}%`);
+            root.style.setProperty('--panel-background-rgba', finalDerived.panelBackgroundRgba);
           }
         };
 
@@ -105,6 +110,7 @@ export const useDynamicColors = (currentMood: Mood) => {
         animationFrameRef.current = requestAnimationFrame(animate);
 
       } else {
+        // If mood hasn't effectively changed, just ensure all properties are set (e.g., on initial load)
         root.style.setProperty('--mood-hue', currentMood.hue.toFixed(2));
         root.style.setProperty('--mood-saturation', `${currentMood.saturation.toFixed(2)}%`);
         root.style.setProperty('--mood-lightness', `${currentMood.lightness.toFixed(2)}%`);

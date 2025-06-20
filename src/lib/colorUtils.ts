@@ -50,7 +50,8 @@ export function getDerivedColors(mood: Mood): {
   // Determine foreground color for primary elements
   const primaryHue = (mood.hue - 30 + 360) % 360;
   const primaryLightness = mood.lightness * 0.9;
-  const primaryLuminance = getRelativeLuminance(primaryHue, mood.saturation, primaryLightness);
+  const primarySaturation = mood.saturation; // Use mood's saturation for primary
+  const primaryLuminance = getRelativeLuminance(primaryHue, primarySaturation, primaryLightness);
   const isPrimaryLight = primaryLuminance > 0.5;
   const pfgLightness = isPrimaryLight ? 10 : 91.8;
   const pfgHue = isPrimaryLight ? 204 : 200;

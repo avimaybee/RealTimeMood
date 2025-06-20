@@ -13,6 +13,9 @@ body {
     --mood-hue: 210; /* Default: Calm Blue */
     --mood-saturation: 100%;
     --mood-lightness: 60%; /* Brighter default */
+    --mood-saturation-value: 100; /* Numeric value for calcs */
+    --mood-lightness-value: 60;  /* Numeric value for calcs */
+
 
     /* Derived HSL value strings */
     --background-hsl: var(--mood-hue) var(--mood-saturation) var(--mood-lightness);
