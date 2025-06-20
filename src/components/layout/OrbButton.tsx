@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus } from 'lucide-react';
@@ -73,7 +74,7 @@ const OrbButton: React.FC = () => {
         <Button
           aria-label="Contribute Mood"
           className={cn(
-            "rounded-full w-16 h-16 md:w-20 md:h-20 p-0 flex items-center justify-center",
+            "rounded-full w-[60px] h-[60px] md:w-20 md:h-20 p-0 flex items-center justify-center", // Adjusted size here
             "transition-all duration-300 ease-out transform hover:scale-105 active:scale-95",
             "animate-orb-pulse", 
             isInteracting ? "scale-90" : "",
@@ -177,3 +178,4 @@ const OrbButton: React.FC = () => {
 };
 
 export default OrbButton;
+    
