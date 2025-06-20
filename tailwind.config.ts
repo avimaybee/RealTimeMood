@@ -91,7 +91,7 @@ export default {
             height: '0',
           },
         },
-        'global-pulse': { // Removed transform: scale() to prevent stacking context issues
+        'global-pulse': { 
           '0%, 100%': { filter: 'brightness(100%) saturate(100%)' },
           '50%': { filter: 'brightness(80%) saturate(80%)' },
         },
@@ -113,7 +113,7 @@ export default {
         },
         'particle-float': {
           '0%': { transform: 'translateY(0) translateX(0) scale(0.7)', opacity: '0' },
-          '10%': { opacity: '0.7' }, // Fade in quicker
+          '10%': { opacity: '0.7' }, 
           '20%': { opacity: '1' }, 
           '80%': { opacity: '1' }, 
           '50%': { transform: 'translateY(-15vh) translateX(var(--particle-drift-x, 0px)) scale(1)'},
@@ -138,6 +138,12 @@ export default {
             transform: 'translate(-50%, -50%) rotate(var(--particle-final-rotate)) translateX(var(--particle-final-translate-x)) scale(0.3) translateY(40px)',
           },
         },
+        'count-bounce': {
+          '0%, 100%': { transform: 'scale(1)' },
+          '30%': { transform: 'scale(1.15)' },
+          '60%': { transform: 'scale(0.95)' },
+          '80%': { transform: 'scale(1.05)' },
+        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -150,6 +156,7 @@ export default {
         'particle-float': 'particle-float var(--animation-duration, 20s) ease-in-out var(--animation-delay, 0s) infinite', 
         'collective-shift-wave': 'collective-shift-wave 1.5s ease-out forwards', 
         'firework-particle-anim': 'firework-particle-anim var(--animation-duration, 2s) var(--animation-timing-function, ease-out) var(--animation-delay, 0s) forwards',
+        'count-bounce': 'count-bounce 0.6s ease-out',
       },
       backdropBlur: {
         '24px': '24px', 
