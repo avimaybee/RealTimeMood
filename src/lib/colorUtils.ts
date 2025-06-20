@@ -1,3 +1,4 @@
+
 import type { Mood } from '@/types';
 
 /**
@@ -65,7 +66,7 @@ export function getDerivedColors(mood: Mood): {
     primaryForegroundHue: pfgHue,
     primaryForegroundSaturation: pfgSat,
     primaryForegroundLightness: pfgLightness,
-    panelBackgroundRgba: panelRga,
+    panelBackgroundRgba: panelRgba,
   };
 }
 
