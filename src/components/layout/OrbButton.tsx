@@ -40,7 +40,9 @@ const OrbButton: React.FC = () => {
     if (radialBloomActive) {
       setRadialBloomActive(false);
       const marker = document.querySelector('[data-radial-bloom-active-page-marker]');
-      if (marker) document.body.removeChild(marker);
+      if (marker && marker.parentNode) {
+        marker.parentNode.removeChild(marker);
+      }
     } else {
       setShowColorWell(true);
       recordContribution(moodToHslString(personalMood)); 
@@ -57,14 +59,15 @@ const OrbButton: React.FC = () => {
       if (interactionTimeoutRef.current) clearTimeout(interactionTimeoutRef.current);
       if (holdTimeoutRef.current) clearTimeout(holdTimeoutRef.current);
       const marker = document.querySelector('[data-radial-bloom-active-page-marker]');
-      if (marker && marker.parentNode) { // Check parentNode before removing
+      if (marker && marker.parentNode) { 
         marker.parentNode.removeChild(marker);
       }
     };
   }, []);
 
   const orbContainerBaseClasses = "fixed bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 ease-in-out";
-  const shiftClasses = isCollectiveShifting ? "translate-y-1 translate-x-0.5" : "translate-y-0 translate-x-0";
+  // Removed horizontal translation from shiftClasses
+  const shiftClasses = isCollectiveShifting ? "translate-y-1" : "translate-y-0";
 
   return (
     <>
@@ -72,15 +75,15 @@ const OrbButton: React.FC = () => {
         <Button
           aria-label="Contribute Mood"
           className={cn(
-            "rounded-full w-16 h-16 md:w-20 md:h-20 p-0 flex items-center justify-center", // Removed shadow-soft, size and shape are key
+            "rounded-full w-16 h-16 md:w-20 md:h-20 p-0 flex items-center justify-center",
             "transition-all duration-300 ease-out transform hover:scale-105 active:scale-95",
             "animate-orb-pulse", 
             isInteracting ? "scale-90" : "",
             radialBloomActive ? "!scale-110" : "" 
           )}
           style={{
-            background: `linear-gradient(145deg, hsl(var(--primary-hsl)), hsl(var(--mood-hue), calc(var(--mood-saturation-value) * 0.8)%, calc(var(--mood-lightness-value) * 1.1)%))`,
-            boxShadow: `0 0 15px hsla(var(--primary-hsl), 0.5), 0 0 25px hsla(var(--mood-hue), calc(var(--mood-saturation-value) * 0.7)%, calc(var(--mood-lightness-value) * 1.0)%, 0.4), 0 4px 12px rgba(0,0,0,0.3)`,
+            background: `linear-gradient(145deg, hsl(var(--primary-hsl)), hsl(var(--mood-hue), calc(var(--mood-saturation-value) * 0.8%), calc(var(--mood-lightness-value) * 1.1)%))`,
+            boxShadow: `0 0 15px hsla(var(--primary-hsl), 0.5), 0 0 25px hsla(var(--mood-hue), calc(var(--mood-saturation-value) * 0.7%), calc(var(--mood-lightness-value) * 1.0)%, 0.4), 0 4px 12px rgba(0,0,0,0.3)`,
           }}
           onMouseDown={handleInteractionStart}
           onTouchStart={handleInteractionStart}
