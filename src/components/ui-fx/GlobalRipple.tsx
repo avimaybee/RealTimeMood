@@ -11,37 +11,35 @@ const GlobalRipple: React.FC = () => {
   useEffect(() => {
     if (appState.lastContributionTime && appState.lastContributorMoodColor) {
       setIsRippling(true);
-      setRippleColor(appState.lastContributorMoodColor);
-      const timer = setTimeout(() => setIsRippling(false), 1500); // Duration of ripple animation
+      setRippleColor(appState.lastContributorMoodColor); // This is an HSL string
+      const timer = setTimeout(() => setIsRippling(false), 1200); // Duration of ripple animation (spec: 1200ms)
       return () => clearTimeout(timer);
     }
   }, [appState.lastContributionTime, appState.lastContributorMoodColor]);
 
   if (!isRippling || !rippleColor) return null;
 
-  // Multi-layered ripple
+  // Spec: "A thin, glowing ring (border: 1px solid rgba(255,255,255,0.5)) expands smoothly...
+  // The border subtly tints towards the contributor's original mood color as it grows."
+  // For simplicity, we use the contributor's mood color for the glow/tint.
+  // The main border can remain a consistent white/alpha for contrast.
   return (
-    <>
-      {[0, 200, 400].map(delay => ( // Delays for layered effect
-        <div
-          key={delay}
-          className="fixed inset-0 flex items-center justify-center pointer-events-none z-10"
-          aria-hidden="true"
-        >
-          <div
-            className="absolute aspect-square rounded-full animate-ripple-effect"
-            style={{
-              width: '10px', // Initial small size
-              height: '10px',
-              border: `2px solid ${rippleColor}`,
-              boxShadow: `0 0 15px ${rippleColor}, 0 0 20px ${rippleColor} inset`,
-              animationDelay: `${delay}ms`,
-              opacity: 0, // Animation starts from opacity 0
-            }}
-          />
-        </div>
-      ))}
-    </>
+    <div
+      className="fixed inset-0 flex items-center justify-center pointer-events-none z-10"
+      aria-hidden="true"
+    >
+      <div
+        className="absolute aspect-square rounded-full animate-global-ripple-effect" // Changed animation name
+        style={{
+          width: '10px', 
+          height: '10px',
+          border: `1px solid rgba(255,255,255,0.5)`, // Base border as per spec
+          boxShadow: `0 0 10px 2px ${rippleColor}, 0 0 15px 4px ${rippleColor} inset`, // Glow tinted with contributor's mood
+          animationDuration: '1200ms', // Match spec
+          opacity: 0, 
+        }}
+      />
+    </div>
   );
 };
 

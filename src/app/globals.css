@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -82,15 +83,15 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
-
-  /* 
-    No .dark class by default for RealTimeMood as colors are fully dynamic.
-    If a toggle for a separate dark *mode* was needed, it would go here.
-    For now, the dynamic system handles lightness.
-  */
 }
 
 @layer base {
+  html, body, #__next {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevent scrollbars for full screen design */
+  }
   * {
     @apply border-border;
   }
@@ -107,10 +108,29 @@ body {
   
   .frosted-glass {
     background-color: var(--panel-background);
-    @apply backdrop-blur-24px;
+    @apply backdrop-blur-2xl; /* Using 2xl for significant blur as per spec (24px) */
   }
 
   .content-auto {
     content: ""; /* for pseudo-elements */
+  }
+
+  /* For vignette effect */
+  .vignette-overlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 50%, rgba(0,0,0,0.15) 100%);
+    pointer-events: none;
+    z-index: 1; /* Above background, below particles */
+  }
+
+  /* For noise texture */
+  .noise-overlay {
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.04; /* Subtle noise */
+    pointer-events: none;
+    z-index: 1; /* Same level as vignette or just above */
   }
 }
