@@ -74,15 +74,15 @@ const OrbButton: React.FC = () => {
         <Button
           aria-label="Contribute Mood"
           className={cn(
-            "rounded-full w-[60px] h-[60px] md:w-20 md:h-20 p-0 flex items-center justify-center", // Adjusted size here
+            "rounded-full w-[60px] h-[60px] md:w-20 md:h-20 p-0 flex items-center justify-center", // Explicitly set to 60px for mobile
             "transition-all duration-300 ease-out transform hover:scale-105 active:scale-95",
             "animate-orb-pulse", 
             isInteracting ? "scale-90" : "",
             radialBloomActive ? "!scale-110" : "" 
           )}
           style={{
-            background: `linear-gradient(145deg, hsl(var(--primary-hsl)), hsl(var(--mood-hue), calc(var(--mood-saturation-value) * 0.8%), calc(var(--mood-lightness-value) * 1.1)%))`,
-            boxShadow: `0 0 15px hsla(var(--primary-hsl), 0.5), 0 0 25px hsla(var(--mood-hue), calc(var(--mood-saturation-value) * 0.7%), calc(var(--mood-lightness-value) * 1.0)%, 0.4), 0 4px 12px rgba(0,0,0,0.3)`,
+            background: `linear-gradient(145deg, hsl(var(--primary-hsl)), hsl(var(--mood-hue), calc(var(--mood-saturation-value) * 0.8 * 1%), calc(var(--mood-lightness-value) * 1.1 * 1%)))`,
+            boxShadow: `0 0 15px hsla(var(--primary-hsl), 0.5), 0 0 25px hsla(var(--mood-hue), calc(var(--mood-saturation-value) * 0.7 * 1%), calc(var(--mood-lightness-value) * 1.0 * 1%), 0.4), 0 4px 12px rgba(0,0,0,0.3)`,
           }}
           onMouseDown={handleInteractionStart}
           onTouchStart={handleInteractionStart}
