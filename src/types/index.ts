@@ -8,7 +8,8 @@ export interface Mood {
 
 export interface AppState {
   currentMood: Mood;
-  userCount: number;
+  liveUserCount: number;
+  echoUserCount: number;
   contributionCount: number;
   lastContributionTime: number | null;
   lastContributorMoodColor: string | null; // HSL string for the ripple

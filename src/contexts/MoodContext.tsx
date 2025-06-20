@@ -5,9 +5,11 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import type { AppState, Mood } from '@/types';
 import { PREDEFINED_MOODS } from '@/lib/colorUtils';
 
+const initialTotalUserCount = 1873;
 const initialState: AppState = {
   currentMood: PREDEFINED_MOODS[0],
-  userCount: 1873, // Initial mock count
+  liveUserCount: Math.floor(initialTotalUserCount * 0.75), // Example: 75% live
+  echoUserCount: Math.ceil(initialTotalUserCount * 0.25),  // Example: 25% echo
   contributionCount: 12587, // Initial mock count
   lastContributionTime: null,
   lastContributorMoodColor: null,
@@ -54,30 +56,27 @@ export const MoodProvider = ({ children }: { children: ReactNode }) => {
 
   const triggerCollectiveShift = useCallback(() => {
     setIsCollectiveShifting(true);
-    // Simulate shift effects then reset
-    // UI elements (Header, Orb, Footer) should also react to this
-    setTimeout(() => setIsCollectiveShifting(false), 2000); // Duration of the shift wave
+    setTimeout(() => setIsCollectiveShifting(false), 2000); 
   }, []);
 
-  // Simulate dynamic changes for demonstration
   useEffect(() => {
     const moodInterval = setInterval(() => {
       const randomIndex = Math.floor(Math.random() * PREDEFINED_MOODS.length);
       updateMood(PREDEFINED_MOODS[randomIndex]);
-    }, 15000); // Change mood every 15 seconds
+    }, 15000);
 
     const countInterval = setInterval(() => {
       setAppState(prev => ({
         ...prev,
-        userCount: prev.userCount + Math.floor(Math.random() * 10) - 4, // Fluctuating user count
+        liveUserCount: Math.max(0, prev.liveUserCount + Math.floor(Math.random() * 10) - 4), // Fluctuating live user count
+        echoUserCount: Math.max(0, prev.echoUserCount + Math.floor(Math.random() * 5) - 2),  // Fluctuating echo user count
         contributionCount: prev.contributionCount + Math.floor(Math.random() * 5),
       }));
-    }, 5000); // Update counts every 5 seconds
+    }, 5000);
 
-    // Occasional collective shift
     const shiftInterval = setInterval(() => {
       triggerCollectiveShift();
-    }, 60000); // Collective shift every minute
+    }, 60000); 
 
 
     return () => {
