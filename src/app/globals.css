@@ -14,66 +14,67 @@ body {
     --mood-saturation: 100%;
     --mood-lightness: 60%; /* Brighter default */
 
-    /* Derived colors */
+    /* Derived HSL value strings */
     --background-hsl: var(--mood-hue) var(--mood-saturation) var(--mood-lightness);
-    --background: hsl(var(--background-hsl));
     
     /* Accent/Primary: shifted 30deg left for UI elements */
     --primary-hue: calc((var(--mood-hue) - 30 + 360) % 360);
     --primary-saturation: var(--mood-saturation);
     --primary-lightness: calc(var(--mood-lightness) * 0.9); /* Slightly darker/more saturated for UI */
     --primary-hsl: var(--primary-hue) var(--primary-saturation) var(--primary-lightness);
-    --primary: hsl(var(--primary-hsl));
     
-    /* Foreground (text) colors based on background lightness - defaults, JS will refine */
-    --foreground-light: 204 10% 10%; /* Off-black: hsl(204, 10%, 10%) -> #1A1C1E */
-    --foreground-dark: 200 0% 91.8%; /* Off-white: hsl(200, 0%, 91.8%) -> #EAEAEA */
-    --foreground-hsl: var(--foreground-light); /* Default to dark text */
-    --foreground: hsl(var(--foreground-hsl));
+    /* Foreground (text) colors based on background lightness - defaults, JS will refine these HSL values */
+    --foreground-light-hsl: 204 10% 10%; /* Off-black: HSL values for hsl(204, 10%, 10%) -> #1A1C1E */
+    --foreground-dark-hsl: 200 0% 91.8%; /* Off-white: HSL values for hsl(200, 0%, 91.8%) -> #EAEAEA */
+    --foreground-hsl: var(--foreground-light-hsl); /* Default to dark text HSL values. JS updates this variable. */
 
-    --primary-foreground-hsl: var(--foreground-dark); /* Default to light text on primary */
-    --primary-foreground: hsl(var(--primary-foreground-hsl));
+    --primary-foreground-hsl: var(--foreground-dark-hsl); /* Default to light text on primary HSL values. JS updates this. */
+
+    /* Variables for Tailwind's hsl(var(...)) consumption - these store HSL VALUES, not hsl() strings */
+    --background: var(--background-hsl);
+    --foreground: var(--foreground-hsl);
+    --primary: var(--primary-hsl);
+    --primary-foreground: var(--primary-foreground-hsl);
 
     /* UI Panel specific backgrounds */
-    --panel-bg-light-rgba: 255, 255, 255;
-    --panel-bg-dark-rgba: 0, 0, 0;
+    --panel-bg-light-rgba: 255, 255, 255; /* r, g, b values for rgba() */
+    --panel-bg-dark-rgba: 0, 0, 0; /* r, g, b values for rgba() */
     --panel-bg-alpha: 0.08;
     /* Default to light panel, JS will update based on background */
-    --panel-background-rgba: var(--panel-bg-light-rgba);
-    --panel-background: rgba(var(--panel-background-rgba), var(--panel-bg-alpha));
+    --panel-background-rgba: var(--panel-bg-light-rgba); /* This stores "r, g, b" string. JS updates this. */
+    /* --panel-background is used directly in .frosted-glass, not by Tailwind's hsl() */
 
     /* Standard shadcn variables, derived or static */
     --card-hsl: var(--mood-hue) var(--mood-saturation) calc(var(--mood-lightness) + 5%); 
-    --card: hsl(var(--card-hsl));
-    --card-foreground: hsl(var(--foreground-hsl));
+    --card: var(--card-hsl); /* HSL VALUES */
+    --card-foreground: var(--foreground-hsl); /* HSL VALUES */
     
     --popover-hsl: var(--card-hsl);
-    --popover: hsl(var(--popover-hsl));
-    --popover-foreground: hsl(var(--foreground-hsl));
+    --popover: var(--popover-hsl); /* HSL VALUES */
+    --popover-foreground: var(--foreground-hsl); /* HSL VALUES */
     
     --secondary-hsl: calc((var(--mood-hue) + 15 + 360) % 360) var(--mood-saturation) calc(var(--mood-lightness) - 5%);
-    --secondary: hsl(var(--secondary-hsl));
-    --secondary-foreground: hsl(var(--foreground-hsl));
+    --secondary: var(--secondary-hsl); /* HSL VALUES */
+    --secondary-foreground: var(--foreground-hsl); /* HSL VALUES */
 
     --muted-hsl: var(--mood-hue) calc(var(--mood-saturation) * 0.8) calc(var(--mood-lightness) + 10%);
-    --muted: hsl(var(--muted-hsl));
+    --muted: var(--muted-hsl); /* HSL VALUES */
     --muted-foreground-hsl: var(--mood-hue) calc(var(--mood-saturation) * 0.7) calc(var(--mood-lightness) - 20%);
-    --muted-foreground: hsl(var(--muted-foreground-hsl));
+    --muted-foreground: var(--muted-foreground-hsl); /* HSL VALUES */
     
     --accent-hsl: var(--primary-hsl); 
-    --accent: hsl(var(--accent-hsl));
-    --accent-foreground-hsl: var(--primary-foreground-hsl);
-    --accent-foreground: hsl(var(--accent-foreground-hsl));
+    --accent: var(--accent-hsl); /* HSL VALUES */
+    --accent-foreground: var(--primary-foreground-hsl); /* HSL VALUES */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%; /* Direct HSL VALUES */
+    --destructive-foreground: 0 0% 98%; /* Direct HSL VALUES */
 
     --border-hsl: var(--mood-hue) var(--mood-saturation) calc(var(--mood-lightness) - 10%);
-    --border: hsl(var(--border-hsl));
+    --border: var(--border-hsl); /* HSL VALUES */
     --input-hsl: var(--mood-hue) var(--mood-saturation) calc(var(--mood-lightness) - 15%);
-    --input: hsl(var(--input-hsl));
+    --input: var(--input-hsl); /* HSL VALUES */
     --ring-hsl: var(--primary-hsl);
-    --ring: hsl(var(--ring-hsl));
+    --ring: var(--ring-hsl); /* HSL VALUES */
     
     --radius: 1rem; /* 16px, for "generous border-radius (e.g., 16px to 24px)" */
 
@@ -109,7 +110,8 @@ body {
   }
   
   .frosted-glass {
-    background-color: var(--panel-background);
+    /* JS updates --panel-background-rgba and --panel-bg-alpha if needed */
+    background-color: rgba(var(--panel-background-rgba), var(--panel-bg-alpha));
     @apply backdrop-blur-2xl; /* Using 2xl for significant blur as per spec (24px) */
   }
 
@@ -136,3 +138,4 @@ body {
     z-index: 1; /* Same level as vignette or just above */
   }
 }
+
