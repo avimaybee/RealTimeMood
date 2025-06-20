@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus } from 'lucide-react';
@@ -65,7 +64,7 @@ const OrbButton: React.FC = () => {
     };
   }, []);
 
-  const orbContainerBaseClasses = "fixed bottom-20 md:bottom-28 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 ease-in-out";
+  const orbContainerBaseClasses = "fixed bottom-24 md:bottom-32 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 ease-in-out";
   const shiftClasses = isCollectiveShifting ? "translate-y-1" : "translate-y-0";
 
   return (
