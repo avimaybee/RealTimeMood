@@ -42,11 +42,13 @@ const MainPromptDisplay: React.FC = () => {
       </p>
       <p 
         className={cn(
-          "text-sm md:text-base text-shadow-pop opacity-80",
-          isBouncing ? "animate-count-bounce" : ""
+          "text-sm md:text-base text-shadow-pop opacity-80"
         )}
       >
-        {animatedUserCount.toLocaleString()} minds currently connected
+        <span className={cn(isBouncing ? "animate-count-bounce inline-block" : "inline-block")}>
+          {animatedUserCount.toLocaleString()}
+        </span>
+        {' '}minds currently connected
       </p>
     </div>
   );
