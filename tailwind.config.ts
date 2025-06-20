@@ -112,11 +112,10 @@ export default {
           '100%': { transform: 'scale(3) translate(-50%, -50%)', opacity: '0' }, // Ensure ripple starts from center
         },
         'particle-float': {
-          '0%': { transform: 'translateY(0) translateX(0)', opacity: '0' },
-          '25%': { opacity: '0.7' },
-          '50%': { transform: 'translateY(-15vh) translateX(5vw)', opacity: '1'},
-          '75%': { opacity: '0.7' },
-          '100%': { transform: 'translateY(-30vh) translateX(-5vw)', opacity: '0' },
+          '0%': { transform: 'translateY(0) translateX(0) scale(0.8)', opacity: '0' },
+          '10%, 90%': { opacity: '1' }, // Particle's own alpha will determine its max visibility
+          '50%': { transform: 'translateY(-15vh) translateX(var(--particle-drift-x, 0px)) scale(1)'},
+          '100%': { transform: 'translateY(-30vh) translateX(calc(var(--particle-drift-x, 0px) * 2)) scale(0.8)', opacity: '0' },
         },
         'collective-shift-wave': {
           '0%': { transform: 'translateX(-100%) skewX(-15deg)', opacity: '0.3' },
@@ -146,7 +145,7 @@ export default {
         'typewriter': 'typewriter 2s steps(40) 1s 1 normal both',
         'fade-in': 'fade-in 1s ease-out forwards',
         'global-ripple-effect': 'global-ripple-effect 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards', // easeOutQuart like
-        'particle-float': 'particle-float 10s ease-in-out infinite',
+        'particle-float': 'particle-float var(--animation-duration, 20s) ease-in-out var(--animation-delay, 0s) infinite', // Use CSS vars for duration/delay
         'collective-shift-wave': 'collective-shift-wave 1.5s ease-out forwards', // Spec: 1.5s easeOutSine
         'firework-particle-anim': 'firework-particle-anim var(--animation-duration, 2s) var(--animation-timing-function, ease-out) var(--animation-delay, 0s) forwards',
       },
@@ -161,3 +160,4 @@ export default {
   },
   plugins: [require('tailwindcss-animate')],
 } satisfies Config;
+
