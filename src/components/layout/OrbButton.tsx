@@ -4,8 +4,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Plus } from 'lucide-react';
 import { useMood } from '@/contexts/MoodContext';
 import { PREDEFINED_MOODS, moodToHslString } from '@/lib/colorUtils';
-import { Button } from '@/components/ui/button';
+import { Button as ShadcnButton } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+
+const MotionShadcnButton = motion(ShadcnButton);
 
 const OrbButton: React.FC = () => {
   const { recordContribution, appState, isCollectiveShifting } = useMood();
@@ -68,17 +71,30 @@ const OrbButton: React.FC = () => {
   const orbContainerBaseClasses = "fixed bottom-24 md:bottom-32 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 ease-in-out";
   const shiftClasses = isCollectiveShifting ? "translate-y-1" : "translate-y-0";
 
+  let scaleToAnimate;
+  let transitionConfig = { type: "spring", stiffness: 400, damping: 20 }; 
+
+  if (radialBloomActive) {
+    scaleToAnimate = 1.1;
+  } else if (isInteracting) {
+    scaleToAnimate = 0.9;
+  } else {
+    scaleToAnimate = [1, 1.05, 1];
+    transitionConfig = { duration: 3, ease: "easeInOut", repeat: Infinity };
+  }
+
+  const hoverScale = (isInteracting || radialBloomActive) ? scaleToAnimate : 1.08;
+  const tapScale = (isInteracting || radialBloomActive) ? scaleToAnimate : 0.95;
+
   return (
     <>
       <div className={cn(orbContainerBaseClasses, shiftClasses, "orb-button-container" )}>
-        <Button
+        <MotionShadcnButton
           aria-label="Contribute Mood"
           className={cn(
-            "rounded-full w-[60px] h-[60px] md:w-20 md:h-20 p-0 flex items-center justify-center", // Explicitly set to 60px for mobile
-            "transition-all duration-300 ease-out transform hover:scale-105 active:scale-95",
-            "animate-orb-pulse", 
-            isInteracting ? "scale-90" : "",
-            radialBloomActive ? "!scale-110" : "" 
+            "rounded-full w-[60px] h-[60px] md:w-20 md:h-20 p-0 flex items-center justify-center",
+            "transition-all duration-300 ease-out transform" // Keep base transform for other (non-scale) transitions if any
+            // Removed animate-orb-pulse and specific scale classes like hover:scale-105, active:scale-95
           )}
           style={{
             background: `linear-gradient(145deg, hsl(var(--primary-hsl)), hsl(var(--mood-hue), calc(var(--mood-saturation-value) * 0.8 * 1%), calc(var(--mood-lightness-value) * 1.1 * 1%)))`,
@@ -89,9 +105,14 @@ const OrbButton: React.FC = () => {
           onMouseUp={handleInteractionEnd}
           onTouchEnd={handleInteractionEnd}
           onMouseLeave={radialBloomActive ? handleInteractionEnd : undefined} 
+          
+          animate={{ scale: scaleToAnimate }}
+          transition={transitionConfig}
+          whileHover={{ scale: hoverScale }}
+          whileTap={{ scale: tapScale }}
         >
           <Plus className="w-8 h-8 md:w-10 md:h-10 text-primary-foreground" strokeWidth={2} />
-        </Button>
+        </MotionShadcnButton>
       </div>
 
       {showColorWell && (
