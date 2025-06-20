@@ -5,18 +5,17 @@ import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
 
 const AppHeaderLogo: React.FC = () => (
-  // Placeholder logo - to be enhanced with dynamic glow/distortion
-  <svg 
-    width="32" // Slightly larger for better visibility, scales with header
-    height="32" 
-    viewBox="0 0 24 24" 
-    fill="none" 
+  <svg
+    width="32"
+    height="32"
+    viewBox="0 0 24 24"
+    fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    className="text-foreground opacity-80 group-hover:opacity-100 transition-opacity" // Use foreground for dynamic color
-    style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} // Simulates text-shadow-pop for SVG
+    className="text-foreground opacity-80 group-hover:opacity-100 transition-opacity"
+    style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
   >
-    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
-    <circle cx="12" cy="12" r="6" fill="currentColor" fillOpacity="0.5"/>
+    <path d="M4 12L8 8L12 12L16 8L20 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M4 16L8 12L12 16L16 12L20 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.6"/>
   </svg>
 );
 
