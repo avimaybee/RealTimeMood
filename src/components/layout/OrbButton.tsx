@@ -17,19 +17,47 @@ const OrbButton: React.FC = () => {
   const [radialBloomActive, setRadialBloomActive] = useState(false);
   const [tapPoint, setTapPoint] = useState({ x: 0, y: 0 });
   const [isTapped, setIsTapped] = useState(false);
-  const [glowHue, setGlowHue] = useState(0);
+  const [glowHue, setGlowHue] = useState(appState.currentMood.hue); // Initialize with current mood hue
   const interactionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const holdTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const personalMood = PREDEFINED_MOODS[Math.floor(Math.random() * PREDEFINED_MOODS.length)];
 
-  // Simulate hue shift based on mood (should be replaced with actual mood history logic)
+  // Update glowHue to smoothly transition towards the current collective mood's hue
   useEffect(() => {
-    const interval = setInterval(() => {
-      setGlowHue((prev) => (prev + 1) % 360);
-    }, 100); // Slow shift, adjust as needed
-    return () => clearInterval(interval);
-  }, []);
+    const targetHue = appState.currentMood.hue;
+    let animationFrameId: number;
+
+    const animateHue = () => {
+      setGlowHue(prevHue => {
+        // Calculate the shortest distance between hues (e.g., 350 to 10 is +20, not -340)
+        const diff = (targetHue - prevHue + 360) % 360;
+        const step = diff > 180 ? (diff - 360) * 0.05 : diff * 0.05; // Adjust 0.05 for speed (slower)
+
+        let newHue = (prevHue + step + 360) % 360;
+
+        // If very close to target, snap to it and stop animation
+        if (Math.abs(prevHue - targetHue) < 0.5 || Math.abs(prevHue - targetHue) > 359.5) {
+          cancelAnimationFrame(animationFrameId);
+          return targetHue;
+        }
+        
+        animationFrameId = requestAnimationFrame(animateHue);
+        return newHue;
+      });
+    };
+
+    // Cancel any ongoing animation before starting a new one
+    if (typeof animationFrameId === 'number') { // Check if animationFrameId was assigned
+      cancelAnimationFrame(animationFrameId);
+    }
+    animationFrameId = requestAnimationFrame(animateHue);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [appState.currentMood.hue]);
+
 
   const handleInteractionStart = (event: React.MouseEvent | React.TouchEvent) => {
     setIsInteracting(true);
@@ -39,7 +67,7 @@ const OrbButton: React.FC = () => {
     holdTimeoutRef.current = setTimeout(() => {
       setRadialBloomActive(true);
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate([50, 50, 50]); // Sustained soft haptic
+        navigator.vibrate([50, 50, 50]); 
       }
       const marker = document.createElement('div');
       marker.setAttribute('data-radial-bloom-active-page-marker', '');
@@ -61,7 +89,7 @@ const OrbButton: React.FC = () => {
       }
     } else {
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(50); // Tap haptic feedback
+        navigator.vibrate(50); 
       }
       setIsTapped(true);
       setTimeout(() => setIsTapped(false), 500);
@@ -86,7 +114,6 @@ const OrbButton: React.FC = () => {
     };
   }, []);
 
-  // Positioning: Bottom third on mobile, centered horizontally
   const orbContainerBaseClasses = "fixed bottom-24 md:bottom-32 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 ease-in-out";
   const shiftClasses = isCollectiveShifting ? "translate-y-1" : "translate-y-0";
 
@@ -142,9 +169,9 @@ const OrbButton: React.FC = () => {
           <div
             className="absolute inset-0 rounded-full"
             style={{
-              background: `hsl(${glowHue}, 50%, 50%)`,
+              background: `hsl(${glowHue}, 70%, 60%)`, // Adjusted Saturation/Lightness for a more vibrant glow
               filter: 'blur(20px)',
-              opacity: 0.3,
+              opacity: 0.4, // Slightly increased opacity for more presence
             }}
           />
           <Plus className="w-8 h-8 md:w-10 md:h-10 text-primary-foreground" strokeWidth={2} />
