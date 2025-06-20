@@ -7,53 +7,29 @@ import { cn } from '@/lib/utils';
 const MainPromptDisplay: React.FC = () => {
   const { appState } = useMood();
   
-  const [animatedLiveUserCount, setAnimatedLiveUserCount] = useState(appState.liveUserCount);
-  const [animatedEchoUserCount, setAnimatedEchoUserCount] = useState(appState.echoUserCount);
-  
-  const [isLiveBouncing, setIsLiveBouncing] = useState(false);
-  const [isEchoBouncing, setIsEchoBouncing] = useState(false);
-  
-  const prevCountsRef = useRef({ live: appState.liveUserCount, echo: appState.echoUserCount });
+  const [animatedUserCount, setAnimatedUserCount] = useState(appState.userCount);
+  const [isBouncing, setIsBouncing] = useState(false);
+  const prevUserCountRef = useRef(appState.userCount);
 
   useEffect(() => {
-    const liveDiff = appState.liveUserCount - animatedLiveUserCount;
-    if (Math.abs(liveDiff) > 0) {
-      const increment = Math.sign(liveDiff) * Math.max(1, Math.floor(Math.abs(liveDiff) / 10));
-      const timer = setTimeout(() => setAnimatedLiveUserCount(prev => prev + increment ), 50);
+    const diff = appState.userCount - animatedUserCount;
+    if (Math.abs(diff) > 0) {
+      const increment = Math.sign(diff) * Math.max(1, Math.floor(Math.abs(diff) / 10));
+      const timer = setTimeout(() => setAnimatedUserCount(prev => prev + increment ), 50);
       return () => clearTimeout(timer);
-    } else if (appState.liveUserCount !== animatedLiveUserCount) {
-       setAnimatedLiveUserCount(appState.liveUserCount);
+    } else if (appState.userCount !== animatedUserCount) {
+       setAnimatedUserCount(appState.userCount);
     }
-  }, [appState.liveUserCount, animatedLiveUserCount]);
+  }, [appState.userCount, animatedUserCount]);
 
   useEffect(() => {
-    const echoDiff = appState.echoUserCount - animatedEchoUserCount;
-    if (Math.abs(echoDiff) > 0) {
-      const increment = Math.sign(echoDiff) * Math.max(1, Math.floor(Math.abs(echoDiff) / 10));
-      const timer = setTimeout(() => setAnimatedEchoUserCount(prev => prev + increment ), 50);
-      return () => clearTimeout(timer);
-    } else if (appState.echoUserCount !== animatedEchoUserCount) {
-       setAnimatedEchoUserCount(appState.echoUserCount);
-    }
-  }, [appState.echoUserCount, animatedEchoUserCount]);
-
-  useEffect(() => {
-    if (prevCountsRef.current.live !== appState.liveUserCount) {
-      setIsLiveBouncing(true);
-      const timer = setTimeout(() => setIsLiveBouncing(false), 600); 
-      prevCountsRef.current.live = appState.liveUserCount; 
+    if (prevUserCountRef.current !== appState.userCount) {
+      setIsBouncing(true);
+      const timer = setTimeout(() => setIsBouncing(false), 600); 
+      prevUserCountRef.current = appState.userCount; 
       return () => clearTimeout(timer);
     }
-  }, [appState.liveUserCount]);
-
-  useEffect(() => {
-    if (prevCountsRef.current.echo !== appState.echoUserCount) {
-      setIsEchoBouncing(true);
-      const timer = setTimeout(() => setIsEchoBouncing(false), 600); 
-      prevCountsRef.current.echo = appState.echoUserCount; 
-      return () => clearTimeout(timer);
-    }
-  }, [appState.echoUserCount]);
+  }, [appState.userCount]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-y-3 md:gap-y-4 p-4">
@@ -68,14 +44,10 @@ const MainPromptDisplay: React.FC = () => {
           "text-sm md:text-base text-shadow-pop opacity-80"
         )}
       >
-        <span className={cn(isLiveBouncing ? "animate-count-bounce inline-block" : "inline-block")}>
-          {animatedLiveUserCount.toLocaleString()}
+        <span className={cn(isBouncing ? "animate-count-bounce inline-block" : "inline-block")}>
+          {animatedUserCount.toLocaleString()}
         </span>
-        {' '}Live,{' '}
-        <span className={cn(isEchoBouncing ? "animate-count-bounce inline-block opacity-75" : "inline-block opacity-75")}>
-          {animatedEchoUserCount.toLocaleString()}
-        </span>
-        {' '}Echoing minds connected
+        {' '}minds connected
       </p>
     </div>
   );

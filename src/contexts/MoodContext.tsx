@@ -8,9 +8,8 @@ import { PREDEFINED_MOODS } from '@/lib/colorUtils';
 const initialTotalUserCount = 1873;
 const initialState: AppState = {
   currentMood: PREDEFINED_MOODS[0],
-  liveUserCount: Math.floor(initialTotalUserCount * 0.75), // Example: 75% live
-  echoUserCount: Math.ceil(initialTotalUserCount * 0.25),  // Example: 25% echo
-  contributionCount: 12587, // Initial mock count
+  userCount: initialTotalUserCount, // Reverted to single userCount
+  contributionCount: 12587, 
   lastContributionTime: null,
   lastContributorMoodColor: null,
 };
@@ -51,7 +50,7 @@ export const MoodProvider = ({ children }: { children: ReactNode }) => {
     // Reset lastContributorMoodColor after a delay to allow ripple animation to finish
     setTimeout(() => {
       setAppState(prev => ({...prev, lastContributorMoodColor: null}));
-    }, 2000); // matches ripple animation duration
+    }, 2000); 
   }, []);
 
   const triggerCollectiveShift = useCallback(() => {
@@ -68,8 +67,7 @@ export const MoodProvider = ({ children }: { children: ReactNode }) => {
     const countInterval = setInterval(() => {
       setAppState(prev => ({
         ...prev,
-        liveUserCount: Math.max(0, prev.liveUserCount + Math.floor(Math.random() * 10) - 4), // Fluctuating live user count
-        echoUserCount: Math.max(0, prev.echoUserCount + Math.floor(Math.random() * 5) - 2),  // Fluctuating echo user count
+        userCount: Math.max(0, prev.userCount + Math.floor(Math.random() * 10) - 4.5), // Fluctuating total user count
         contributionCount: prev.contributionCount + Math.floor(Math.random() * 5),
       }));
     }, 5000);
