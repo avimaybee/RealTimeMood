@@ -41,23 +41,27 @@ export function getDerivedColors(mood: Mood): {
 } {
   const bgLuminance = getRelativeLuminance(mood.hue, mood.saturation, mood.lightness);
 
-  // Determine foreground color for general text
-  const isBgLight = bgLuminance > 0.5; // Threshold for light/dark background
-  const fgLightness = isBgLight ? 10 : 91.8; // 10% for dark text, 91.8% for light text
+  // Determine foreground color for general text (#1F1F1F or #EAEAEA)
+  // #1F1F1F -> hsl(204, 10%, 10%)
+  // #EAEAEA -> hsl(200, 0%, 91.8%)
+  const isBgLight = bgLuminance > 0.5; 
+  const fgLightness = isBgLight ? 10 : 91.8; 
   const fgHue = isBgLight ? 204 : 200; 
   const fgSat = isBgLight ? 10 : 0;
 
   // Determine foreground color for primary elements
+  // Primary color is shifted -30deg from mood.hue, 0.9 * mood.lightness
   const primaryHue = (mood.hue - 30 + 360) % 360;
-  const primaryLightness = mood.lightness * 0.9;
-  const primarySaturation = mood.saturation; // Use mood's saturation for primary
+  const primaryLightness = mood.lightness * 0.9; // Primary is generally darker/more saturated
+  const primarySaturation = mood.saturation; // Use mood's saturation
+  
   const primaryLuminance = getRelativeLuminance(primaryHue, primarySaturation, primaryLightness);
   const isPrimaryLight = primaryLuminance > 0.5;
   const pfgLightness = isPrimaryLight ? 10 : 91.8;
   const pfgHue = isPrimaryLight ? 204 : 200;
   const pfgSat = isPrimaryLight ? 10 : 0;
 
-  // Determine panel background
+  // Determine panel background based on main background's lightness
   const panelRgba = isBgLight ? '255, 255, 255' : '0, 0, 0';
 
   return {

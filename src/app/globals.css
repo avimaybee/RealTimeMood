@@ -27,7 +27,7 @@ body {
     --primary-hsl: var(--primary-hue) var(--primary-saturation) var(--primary-lightness);
     
     /* Foreground (text) colors based on background lightness - defaults, JS will refine these HSL values */
-    --foreground-light-hsl: 204 10% 10%; /* Off-black: HSL values for hsl(204, 10%, 10%) -> #1A1C1E */
+    --foreground-light-hsl: 204 10% 10%; /* Off-black: HSL values for hsl(204, 10%, 10%) -> #1F1F1F */
     --foreground-dark-hsl: 200 0% 91.8%; /* Off-white: HSL values for hsl(200, 0%, 91.8%) -> #EAEAEA */
     --foreground-hsl: var(--foreground-light-hsl); /* Default to dark text HSL values. JS updates this variable. */
 
@@ -103,7 +103,7 @@ body {
     @apply bg-background text-foreground;
     /* CSS Transitions for background-color and color are removed here. 
        Smooth color changes are now handled by JavaScript LERPing 
-       of --mood-hue, --mood-saturation, --mood-lightness, and --foreground-hsl variables. */
+       of --mood-hue, --mood-saturation, --mood-lightness, and HSL components of --foreground-hsl and --primary-foreground-hsl. */
   }
 }
 

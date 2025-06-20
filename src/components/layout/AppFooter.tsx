@@ -45,9 +45,9 @@ const AppFooter: React.FC = () => {
         size="icon" 
         onClick={handleMenuClick} 
         aria-label="Open menu"
-        className="w-8 h-8 rounded-full hover:bg-transparent" // ensure icon button styling
+        className="w-8 h-8 rounded-full hover:bg-transparent text-shadow-pop" // ensure icon button styling, added text-shadow-pop
       >
-        <Menu className="w-5 h-5 md:w-6 md:h-6 text-shadow-pop opacity-90" />
+        <Menu className="w-5 h-5 md:w-6 md:h-6 opacity-90" /> 
       </Button>
     </footer>
   );
