@@ -34,7 +34,7 @@ const PageContent: React.FC = () => {
   return (
     <div 
       className={cn(
-        "min-h-screen w-full flex flex-col items-center relative overflow-hidden transition-all duration-500 ease-in-out", 
+        "min-h-screen w-full flex flex-col items-center", // Removed 'relative' and 'overflow-hidden'
         // justify-between is removed to allow main content to naturally fill space
         isCollectiveShifting ? 'animate-global-pulse opacity-95' : 'opacity-100', 
         isRadialBloomActive ? 'radial-bloom-active-page' : ''
@@ -51,16 +51,14 @@ const PageContent: React.FC = () => {
       <AppHeader />
 
       <main className={cn(
-        "flex-grow flex flex-col items-center justify-center w-full px-4 text-center z-10", // Added z-10 to ensure main content is above particles
+        "flex-grow flex flex-col items-center justify-center w-full px-4 text-center z-10",
         isCollectiveShifting ? 'opacity-90' : 'opacity-100',
         )}>
         <MainPromptDisplay />
       </main>
       
-      {/* OrbButton is fixed positioned and will overlay correctly */}
       <OrbButton /> 
       
-      {/* AppFooter is fixed positioned and will overlay correctly */}
       <AppFooter />
 
     </div>
