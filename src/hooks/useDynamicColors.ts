@@ -8,13 +8,11 @@ const lerp = (start: number, end: number, t: number): number => {
   return start * (1 - t) + end * t;
 };
 
-// Helper function to calculate the shortest difference between two angles (hues)
 const shortestAngleDiff = (startAngle: number, endAngle: number): number => {
   const diff = (endAngle - startAngle + 360) % 360;
-  return diff > 180 ? diff - 360 : diff; // Returns a value between -180 and 180
+  return diff > 180 ? diff - 360 : diff;
 };
 
-// Lerps hue along the shortest path
 const lerpAngle = (startAngle: number, endAngle: number, t: number): number => {
   const angleDiff = shortestAngleDiff(startAngle, endAngle);
   return (startAngle + angleDiff * t + 360) % 360;
@@ -40,18 +38,15 @@ export const useDynamicColors = (currentMood: Mood) => {
         Math.abs(lastSetHSLRef.current.lightness - currentMood.lightness) > 0.01;
 
       if (moodEffectivelyChanged) {
-        // Calculate magnitude of change
         const deltaHueAbs = Math.abs(shortestAngleDiff(startHue, currentMood.hue));
         const deltaSaturation = Math.abs(startSaturation - currentMood.saturation);
         const deltaLightness = Math.abs(startLightness - currentMood.lightness);
 
-        const normDeltaHue = deltaHueAbs / 180; // Max possible shortest angle diff is 180
+        const normDeltaHue = deltaHueAbs / 180;
         const normDeltaSaturation = deltaSaturation / 100;
         const normDeltaLightness = deltaLightness / 100;
 
         const changeMagnitude = Math.max(normDeltaHue, normDeltaSaturation, normDeltaLightness);
-        
-        // Duration: 2000ms (2s) for small changes, up to 3000ms (3s) for max magnitude changes
         const duration = 2000 + changeMagnitude * 1000;
 
         const animate = (timestamp: number) => {
@@ -69,6 +64,9 @@ export const useDynamicColors = (currentMood: Mood) => {
           root.style.setProperty('--mood-hue', hue.toFixed(2));
           root.style.setProperty('--mood-saturation', `${saturation.toFixed(2)}%`);
           root.style.setProperty('--mood-lightness', `${lightness.toFixed(2)}%`);
+          // Set numeric values for calculations in components like OrbButton
+          root.style.setProperty('--mood-saturation-value', saturation.toFixed(2));
+          root.style.setProperty('--mood-lightness-value', lightness.toFixed(2));
           
           lastSetHSLRef.current = { hue, saturation, lightness };
 
@@ -93,8 +91,10 @@ export const useDynamicColors = (currentMood: Mood) => {
             animationFrameRef.current = requestAnimationFrame(animate);
           } else {
             animationStartTimeRef.current = null; 
-            // Ensure final values are precisely set
             lastSetHSLRef.current = { hue: currentMood.hue, saturation: currentMood.saturation, lightness: currentMood.lightness };
+             // Ensure final numeric values are also set precisely
+            root.style.setProperty('--mood-saturation-value', currentMood.saturation.toFixed(2));
+            root.style.setProperty('--mood-lightness-value', currentMood.lightness.toFixed(2));
           }
         };
 
@@ -105,10 +105,11 @@ export const useDynamicColors = (currentMood: Mood) => {
         animationFrameRef.current = requestAnimationFrame(animate);
 
       } else {
-        // Mood hasn't changed significantly, or initial set
         root.style.setProperty('--mood-hue', currentMood.hue.toFixed(2));
         root.style.setProperty('--mood-saturation', `${currentMood.saturation.toFixed(2)}%`);
         root.style.setProperty('--mood-lightness', `${currentMood.lightness.toFixed(2)}%`);
+        root.style.setProperty('--mood-saturation-value', currentMood.saturation.toFixed(2));
+        root.style.setProperty('--mood-lightness-value', currentMood.lightness.toFixed(2));
         lastSetHSLRef.current = { hue: currentMood.hue, saturation: currentMood.saturation, lightness: currentMood.lightness };
         
         const {

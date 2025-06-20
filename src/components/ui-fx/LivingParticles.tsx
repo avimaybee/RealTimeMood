@@ -11,7 +11,7 @@ const LivingParticles: React.FC = () => {
     const minUserCountForScale = 100;
     const maxUserCountForScale = 10000;
     const minParticles = 50;
-    const maxParticles = 500;
+    const maxParticles = 500; // As per spec
 
     let normalizedUserCount = (appState.userCount - minUserCountForScale) / (maxUserCountForScale - minUserCountForScale);
     normalizedUserCount = Math.max(0, Math.min(1, normalizedUserCount)); 
@@ -19,10 +19,10 @@ const LivingParticles: React.FC = () => {
     const numParticles = Math.floor(minParticles + normalizedUserCount * (maxParticles - minParticles));
 
     const newParticles = Array.from({ length: numParticles }).map((_, i) => {
-      const size = Math.random() * 4 + 2.5; // Size: 2.5px to 6.5px
+      const size = Math.random() * 3 + 2.5; // Size: 2.5px to 5.5px (slightly larger min)
       const duration = Math.random() * 15 + 10; 
       const delay = Math.random() * 15; 
-      const particleAlpha = Math.random() * 0.5 + 0.3; // Alpha: 0.3 to 0.8
+      const particleAlpha = Math.random() * 0.4 + 0.4; // Alpha: 0.4 to 0.8 (more visible)
       const particleDriftX = `${(Math.random() - 0.5) * 10}vw`; 
 
       return {
@@ -34,22 +34,22 @@ const LivingParticles: React.FC = () => {
           top: `${Math.random() * 100 + 100}%`, 
           animationDuration: `${duration}s`,
           animationDelay: `${delay}s`,
-          backgroundColor: `hsla(${appState.currentMood.hue}, ${appState.currentMood.saturation}%, ${appState.currentMood.lightness}%, ${particleAlpha})`,
+          // Use fixed white color for particles to ensure contrast, alpha controlled by particleAlpha
+          backgroundColor: `hsla(0, 0%, 100%, ${particleAlpha})`, 
           '--particle-drift-x': particleDriftX,
-          // Opacity is now primarily controlled by the animation keyframes for fade in/out
         } as React.CSSProperties,
       };
     });
     setParticles(newParticles);
-  }, [appState.currentMood, appState.userCount]);
+  }, [appState.userCount]); // Removed appState.currentMood dependency as color is now fixed white
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-2"> {/* z-index: above overlays, below UI */}
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-2 w-full h-full"> {/* Ensure full viewport coverage */}
       {particles.map(p => (
         <div
           key={p.id}
           className="absolute rounded-full animate-particle-float"
-          style={{ ...p.style, transition: 'background-color 0.5s ease-in-out' }}
+          style={p.style} // Removed background-color transition as it's fixed white now
           aria-hidden="true"
         />
       ))}

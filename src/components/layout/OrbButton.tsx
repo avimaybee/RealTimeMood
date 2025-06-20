@@ -57,7 +57,9 @@ const OrbButton: React.FC = () => {
       if (interactionTimeoutRef.current) clearTimeout(interactionTimeoutRef.current);
       if (holdTimeoutRef.current) clearTimeout(holdTimeoutRef.current);
       const marker = document.querySelector('[data-radial-bloom-active-page-marker]');
-      if (marker) document.body.removeChild(marker);
+      if (marker && marker.parentNode) { // Check parentNode before removing
+        marker.parentNode.removeChild(marker);
+      }
     };
   }, []);
 
@@ -70,16 +72,15 @@ const OrbButton: React.FC = () => {
         <Button
           aria-label="Contribute Mood"
           className={cn(
-            "rounded-full w-16 h-16 md:w-20 md:h-20 p-0 shadow-soft flex items-center justify-center",
+            "rounded-full w-16 h-16 md:w-20 md:h-20 p-0 flex items-center justify-center", // Removed shadow-soft, size and shape are key
             "transition-all duration-300 ease-out transform hover:scale-105 active:scale-95",
             "animate-orb-pulse", 
             isInteracting ? "scale-90" : "",
             radialBloomActive ? "!scale-110" : "" 
           )}
           style={{
-            // Ensure this background is applied and visible
-            background: `linear-gradient(145deg, hsl(var(--primary-hsl)), hsl(var(--mood-hue), calc(var(--mood-saturation) * 0.8), calc(var(--mood-lightness) * 1.1)))`,
-            boxShadow: `0 0 15px hsla(var(--primary-hsl), 0.5), 0 0 25px hsla(var(--mood-hue), calc(var(--mood-saturation) * 0.7), calc(var(--mood-lightness) * 1.0), 0.4), 0 4px 12px rgba(0,0,0,0.3)`, // Enhanced shadow for pop
+            background: `linear-gradient(145deg, hsl(var(--primary-hsl)), hsl(var(--mood-hue), calc(var(--mood-saturation-value) * 0.8)%, calc(var(--mood-lightness-value) * 1.1)%))`,
+            boxShadow: `0 0 15px hsla(var(--primary-hsl), 0.5), 0 0 25px hsla(var(--mood-hue), calc(var(--mood-saturation-value) * 0.7)%, calc(var(--mood-lightness-value) * 1.0)%, 0.4), 0 4px 12px rgba(0,0,0,0.3)`,
           }}
           onMouseDown={handleInteractionStart}
           onTouchStart={handleInteractionStart}
@@ -118,7 +119,7 @@ const OrbButton: React.FC = () => {
 
       {radialBloomActive && (
          <div 
-            className="orb-radial-bloom-effect fixed inset-0 pointer-events-none z-20" // Ensure this is below the Orb button (z-40)
+            className="orb-radial-bloom-effect fixed inset-0 pointer-events-none z-20"
             style={{
               '--tap-x': `${tapPoint.x}px`,
               '--tap-y': `${tapPoint.y}px`,
@@ -153,7 +154,7 @@ const OrbButton: React.FC = () => {
         }
 
         .orb-radial-bloom-effect {
-          background: radial-gradient(circle at var(--tap-x) var(--tap-y), transparent 0%, hsla(var(--mood-hue), var(--mood-saturation), var(--mood-lightness), 0.3) 70%, hsla(var(--mood-hue), var(--mood-saturation), var(--mood-lightness), 0.5) 100%);
+          background: radial-gradient(circle at var(--tap-x) var(--tap-y), transparent 0%, hsla(var(--mood-hue), var(--mood-saturation-value)%, var(--mood-lightness-value)%, 0.3) 70%, hsla(var(--mood-hue), var(--mood-saturation-value)%, var(--mood-lightness-value)%, 0.5) 100%);
           animation: radial-bloom-effect-anim 1s ease-out forwards;
         }
 
@@ -165,7 +166,6 @@ const OrbButton: React.FC = () => {
 
       <style jsx global>{`
         .radial-bloom-active-page > *:not(.orb-button-container):not([data-radix-portal]):not(.orb-radial-bloom-effect):not(.vignette-overlay):not(.noise-overlay):not(.fixed.inset-0.pointer-events-none.z-2) {
-            /* Ensure LivingParticles (z-2) is not blurred out by radial bloom page effect */
             opacity: 0.2 !important;
             filter: blur(24px) !important;
             transition: opacity 0.5s ease, filter 0.5s ease !important;
@@ -176,4 +176,3 @@ const OrbButton: React.FC = () => {
 };
 
 export default OrbButton;
-

@@ -91,9 +91,9 @@ export default {
             height: '0',
           },
         },
-        'global-pulse': { 
-          '0%, 100%': { filter: 'brightness(100%) saturate(100%)', transform: 'scale(1)' },
-          '50%': { filter: 'brightness(80%) saturate(80%)', transform: 'scale(0.99)' },
+        'global-pulse': { // Removed transform: scale() to prevent stacking context issues
+          '0%, 100%': { filter: 'brightness(100%) saturate(100%)' },
+          '50%': { filter: 'brightness(80%) saturate(80%)' },
         },
         'orb-pulse': { 
           '0%, 100%': { transform: 'scale(1)' },
@@ -113,8 +113,9 @@ export default {
         },
         'particle-float': {
           '0%': { transform: 'translateY(0) translateX(0) scale(0.7)', opacity: '0' },
-          '20%': { opacity: '1' }, // Become fully visible (respecting hsla alpha)
-          '80%': { opacity: '1' }, // Stay visible
+          '10%': { opacity: '0.7' }, // Fade in quicker
+          '20%': { opacity: '1' }, 
+          '80%': { opacity: '1' }, 
           '50%': { transform: 'translateY(-15vh) translateX(var(--particle-drift-x, 0px)) scale(1)'},
           '100%': { transform: 'translateY(-30vh) translateX(calc(var(--particle-drift-x, 0px) * 2)) scale(0.7)', opacity: '0' },
         },
