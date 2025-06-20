@@ -97,7 +97,9 @@ body {
   }
   body {
     @apply bg-background text-foreground;
-    transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out;
+    /* CSS Transitions for background-color and color are removed here. 
+       Smooth color changes are now handled by JavaScript LERPing 
+       of --mood-hue, --mood-saturation, --mood-lightness, and --foreground-hsl variables. */
   }
 }
 
