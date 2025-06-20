@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useEffect, useState } from 'react';
 import { useMood } from '@/contexts/MoodContext';
@@ -30,9 +29,6 @@ const MainPromptDisplay: React.FC = () => {
       </p>
       <p className="text-sm md:text-base text-shadow-pop opacity-80">
         {animatedUserCount.toLocaleString()} minds currently connected
-        {/* Placeholder for Live/Echoing distinction:
-        <span className="ml-2 opacity-70">([Y] Live, [Z] Echoing)</span> 
-        */}
       </p>
     </div>
   );
