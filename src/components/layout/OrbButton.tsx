@@ -25,7 +25,6 @@ const OrbButton: React.FC = () => {
 
     holdTimeoutRef.current = setTimeout(() => {
       setRadialBloomActive(true);
-      // Add marker for page-level effects
       const marker = document.createElement('div');
       marker.setAttribute('data-radial-bloom-active-page-marker', '');
       document.body.appendChild(marker);
@@ -57,7 +56,6 @@ const OrbButton: React.FC = () => {
     return () => {
       if (interactionTimeoutRef.current) clearTimeout(interactionTimeoutRef.current);
       if (holdTimeoutRef.current) clearTimeout(holdTimeoutRef.current);
-      // Ensure marker is removed on unmount if active
       const marker = document.querySelector('[data-radial-bloom-active-page-marker]');
       if (marker) document.body.removeChild(marker);
     };
@@ -74,13 +72,14 @@ const OrbButton: React.FC = () => {
           className={cn(
             "rounded-full w-16 h-16 md:w-20 md:h-20 p-0 shadow-soft flex items-center justify-center",
             "transition-all duration-300 ease-out transform hover:scale-105 active:scale-95",
-            "animate-orb-pulse", // Added hypnotic pulse
-            isInteracting ? "scale-90" : "", // Apply interaction scale only when interacting
-            radialBloomActive ? "!scale-110" : "" // Ensure radial bloom scale overrides others
+            "animate-orb-pulse", 
+            isInteracting ? "scale-90" : "",
+            radialBloomActive ? "!scale-110" : "" 
           )}
           style={{
+            // Ensure this background is applied and visible
             background: `linear-gradient(145deg, hsl(var(--primary-hsl)), hsl(var(--mood-hue), calc(var(--mood-saturation) * 0.8), calc(var(--mood-lightness) * 1.1)))`,
-            boxShadow: `0 0 20px hsla(var(--primary-hsl), 0.7), 0 0 30px hsla(var(--mood-hue), calc(var(--mood-saturation) * 0.8), calc(var(--mood-lightness) * 1.1), 0.5)`,
+            boxShadow: `0 0 15px hsla(var(--primary-hsl), 0.5), 0 0 25px hsla(var(--mood-hue), calc(var(--mood-saturation) * 0.7), calc(var(--mood-lightness) * 1.0), 0.4), 0 4px 12px rgba(0,0,0,0.3)`, // Enhanced shadow for pop
           }}
           onMouseDown={handleInteractionStart}
           onTouchStart={handleInteractionStart}
@@ -107,10 +106,10 @@ const OrbButton: React.FC = () => {
                 '--particle-size': `${Math.random() * 6 + 3}px`,
                 '--particle-anim-duration': `${Math.random() * 0.5 + 0.5}s`,
                 '--particle-initial-rotate': `${Math.random() * 360}deg`,
-                '--particle-initial-translateX': `${Math.random() * 50 - 25}px`, // Adjusted for more centered burst
+                '--particle-initial-translateX': `${Math.random() * 50 - 25}px`,
                 '--particle-final-rotate': `${Math.random() * 360}deg`,
-                '--particle-final-translateX': `${(Math.random() - 0.5) * 2 * (Math.random() * 80 + 40)}px`, // More varied X direction
-                '--particle-final-translateY': `${(Math.random() - 0.5) * 2 * (Math.random() * 80 + 40)}px`, // Added Y direction for swirl
+                '--particle-final-translateX': `${(Math.random() - 0.5) * 2 * (Math.random() * 80 + 40)}px`,
+                '--particle-final-translateY': `${(Math.random() - 0.5) * 2 * (Math.random() * 80 + 40)}px`,
               } as React.CSSProperties}
             />
           ))}
@@ -119,7 +118,7 @@ const OrbButton: React.FC = () => {
 
       {radialBloomActive && (
          <div 
-            className="orb-radial-bloom-effect fixed inset-0 pointer-events-none z-20"
+            className="orb-radial-bloom-effect fixed inset-0 pointer-events-none z-20" // Ensure this is below the Orb button (z-40)
             style={{
               '--tap-x': `${tapPoint.x}px`,
               '--tap-y': `${tapPoint.y}px`,
@@ -158,14 +157,15 @@ const OrbButton: React.FC = () => {
           animation: radial-bloom-effect-anim 1s ease-out forwards;
         }
 
-        @keyframes radial-bloom-effect-anim { /* Renamed to avoid conflict if global has same name */
+        @keyframes radial-bloom-effect-anim {
           from { opacity: 0; transform: scale(0); }
           to { opacity: 1; transform: scale(3); }
         }
       `}</style>
 
       <style jsx global>{`
-        .radial-bloom-active-page > *:not(.orb-button-container):not([data-radix-portal]):not(.orb-radial-bloom-effect):not(.vignette-overlay):not(.noise-overlay):not(.fixed.inset-0.pointer-events-none) {
+        .radial-bloom-active-page > *:not(.orb-button-container):not([data-radix-portal]):not(.orb-radial-bloom-effect):not(.vignette-overlay):not(.noise-overlay):not(.fixed.inset-0.pointer-events-none.z-2) {
+            /* Ensure LivingParticles (z-2) is not blurred out by radial bloom page effect */
             opacity: 0.2 !important;
             filter: blur(24px) !important;
             transition: opacity 0.5s ease, filter 0.5s ease !important;
@@ -176,3 +176,4 @@ const OrbButton: React.FC = () => {
 };
 
 export default OrbButton;
+

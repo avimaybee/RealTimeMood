@@ -91,11 +91,11 @@ export default {
             height: '0',
           },
         },
-        'global-pulse': { // Updated as per spec 1.3.2
+        'global-pulse': { 
           '0%, 100%': { filter: 'brightness(100%) saturate(100%)', transform: 'scale(1)' },
           '50%': { filter: 'brightness(80%) saturate(80%)', transform: 'scale(0.99)' },
         },
-        'orb-pulse': { // New for OrbButton hypnotic pulse (spec 2.5)
+        'orb-pulse': { 
           '0%, 100%': { transform: 'scale(1)' },
           '50%': { transform: 'scale(1.05)' },
         },
@@ -107,22 +107,23 @@ export default {
           from: { opacity: '0' },
           to: { opacity: '1' },
         },
-         'global-ripple-effect': { // Renamed from ripple-effect to be specific
-          '0%': { transform: 'scale(0.1) translate(-50%, -50%)', opacity: '0.7' }, // Start from center
-          '100%': { transform: 'scale(3) translate(-50%, -50%)', opacity: '0' }, // Ensure ripple starts from center
+         'global-ripple-effect': { 
+          '0%': { transform: 'scale(0.1) translate(-50%, -50%)', opacity: '0.7' }, 
+          '100%': { transform: 'scale(3) translate(-50%, -50%)', opacity: '0' }, 
         },
         'particle-float': {
-          '0%': { transform: 'translateY(0) translateX(0) scale(0.8)', opacity: '0' },
-          '10%, 90%': { opacity: '1' }, // Particle's own alpha will determine its max visibility
+          '0%': { transform: 'translateY(0) translateX(0) scale(0.7)', opacity: '0' },
+          '20%': { opacity: '1' }, // Become fully visible (respecting hsla alpha)
+          '80%': { opacity: '1' }, // Stay visible
           '50%': { transform: 'translateY(-15vh) translateX(var(--particle-drift-x, 0px)) scale(1)'},
-          '100%': { transform: 'translateY(-30vh) translateX(calc(var(--particle-drift-x, 0px) * 2)) scale(0.8)', opacity: '0' },
+          '100%': { transform: 'translateY(-30vh) translateX(calc(var(--particle-drift-x, 0px) * 2)) scale(0.7)', opacity: '0' },
         },
         'collective-shift-wave': {
           '0%': { transform: 'translateX(-100%) skewX(-15deg)', opacity: '0.3' },
           '20%': { transform: 'translateX(0) skewX(0deg)', opacity: '0.1' },
           '100%': { transform: 'translateX(100%) skewX(15deg)', opacity: '0.3' },
         },
-        'firework-particle-anim': { // from MilestoneFireworks
+        'firework-particle-anim': { 
           '0%': {
             opacity: '0.8',
             transform: 'translate(-50%, -50%) rotate(var(--particle-initial-rotate)) translateX(0px) scale(0.2)',
@@ -140,18 +141,18 @@ export default {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'global-pulse': 'global-pulse 2s ease-in-out', // Spec: 1s to contract, 1s to return (2s total)
-        'orb-pulse': 'orb-pulse 3s ease-in-out infinite', // Spec: 3s loop
+        'global-pulse': 'global-pulse 2s ease-in-out', 
+        'orb-pulse': 'orb-pulse 3s ease-in-out infinite', 
         'typewriter': 'typewriter 2s steps(40) 1s 1 normal both',
         'fade-in': 'fade-in 1s ease-out forwards',
-        'global-ripple-effect': 'global-ripple-effect 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards', // easeOutQuart like
-        'particle-float': 'particle-float var(--animation-duration, 20s) ease-in-out var(--animation-delay, 0s) infinite', // Use CSS vars for duration/delay
-        'collective-shift-wave': 'collective-shift-wave 1.5s ease-out forwards', // Spec: 1.5s easeOutSine
+        'global-ripple-effect': 'global-ripple-effect 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards', 
+        'particle-float': 'particle-float var(--animation-duration, 20s) ease-in-out var(--animation-delay, 0s) infinite', 
+        'collective-shift-wave': 'collective-shift-wave 1.5s ease-out forwards', 
         'firework-particle-anim': 'firework-particle-anim var(--animation-duration, 2s) var(--animation-timing-function, ease-out) var(--animation-delay, 0s) forwards',
       },
       backdropBlur: {
-        '24px': '24px', // Kept from original, can be '2xl' from tailwind default if preferred.
-        '2xl': '24px', // Ensure this specific value is available
+        '24px': '24px', 
+        '2xl': '24px', 
       },
       boxShadow: {
         'soft': '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
@@ -160,4 +161,3 @@ export default {
   },
   plugins: [require('tailwindcss-animate')],
 } satisfies Config;
-
