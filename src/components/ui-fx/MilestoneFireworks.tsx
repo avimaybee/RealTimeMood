@@ -9,11 +9,14 @@ const MilestoneFireworks: React.FC = () => {
   const [showFireworks, setShowFireworks] = useState(false);
 
   useEffect(() => {
-    // Trigger fireworks at certain contribution milestones
-    if (contributionCount > 0 && contributionCount % 100 === 0) { // Every 100 contributions
+    let timer: NodeJS.Timeout;
+    if (contributionCount > 0 && contributionCount % 100 === 0) { 
       setShowFireworks(true);
-      setTimeout(() => setShowFireworks(false), 5000); // Show for 5 seconds
+      timer = setTimeout(() => setShowFireworks(false), 5000); // Show for 5 seconds
     }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [contributionCount]);
 
   if (!showFireworks) return null;
@@ -24,11 +27,18 @@ const MilestoneFireworks: React.FC = () => {
     <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden" aria-hidden="true">
       {Array.from({ length: 5 }).map((_, burstIndex) => ( // 5 bursts
         Array.from({ length: particleCount }).map((_, particleIndex) => {
-          const angle = (particleIndex / particleCount) * 360;
-          const distance = Math.random() * 100 + 50; // 50 to 150 units
-          const duration = Math.random() * 1.5 + 1; // 1s to 2.5s
-          const delay = burstIndex * 0.3 + Math.random() * 0.5;
-          const size = Math.random() * 4 + 2;
+          const angle = (particleIndex / particleCount) * 360 + (burstIndex * 72); // Base angle for particle, offset for each burst
+          const distance = Math.random() * 120 + 60; // Max travel distance (radius of burst)
+          const duration = Math.random() * 1.5 + 1.2; // Animation duration 1.2s to 2.7s
+          const delay = burstIndex * 0.25 + Math.random() * 0.3; // Stagger bursts and particles within bursts
+          const size = Math.random() * 3 + 1.5; // Particle size 1.5px to 4.5px
+
+          // CSS custom properties for unique animation per particle
+          const initialRotate = angle;
+          const midTranslateX = distance * (Math.random() * 0.3 + 0.4); // Mid-point translation (40-70% of distance)
+          const midRotate = angle + (Math.random() - 0.5) * 30; // Slight rotation variance at mid-point
+          const finalTranslateX = distance * (Math.random() * 0.2 + 0.8); // Final translation (80-100% of distance)
+          const finalRotate = angle + (Math.random() - 0.5) * 60; // More rotation variance at the end
 
           return (
             <div
@@ -38,26 +48,42 @@ const MilestoneFireworks: React.FC = () => {
                 backgroundColor: moodToHslString(appState.currentMood),
                 width: `${size}px`,
                 height: `${size}px`,
-                left: '50%',
-                top: '50%',
-                opacity: 0,
-                animation: `firework-particle ${duration}s cubic-bezier(0.1, 0.8, 0.2, 1) ${delay}s forwards`,
-                transform: `translate(-50%, -50%) rotate(${angle}deg) translateX(${distance}px) scale(0)`,
-                // Keyframes for 'firework-particle' would be needed in globals.css or here
-                // For brevity, I'm omitting explicit keyframes here, but they would be like:
-                // @keyframes firework-particle { 0% { opacity: 1, transform: ... scale(0) } 50% { opacity: 1, transform: ... scale(1) } 100% { opacity: 0, transform: ... scale(0.5) translateY(20px) } }
-                // Using a simplified fade-in/out for now
-                animationName: 'fade-in', // This is a very basic substitute
-              }}
+                left: '50%', // Center for transform origin
+                top: '50%',  // Center for transform origin
+                opacity: 0,  // Animation will control opacity
+                
+                // Use longhand animation properties to avoid conflicts
+                animationName: 'firework-particle-anim',
+                animationDuration: `${duration}s`,
+                animationTimingFunction: 'cubic-bezier(0.25, 0.1, 0.25, 1.0)', // Simulates ease-out
+                animationDelay: `${delay}s`,
+                animationFillMode: 'forwards',
+                
+                // Pass dynamic values to keyframes via CSS custom properties
+                '--particle-initial-rotate': `${initialRotate}deg`,
+                '--particle-mid-rotate': `${midRotate}deg`,
+                '--particle-mid-translate-x': `${midTranslateX}px`,
+                '--particle-final-rotate': `${finalRotate}deg`,
+                '--particle-final-translate-x': `${finalTranslateX}px`,
+              } as React.CSSProperties} // Type assertion for CSS custom properties
             />
           );
         })
       ))}
        <style jsx>{`
-        @keyframes firework-particle {
-          0% { opacity: 1; transform: translate(-50%, -50%) rotate(${Math.random()*360}deg) translateX(0px) scale(0.1); }
-          50% { opacity: 1; transform: translate(-50%, -50%) rotate(${Math.random()*360}deg) translateX(${Math.random()*150 + 50}px) scale(1); }
-          100% { opacity: 0; transform: translate(-50%, -50%) rotate(${Math.random()*360}deg) translateX(${Math.random()*150 + 100}px) scale(0.5) translateY(30px); }
+        @keyframes firework-particle-anim {
+          0% {
+            opacity: 0.8; /* Start visible */
+            transform: translate(-50%, -50%) rotate(var(--particle-initial-rotate)) translateX(0px) scale(0.2);
+          }
+          50% {
+            opacity: 1; /* Full opacity mid-flight */
+            transform: translate(-50%, -50%) rotate(var(--particle-mid-rotate)) translateX(var(--particle-mid-translate-x)) scale(1);
+          }
+          100% {
+            opacity: 0; /* Fade out at the end */
+            transform: translate(-50%, -50%) rotate(var(--particle-final-rotate)) translateX(var(--particle-final-translate-x)) scale(0.3) translateY(40px); /* Drift downwards */
+          }
         }
       `}</style>
     </div>
