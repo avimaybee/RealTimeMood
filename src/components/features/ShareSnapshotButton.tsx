@@ -45,48 +45,93 @@ const ShareSnapshotButton: React.FC = () => {
         ctx.fillText(text, canvas.width - padding, canvas.height - padding);
         
         // --- Draw Icon ---
-        // SVG content matches the app's logo icon
         const svgString = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M4 12L8 8L12 12L16 8L20 12" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M4 16L8 12L12 16L16 12L20 16" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
           </svg>`;
         
         const img = new Image();
-        // Use a data URI to avoid object URL management and potential CORS issues.
         const svgDataUrl = 'data:image/svg+xml;base64,' + btoa(svgString);
 
         await new Promise<void>((resolve, reject) => {
           img.onload = () => {
             const textMetrics = ctx.measureText(text);
             const textWidth = textMetrics.width;
-            // Position icon to the left of the text
-            const iconX = canvas.width - padding - textWidth - 8 - 24; // icon width: 24, spacing: 8
-            const iconY = canvas.height - padding - 22; // Align vertically with text
+            const iconX = canvas.width - padding - textWidth - 8 - 24;
+            const iconY = canvas.height - padding - 22;
             
-            ctx.globalAlpha = 0.5; // Apply shared opacity to the icon
+            ctx.globalAlpha = 0.5;
             ctx.drawImage(img, iconX, iconY, 24, 24);
-            ctx.globalAlpha = 1.0; // Reset global alpha for other canvas operations
+            ctx.globalAlpha = 1.0;
 
             resolve();
           };
-          img.onerror = (err) => reject(err); // Handle image loading errors
+          img.onerror = (err) => reject(err);
           img.src = svgDataUrl;
         });
       }
       // --- END WATERMARKING LOGIC ---
 
-      const image = canvas.toDataURL('image/png', 1.0);
-      const link = document.createElement('a');
-      link.href = image;
-      link.download = `RealTimeMood-Snapshot-${new Date().toISOString().split('T')[0]}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const fileName = `RealTimeMood-Snapshot-${new Date().toISOString().split('T')[0]}.png`;
 
-      toast({
-        title: "Snapshot Ready!",
-        description: "Your snapshot has been downloaded.",
-      });
+      const downloadImage = () => {
+        const image = canvas.toDataURL('image/png', 1.0);
+        const link = document.createElement('a');
+        link.href = image;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast({
+          title: "Snapshot Ready!",
+          description: "Your snapshot has been downloaded.",
+        });
+      };
+
+      // Use Web Share API if available, otherwise fall back to download
+      if (navigator.share) {
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            toast({
+              title: "Error",
+              description: "Could not create image file. Please try again.",
+              variant: "destructive",
+            });
+            downloadImage(); // Fallback on blob creation failure
+            return;
+          }
+
+          const file = new File([blob], fileName, { type: 'image/png' });
+          const shareData = {
+            files: [file],
+            title: 'My RealTimeMood Snapshot',
+            text: 'Check out the collective mood right now! #RealTimeMood',
+          };
+          
+          if (navigator.canShare && navigator.canShare(shareData)) {
+            try {
+              await navigator.share(shareData);
+              toast({
+                title: "Shared!",
+                description: "Your mood snapshot has been shared.",
+              });
+            } catch (err) {
+              if ((err as Error).name !== 'AbortError') {
+                console.error("Share API error:", err);
+                toast({
+                  title: "Share Failed",
+                  description: "Could not share the snapshot. It has been downloaded instead.",
+                });
+                downloadImage();
+              }
+            }
+          } else {
+            downloadImage();
+          }
+        }, 'image/png', 1.0);
+      } else {
+        downloadImage();
+      }
 
     } catch (error) {
       console.error("Error taking snapshot:", error);
