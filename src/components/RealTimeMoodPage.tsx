@@ -42,9 +42,15 @@ const PageContent: React.FC = () => {
       <div className="vignette-overlay" />
       <div className="noise-overlay" />
       <LivingParticles />
-      <GlobalRipple />
-      <CollectiveShiftEffect />
-      <MilestoneFireworks />
+
+      {/* Suppress global effects during focused mood selection */}
+      {!isRadialBloomActive && (
+        <>
+          <GlobalRipple />
+          <CollectiveShiftEffect />
+          <MilestoneFireworks />
+        </>
+      )}
       
       <AppHeader />
 
