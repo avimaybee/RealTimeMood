@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 interface MoodSelectionButtonsProps {
   point: { x: number; y: number };
   onSelect: (mood: Mood) => void;
+  onPreviewChange: (mood: Mood | null) => void;
 }
 
 const MOOD_CHOICES = PREDEFINED_MOODS.slice(0, 8);
@@ -45,7 +46,7 @@ const itemVariants = {
 };
 
 
-const MoodSelectionButtons: React.FC<MoodSelectionButtonsProps> = ({ point, onSelect }) => {
+const MoodSelectionButtons: React.FC<MoodSelectionButtonsProps> = ({ point, onSelect, onPreviewChange }) => {
   return (
     <motion.div
       className="fixed inset-0 z-40 flex items-center justify-center"
@@ -66,6 +67,8 @@ const MoodSelectionButtons: React.FC<MoodSelectionButtonsProps> = ({ point, onSe
           custom={i}
           variants={itemVariants}
           className="absolute"
+          onHoverStart={() => onPreviewChange(mood)}
+          onHoverEnd={() => onPreviewChange(null)}
         >
           <Button
             onClick={() => onSelect(mood)}

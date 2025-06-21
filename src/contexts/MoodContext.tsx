@@ -19,6 +19,8 @@ const initialState: AppState = {
 
 const MoodContext = createContext<{
   appState: AppState;
+  previewMood: Mood | null;
+  setPreviewMood: (mood: Mood | null) => void;
   setAppState: React.Dispatch<React.SetStateAction<AppState>>;
   updateMood: (newMood: Mood) => void;
   recordContribution: (mood: Mood, position: { x: number; y: number } | null) => void;
@@ -26,6 +28,8 @@ const MoodContext = createContext<{
   isCollectiveShifting: boolean;
 }>({
   appState: initialState,
+  previewMood: null,
+  setPreviewMood: () => {},
   setAppState: () => {},
   updateMood: () => {},
   recordContribution: () => {},
@@ -38,6 +42,7 @@ export const useMood = () => useContext(MoodContext);
 export const MoodProvider = ({ children }: { children: ReactNode }) => {
   const [appState, setAppState] = useState<AppState>(initialState);
   const [isCollectiveShifting, setIsCollectiveShifting] = useState(false);
+  const [previewMood, setPreviewMood] = useState<Mood | null>(null);
   const lastPulsedHueRef = useRef<number>(initialState.currentMood.hue);
 
   const triggerCollectiveShift = useCallback(() => {
@@ -114,7 +119,7 @@ export const MoodProvider = ({ children }: { children: ReactNode }) => {
   }, [updateMood, recordContribution]);
 
   return (
-    <MoodContext.Provider value={{ appState, setAppState, updateMood, recordContribution, triggerCollectiveShift, isCollectiveShifting }}>
+    <MoodContext.Provider value={{ appState, setAppState, updateMood, recordContribution, triggerCollectiveShift, isCollectiveShifting, previewMood, setPreviewMood }}>
       {children}
     </MoodContext.Provider>
   );

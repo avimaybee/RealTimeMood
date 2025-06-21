@@ -23,7 +23,7 @@ interface Particle {
 const NUM_PARTICLES = 120;
 
 const LivingParticles: React.FC = () => {
-  const { appState, isCollectiveShifting, lastContributionTime, lastContributionPosition } = useMood();
+  const { appState, isCollectiveShifting, lastContributionTime, lastContributionPosition, previewMood } = useMood();
   const particlesRef = useRef<Particle[]>([]);
   const animationFrameRef = useRef<number>();
   const lastRippleTimeRef = useRef<number | null>(null);
@@ -31,12 +31,12 @@ const LivingParticles: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // This ref gives the animation loop a "live window" into the latest state from the context.
-  const latestStateRef = useRef({ appState, isCollectiveShifting, lastContributionTime, lastContributionPosition });
+  const latestStateRef = useRef({ appState, isCollectiveShifting, lastContributionTime, lastContributionPosition, previewMood });
 
   // Keep the ref updated with the latest state on every render.
   useEffect(() => {
-    latestStateRef.current = { appState, isCollectiveShifting, lastContributionTime, lastContributionPosition };
-  }, [appState, isCollectiveShifting, lastContributionTime, lastContributionPosition]);
+    latestStateRef.current = { appState, isCollectiveShifting, lastContributionTime, lastContributionPosition, previewMood };
+  }, [appState, isCollectiveShifting, lastContributionTime, lastContributionPosition, previewMood]);
 
 
   const resetParticle = (p: Partial<Particle>, width: number, height: number, emanateFromCenter: boolean): Particle => {
@@ -92,13 +92,15 @@ const LivingParticles: React.FC = () => {
         isCollectiveShifting: latestIsCollectiveShifting,
         lastContributionTime: latestLastContributionTime,
         lastContributionPosition: latestLastContributionPosition,
+        previewMood: latestPreviewMood,
       } = latestStateRef.current;
 
       const width = containerRef.current.offsetWidth;
       const height = containerRef.current.offsetHeight;
       const centerX = width / 2;
       const centerY = height / 2;
-      const { currentMood } = latestAppState;
+      
+      const moodForBehavior = latestPreviewMood || latestAppState.currentMood;
 
       const rippleJustFired = latestLastContributionTime !== null && latestLastContributionTime !== lastRippleTimeRef.current;
       if (rippleJustFired) {
@@ -136,9 +138,9 @@ const LivingParticles: React.FC = () => {
         const angle = Math.atan2(p.vy, p.vx);
         let angleChange = 0;
         
-        if (currentMood.adjective === 'Anxious' || (latestIsCollectiveShifting && p.life % 2 === 0)) {
+        if (moodForBehavior.adjective === 'Anxious' || (latestIsCollectiveShifting && p.life % 2 === 0)) {
           angleChange = (Math.random() - 0.5) * 0.5; // Erratic
-        } else if (currentMood.adjective === 'Joyful') {
+        } else if (moodForBehavior.adjective === 'Joyful') {
           angleChange = Math.sin(p.life / 20) * 0.1; // Arcing
         } else {
           angleChange = (Math.random() - 0.5) * 0.1; // Gentle brownian motion

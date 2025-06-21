@@ -5,8 +5,10 @@ import { useMood } from '@/contexts/MoodContext';
 import { useDynamicColors } from '@/hooks/useDynamicColors';
 
 const DynamicBackground: React.FC = () => {
-  const { appState } = useMood();
-  useDynamicColors(appState.currentMood);
+  const { appState, previewMood } = useMood();
+  const moodToDisplay = previewMood || appState.currentMood;
+
+  useDynamicColors(moodToDisplay);
 
   // The actual background color is applied to `body` via CSS variables updated by useDynamicColors.
   // This component can also host the Global Pulse animation if it's a global overlay.

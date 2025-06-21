@@ -14,7 +14,7 @@ import MoodSelectionButtons from '@/components/features/MoodSelectionButtons';
 
 
 const OrbButton: React.FC = () => {
-  const { recordContribution, isCollectiveShifting } = useMood();
+  const { recordContribution, isCollectiveShifting, setPreviewMood } = useMood();
   const [interactionMode, setInteractionMode] = useState<'orb' | 'bar'>('orb');
   const [isCharging, setIsCharging] = useState(false);
   const [chargeData, setChargeData] = useState<{ mood: Mood } | null>(null);
@@ -26,22 +26,6 @@ const OrbButton: React.FC = () => {
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  useEffect(() => {
-    const handlePointerUp = () => {
-      // Intentionally empty. We want the bloom to persist after long-press
-      // until a selection is made.
-    };
-
-    if (bloomPoint) {
-      window.addEventListener('pointerup', handlePointerUp);
-    }
-
-    return () => {
-      window.removeEventListener('pointerup', handlePointerUp);
-    };
-  }, [bloomPoint]);
-
 
   const handleTap = (event: MouseEvent | TouchEvent | ReactPointerEvent, info: PanInfo) => {
     clearLongPressTimeout();
@@ -100,6 +84,7 @@ const OrbButton: React.FC = () => {
   };
 
   const handleMoodSelectionFromBloom = (mood: Mood) => {
+    setPreviewMood(null); // Clear the preview on selection
     setBloomPoint(null); // Dismiss the bloom and buttons
     
     // Use the orb's center for the ripple effect, not the bloom point
@@ -217,7 +202,11 @@ const OrbButton: React.FC = () => {
         <>
           <div data-radial-bloom-active-page-marker />
           <RadialBloomEffect point={bloomPoint} />
-          <MoodSelectionButtons point={bloomPoint} onSelect={handleMoodSelectionFromBloom} />
+          <MoodSelectionButtons 
+            point={bloomPoint} 
+            onSelect={handleMoodSelectionFromBloom} 
+            onPreviewChange={setPreviewMood}
+          />
         </>,
         document.body
       )}
