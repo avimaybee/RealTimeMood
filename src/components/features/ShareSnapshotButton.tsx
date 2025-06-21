@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import html2canvas from 'html2canvas';
 
 const ShareSnapshotButton: React.FC = () => {
   const { toast } = useToast();
@@ -24,6 +23,7 @@ const ShareSnapshotButton: React.FC = () => {
     elementsToHide.forEach(el => el.style.visibility = 'hidden');
 
     try {
+      const html2canvas = (await import('html2canvas')).default;
       const canvas = await html2canvas(document.body, {
         useCORS: true,
         allowTaint: true,

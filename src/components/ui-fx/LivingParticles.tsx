@@ -18,6 +18,7 @@ interface Particle {
   pushY: number;
   pushDecay: number;
   nodeRef: React.RefObject<HTMLDivElement>;
+  isNew?: boolean;
 }
 
 const NUM_PARTICLES = 120;
@@ -71,6 +72,7 @@ const LivingParticles: React.FC = () => {
       pushY: 0,
       pushDecay: 0.95,
       nodeRef: p.nodeRef || React.createRef<HTMLDivElement>(),
+      isNew: true,
     };
   };
 
@@ -178,11 +180,14 @@ const LivingParticles: React.FC = () => {
         // Update the particle's style on the DOM
         const node = p.nodeRef.current;
         if (node) {
+          if (p.isNew) {
+            node.style.width = `${p.size}px`;
+            node.style.height = `${p.size}px`;
+            node.style.backgroundColor = `rgba(255, 255, 255, ${p.opacity})`;
+            p.isNew = false;
+          }
           const isPushed = Math.abs(p.pushX) > 0.5 || Math.abs(p.pushY) > 0.5;
           node.style.transform = `translate3d(${p.x}px, ${p.y}px, 0px) scale(${isPushed ? 1.2 : 1})`;
-          node.style.width = `${p.size}px`;
-          node.style.height = `${p.size}px`;
-          node.style.backgroundColor = `rgba(255, 255, 255, ${p.opacity})`; // Pure white particles
           node.style.filter = `brightness(${isPushed ? 1.5 : 1})`;
           node.style.transition = 'transform 0.1s ease-out, filter 0.1s ease-out'; // For scale/brightness flash
         }
@@ -205,6 +210,7 @@ const LivingParticles: React.FC = () => {
           style={{
             top: 0,
             left: 0,
+            willChange: 'transform'
           }}
         />
       ))}
