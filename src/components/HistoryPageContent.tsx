@@ -10,9 +10,10 @@ import { useDynamicColors } from '@/hooks/useDynamicColors';
 import type { Mood } from '@/types';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
 import TrendSummaryDisplay from '@/components/features/TrendSummaryDisplay';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 // Define a static, near-white mood for the history page's background
@@ -83,8 +84,19 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const HistoryPageContent = () => {
   useDynamicColors(historyPageMood);
   const [timeRange, setTimeRange] = useState<number>(30); // 30 days, 7 days, 1 day (for 24h)
+  const [chartData, setChartData] = useState<ReturnType<typeof generateMockData>>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const mockHistoryData = useMemo(() => generateMockData(timeRange), [timeRange]);
+  useEffect(() => {
+    setIsLoading(true);
+    // Simulate fetching data async
+    const timer = setTimeout(() => {
+      setChartData(generateMockData(timeRange));
+      setIsLoading(false);
+    }, 1200); // 1.2 second delay
+
+    return () => clearTimeout(timer);
+  }, [timeRange]);
 
   const timeRanges = [
     { label: '30 Days', value: 30 },
@@ -137,6 +149,7 @@ const HistoryPageContent = () => {
                          timeRange !== range.value && "hover:bg-transparent"
                       )}
                       size="sm"
+                      disabled={isLoading}
                     >
                       {range.label}
                     </Button>
@@ -146,13 +159,18 @@ const HistoryPageContent = () => {
               <CardDescription>
                 This chart shows the trend of the collective dominant mood's hue over time.
               </CardDescription>
-              <TrendSummaryDisplay historyData={mockHistoryData} />
+              <TrendSummaryDisplay historyData={chartData} />
             </CardHeader>
             <CardContent>
               <ChartContainer config={{}} className="h-[300px] sm:h-[400px] w-full">
+                {isLoading ? (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Skeleton className="w-full h-full rounded-lg" />
+                  </div>
+                ) : (
                 <ResponsiveContainer>
                   <LineChart
-                    data={mockHistoryData}
+                    data={chartData}
                     margin={{
                       top: 5,
                       right: 30,
@@ -166,7 +184,7 @@ const HistoryPageContent = () => {
                       stroke="hsl(var(--foreground) / 0.8)" 
                       tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
                       tickLine={{ stroke: 'hsl(var(--foreground) / 0.5)' }}
-                      interval={Math.floor(mockHistoryData.length / 10)} // Adjust tick density
+                      interval={Math.floor(chartData.length / 10)} // Adjust tick density
                     />
                     <YAxis 
                       domain={[0, 360]} 
@@ -178,10 +196,10 @@ const HistoryPageContent = () => {
                     <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, strokeDasharray: '3 3' }} />
                     <defs>
                       <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-                        {mockHistoryData.map((entry, index) => (
+                        {chartData.map((entry, index) => (
                           <stop
                             key={index}
-                            offset={`${(index / (mockHistoryData.length > 1 ? mockHistoryData.length - 1 : 1)) * 100}%`}
+                            offset={`${(index / (chartData.length > 1 ? chartData.length - 1 : 1)) * 100}%`}
                             stopColor={`hsl(${entry.hue}, 80%, 60%)`}
                           />
                         ))}
@@ -205,6 +223,7 @@ const HistoryPageContent = () => {
                     />
                   </LineChart>
                 </ResponsiveContainer>
+                )}
               </ChartContainer>
             </CardContent>
           </Card>

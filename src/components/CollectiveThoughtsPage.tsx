@@ -1,7 +1,7 @@
 
 "use client";
 import Link from 'next/link';
-import { ArrowLeft, Plus, MessageSquareQuote, ChevronLeft, ChevronRight, Send, X } from 'lucide-react';
+import { ArrowLeft, Plus, MessageSquareQuote, ChevronLeft, ChevronRight, Send, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -10,6 +10,7 @@ import type { Mood } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { useDynamicColors } from '@/hooks/useDynamicColors';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Static mood for this page for a clean, stable background
 const thoughtsPageMood: Mood = {
@@ -36,8 +37,18 @@ const CollectiveThoughtsPage = () => {
     const { toast } = useToast();
     const [index, setIndex] = useState(0);
     const [isInputVisible, setIsInputVisible] = useState(false);
+    const [isLoadingQuotes, setIsLoadingQuotes] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    useEffect(() => {
+        // Simulate loading quotes from an API
+        const timer = setTimeout(() => {
+            setIsLoadingQuotes(false);
+        }, 1500); // 1.5 second delay
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         if (isInputVisible) {
@@ -45,10 +56,14 @@ const CollectiveThoughtsPage = () => {
         }
     }, [isInputVisible]);
 
-    const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        setIsSubmitting(true);
         const formData = new FormData(event.currentTarget);
         const thought = formData.get('thought');
+
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         if (thought && typeof thought === 'string' && thought.trim().length > 0) {
             // --- Haptic and Audio Feedback on Success ---
@@ -69,9 +84,11 @@ const CollectiveThoughtsPage = () => {
                 variant: "destructive"
             });
         }
+        setIsSubmitting(false);
     };
 
     const advanceQuote = useCallback((direction: 'next' | 'prev') => {
+        if (isLoadingQuotes) return;
         setIndex((prevIndex) => {
             if (direction === 'next') {
                 return (prevIndex + 1) % mockQuotes.length;
@@ -79,7 +96,7 @@ const CollectiveThoughtsPage = () => {
                 return (prevIndex - 1 + mockQuotes.length) % mockQuotes.length;
             }
         });
-    }, []);
+    }, [isLoadingQuotes]);
 
     const resetInterval = useCallback(() => {
         if (intervalRef.current) {
@@ -93,11 +110,13 @@ const CollectiveThoughtsPage = () => {
     }, [advanceQuote]);
     
     useEffect(() => {
-        resetInterval();
+        if (!isLoadingQuotes) {
+            resetInterval();
+        }
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
         };
-    }, [resetInterval]);
+    }, [isLoadingQuotes, resetInterval]);
 
     const handlePrevClick = () => {
         // --- Haptic and Audio Feedback for Manual Navigation ---
@@ -150,12 +169,19 @@ const CollectiveThoughtsPage = () => {
                             onClick={handlePrevClick}
                             aria-label="Previous thought"
                             className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 bg-muted/50 hover:bg-muted"
+                            disabled={isLoadingQuotes}
                         >
                             <ChevronLeft className="w-6 h-6" />
                         </Button>
 
                         <div className="w-full text-center">
                            <AnimatePresence mode="wait">
+                            {isLoadingQuotes ? (
+                                <div className="space-y-3 px-12">
+                                    <Skeleton className="h-8 w-full" />
+                                    <Skeleton className="h-8 w-2/3 mx-auto" />
+                                </div>
+                            ) : (
                                 <motion.p
                                     key={mockQuotes[index].id}
                                     initial={{ opacity: 0, y: 15 }}
@@ -166,6 +192,7 @@ const CollectiveThoughtsPage = () => {
                                 >
                                     "{mockQuotes[index].text}"
                                 </motion.p>
+                            )}
                            </AnimatePresence>
                         </div>
                         
@@ -175,6 +202,7 @@ const CollectiveThoughtsPage = () => {
                             onClick={handleNextClick}
                             aria-label="Next thought"
                             className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 bg-muted/50 hover:bg-muted"
+                            disabled={isLoadingQuotes}
                         >
                             <ChevronRight className="w-6 h-6" />
                         </Button>
@@ -186,9 +214,9 @@ const CollectiveThoughtsPage = () => {
               <motion.form
                 onSubmit={handleFormSubmit}
                 onClick={() => {
-                    if (!isInputVisible) setIsInputVisible(true);
+                    if (!isInputVisible && !isSubmitting) setIsInputVisible(true);
                 }}
-                className="relative flex items-center justify-center bg-card shadow-md overflow-hidden cursor-pointer"
+                className="relative flex items-center justify-center bg-card shadow-md overflow-hidden"
                 animate={{
                   width: isInputVisible ? '100%' : '220px',
                   height: '56px',
@@ -196,6 +224,7 @@ const CollectiveThoughtsPage = () => {
                 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 30, mass: 0.8 }}
                 initial={false}
+                style={{ cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
               >
                 {/* Button Content - visible when collapsed */}
                 <motion.div
@@ -226,9 +255,10 @@ const CollectiveThoughtsPage = () => {
                             (e.currentTarget.form as HTMLFormElement).requestSubmit();
                         }
                     }}
+                    disabled={isSubmitting}
                   />
-                  <Button type="submit" size="icon" className="rounded-full flex-shrink-0 w-10 h-10 ml-2">
-                    <Send className="w-4 h-4" />
+                  <Button type="submit" size="icon" className="rounded-full flex-shrink-0 w-10 h-10 ml-2" disabled={isSubmitting}>
+                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   </Button>
                   <Button
                     type="button"
@@ -236,6 +266,7 @@ const CollectiveThoughtsPage = () => {
                     variant="ghost"
                     className="rounded-full flex-shrink-0 w-10 h-10"
                     onClick={() => setIsInputVisible(false)}
+                    disabled={isSubmitting}
                   >
                     <X className="w-5 h-5" />
                   </Button>
