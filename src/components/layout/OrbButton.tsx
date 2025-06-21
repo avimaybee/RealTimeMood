@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
@@ -8,7 +7,7 @@ import { useMood } from '@/contexts/MoodContext';
 import { findClosestMood, moodToHslString } from '@/lib/colorUtils';
 import type { Mood } from '@/types';
 import { cn } from '@/lib/utils';
-import { motion, type PanInfo, AnimatePresence, useMotionValue } from 'framer-motion';
+import { motion, type PanInfo, AnimatePresence } from 'framer-motion';
 import RadialBloomEffect from '@/components/ui-fx/RadialBloomEffect';
 import MoodSelectionButtons from '@/components/features/MoodSelectionButtons';
 
@@ -22,41 +21,28 @@ const OrbButton: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
   const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const thumbX = useMotionValue(0);
-  const [previewAdjective, setPreviewAdjective] = useState('');
-  const [isInteractingWithBar, setIsInteractingWithBar] = useState(false);
-  const [isBarReadyForInteraction, setIsBarReadyForInteraction] = useState(false);
-  const THUMB_WIDTH = 40; // w-10
-
-  const [barRect, setBarRect] = useState<DOMRect | null>(null);
-  
   useEffect(() => {
     setIsClient(true);
-    const updateBarRect = () => {
-      if (barRef.current && interactionMode === 'bar') {
-        setBarRect(barRef.current.getBoundingClientRect());
-      }
-    };
-    window.addEventListener('resize', updateBarRect);
-    return () => window.removeEventListener('resize', updateBarRect);
-  }, [interactionMode]);
+  }, []);
 
-  const handleInteractionStart = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    setIsInteractingWithBar(true);
-    updateMoodFromPosition(info.point.x);
-  };
-
-  const handleInteractionMove = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    updateMoodFromPosition(info.point.x);
-  };
-
-  const handleInteractionEnd = () => {
-    if (!barRect) return;
-
-    setIsBarReadyForInteraction(false);
+  const handleOrbTap = () => {
+    clearLongPressTimeout();
+    if (isCharging || bloomPoint) return;
     
-    const x = thumbX.get() + THUMB_WIDTH / 2;
-    const percentage = Math.min(1, Math.max(0, x / barRect.width));
+    setInteractionMode('bar');
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+  };
+
+  const handleBarTap = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (!barRef.current) return;
+    const rect = barRef.current.getBoundingClientRect();
+
+    let relativeX = info.point.x - rect.left;
+    relativeX = Math.max(0, Math.min(relativeX, rect.width));
+
+    const percentage = relativeX / rect.width;
     const selectedHue = Math.round(percentage * 360);
     
     const closestMood = findClosestMood(selectedHue);
@@ -66,46 +52,11 @@ const OrbButton: React.FC = () => {
       saturation: 85,
       lightness: 60,
     };
-    
+
     setInteractionMode('orb');
     setChargeData({ mood: newMood });
     setIsCharging(true);
     setPreviewMood(null);
-    setPreviewAdjective('');
-    setIsInteractingWithBar(false);
-  };
-
-  const updateMoodFromPosition = (clientX: number) => {
-    if (!barRect) return;
-    
-    let relativeX = clientX - barRect.left;
-    relativeX = Math.max(0, Math.min(relativeX, barRect.width));
-    
-    const thumbPosition = relativeX - THUMB_WIDTH / 2;
-    thumbX.set(Math.max(0, Math.min(thumbPosition, barRect.width - THUMB_WIDTH)));
-    
-    const percentage = relativeX / barRect.width;
-    const selectedHue = Math.round(percentage * 360);
-
-    const closestMood = findClosestMood(selectedHue);
-    setPreviewMood({
-      ...closestMood,
-      hue: selectedHue,
-      saturation: 85,
-      lightness: 60,
-    });
-    setPreviewAdjective(closestMood.adjective);
-  };
-
-  const handleOrbTap = () => {
-    clearLongPressTimeout();
-    if (isCharging || bloomPoint) return;
-    
-    setIsBarReadyForInteraction(false);
-    setInteractionMode('bar');
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(50);
-    }
   };
 
   const handleLongPress = (point: {clientX: number, clientY: number}) => {
@@ -146,10 +97,8 @@ const OrbButton: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && interactionMode === 'bar') {
-        setIsBarReadyForInteraction(false);
         setInteractionMode('orb');
         setPreviewMood(null);
-        setPreviewAdjective('');
       }
     };
     
@@ -245,28 +194,7 @@ const OrbButton: React.FC = () => {
           variants={orbVariants}
           initial={false}
           animate={animationState}
-          onAnimationComplete={() => {
-            if (interactionMode === 'bar' && barRef.current) {
-              const newBarRect = barRef.current.getBoundingClientRect();
-              setBarRect(newBarRect);
-              setIsBarReadyForInteraction(true);
-
-              thumbX.set(newBarRect.width / 2 - THUMB_WIDTH / 2);
-              const centerHue = 180;
-              const closestMood = findClosestMood(centerHue);
-              setPreviewMood({
-                ...closestMood,
-                hue: centerHue,
-                saturation: 85,
-                lightness: 60,
-              });
-              setPreviewAdjective(closestMood.adjective);
-            }
-          }}
-          onTap={animationState === 'orb' ? handleOrbTap : undefined}
-          onPanStart={isBarReadyForInteraction ? handleInteractionStart : undefined}
-          onPan={isBarReadyForInteraction ? handleInteractionMove : undefined}
-          onPanEnd={isBarReadyForInteraction ? handleInteractionEnd : undefined}
+          onTap={animationState === 'orb' ? handleOrbTap : handleBarTap}
           onPointerDown={handlePointerDown}
           onPointerUp={clearLongPressTimeout}
           onPointerLeave={clearLongPressTimeout}
@@ -274,38 +202,9 @@ const OrbButton: React.FC = () => {
             "relative flex items-center justify-center",
             (isCharging || bloomPoint) && "pointer-events-none",
             animationState === 'orb' && "cursor-pointer",
-            animationState === 'bar' && (isBarReadyForInteraction ? "cursor-grab" : "cursor-wait")
+            animationState === 'bar' && "cursor-pointer"
           )}
         >
-          {animationState === 'bar' && (
-            <motion.div
-              className="absolute h-10 w-10 bg-white/80 backdrop-blur-sm rounded-full shadow-lg z-10 focus:outline-none"
-              style={{ 
-                x: thumbX, 
-                top: '50%', 
-                y: '-50%',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
-              }}
-              animate={{
-                pointerEvents: isBarReadyForInteraction ? 'auto' : 'none'
-              }}
-            >
-              <AnimatePresence>
-                {previewAdjective && (
-                  <motion.div
-                    className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-background/80 backdrop-blur-sm rounded-md text-sm text-foreground whitespace-nowrap shadow-md"
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 5 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    {previewAdjective}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          )}
-
           <motion.div 
             variants={iconVariants} 
             animate={animationState} 
