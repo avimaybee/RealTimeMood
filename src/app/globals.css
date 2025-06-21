@@ -155,6 +155,16 @@
     pointer-events: none;
   }
 
+  /* When the footer menu is active, recede the page content */
+  .menu-open-recede-children > header,
+  .menu-open-recede-children > main,
+  .menu-open-recede-children > [data-orb-button-container] {
+    transition: opacity 0.4s ease-in-out, filter 0.4s ease-in-out;
+    opacity: 0.2;
+    filter: blur(8px);
+    pointer-events: none;
+  }
+
   @keyframes logo-calm {
     0%, 100% { filter: drop-shadow(0 0 3px hsl(var(--primary-hsl))); transform: scale(1); }
     50% { filter: drop-shadow(0 0 6px hsl(var(--primary-hsl))); transform: scale(1.02); }

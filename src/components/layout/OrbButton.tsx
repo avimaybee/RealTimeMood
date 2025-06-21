@@ -196,6 +196,7 @@ const OrbButton: React.FC = () => {
   return (
     <>
       <motion.div
+        data-orb-button-container
         className={cn(orbContainerBaseClasses, "left-1/2")}
         style={{ x: "-50%" }}
         animate={{ y: isCollectiveShifting ? 8 : 0 }}

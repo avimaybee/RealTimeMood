@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 const PageContent: React.FC = () => {
   const { isCollectiveShifting } = useMood();
   const [isRadialBloomActive, setIsRadialBloomActive] = React.useState(false);
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   useEffect(() => {
     const observer = new MutationObserver((mutationsList) => {
@@ -35,7 +36,8 @@ const PageContent: React.FC = () => {
     <div 
       className={cn(
         "h-screen min-h-screen w-full flex flex-col items-center overflow-hidden",
-        isRadialBloomActive ? 'radial-bloom-active-page' : ''
+        isRadialBloomActive ? 'radial-bloom-active-page' : '',
+        isMenuOpen ? 'menu-open-recede-children' : ''
       )}
     >
       <DynamicBackground />
@@ -63,7 +65,7 @@ const PageContent: React.FC = () => {
       
       <OrbButton /> 
       
-      <AppFooter />
+      <AppFooter isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
 
     </div>
   );

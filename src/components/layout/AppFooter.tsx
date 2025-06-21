@@ -1,5 +1,6 @@
+
 "use client";
-import React, { useState } from 'react';
+import React from 'react';
 import { Menu, BarChart2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMood } from '@/contexts/MoodContext';
@@ -8,15 +9,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { Separator } from '../ui/separator';
 
-const AppFooter: React.FC = () => {
-  const { appState, isCollectiveShifting } = useMood();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+interface AppFooterProps {
+  isMenuOpen: boolean;
+  setIsMenuOpen: (isOpen: boolean) => void;
+}
 
-  // Base classes for the footer container
-  const footerBaseClasses = "fixed bottom-0 mb-4 md:mb-6 p-2 z-30 frosted-glass rounded-2xl shadow-soft flex flex-col items-center overflow-hidden";
+const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
+  const { appState, isCollectiveShifting } = useMood();
+
+  const footerBaseClasses = "fixed bottom-0 mb-4 md:mb-6 p-2 z-50 frosted-glass rounded-2xl shadow-soft flex flex-col items-center overflow-hidden";
   const sizeClasses = "min-w-[200px] md:min-w-[280px] px-4";
 
-  // Variants for menu content animation
   const menuContentVariants = {
     hidden: { opacity: 0, y: 10, filter: 'blur(5px)' },
     visible: { 
@@ -46,7 +49,6 @@ const AppFooter: React.FC = () => {
         height: { type: "spring", stiffness: 400, damping: 30, mass: 0.8 },
       }}
     >
-      {/* Container for top part (collapsed view) */}
       <div className="flex-shrink-0 w-full flex items-center justify-between h-[36px]">
         <div className="text-xs md:text-sm text-shadow-pop opacity-90">
           {appState.contributionCount.toLocaleString()} moods shared
@@ -74,7 +76,6 @@ const AppFooter: React.FC = () => {
         </Button>
       </div>
 
-      {/* Expanded menu content */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.nav 
