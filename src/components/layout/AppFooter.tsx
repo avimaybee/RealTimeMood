@@ -1,13 +1,14 @@
 
 "use client";
 import React from 'react';
-import { Menu, BarChart2, MessageSquareQuote, X } from 'lucide-react';
+import { Menu, BarChart2, MessageSquareQuote, X, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { Separator } from '../ui/separator';
+import ShareSnapshotButton from '../features/ShareSnapshotButton';
 
 interface AppFooterProps {
   isMenuOpen: boolean;
@@ -42,7 +43,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
       style={{ x: "-50%" }}
       animate={{
         y: isCollectiveShifting ? 8 : 0,
-        height: isMenuOpen ? '200px' : '52px',
+        height: isMenuOpen ? 'auto' : '52px',
       }}
       transition={{
         y: { type: "spring", stiffness: 100, damping: 10 },
@@ -79,7 +80,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            className="flex-grow w-full flex flex-col items-center justify-start pt-2"
+            className="flex-grow w-full flex flex-col items-center justify-start pt-2 pb-2"
             variants={menuContentVariants}
             initial="hidden"
             animate="visible"
@@ -100,6 +101,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                     Collective Thoughts
                   </Link>
                 </Button>
+                <ShareSnapshotButton />
             </div>
           </motion.div>
         )}

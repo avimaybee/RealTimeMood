@@ -1,47 +1,70 @@
 
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Camera } from 'lucide-react';
+import { Camera, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+import html2canvas from 'html2canvas';
 
 const ShareSnapshotButton: React.FC = () => {
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleShare = () => {
-    // Placeholder for html2canvas functionality
-    // For example:
-    // import html2canvas from 'html2canvas';
-    // html2canvas(document.body).then(canvas => {
-    //   const image = canvas.toDataURL('image/png');
-    //   // Logic to download or share the image
-    //   const link = document.createElement('a');
-    //   link.href = image;
-    //   link.download = 'mood-snapshot.png';
-    //   link.click();
-    // });
+  const takeSnapshot = async () => {
+    setIsLoading(true);
     toast({
-      title: "Snapshot Feature",
-      description: "Sharing current mood screen (simulated). Install html2canvas to enable.",
+      title: "Generating Snapshot...",
+      description: "Please wait a moment.",
     });
+
+    const elementsToHide: HTMLElement[] = Array.from(
+      document.querySelectorAll('[data-orb-button-container], footer')
+    );
+    elementsToHide.forEach(el => el.style.visibility = 'hidden');
+
+    try {
+      const canvas = await html2canvas(document.body, {
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: getComputedStyle(document.body).backgroundColor,
+      });
+
+      const image = canvas.toDataURL('image/png', 1.0);
+      const link = document.createElement('a');
+      link.href = image;
+      link.download = `RealTimeMood-Snapshot-${new Date().toISOString().split('T')[0]}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Snapshot Ready!",
+        description: "Your snapshot has been downloaded.",
+      });
+
+    } catch (error) {
+      console.error("Error taking snapshot:", error);
+      toast({
+        title: "Error",
+        description: "Could not create snapshot. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      elementsToHide.forEach(el => el.style.visibility = 'visible');
+      setIsLoading(false);
+    }
   };
 
   return (
     <Button
-      variant="outline"
-      size="icon"
-      onClick={handleShare}
-      aria-label="Share Mood Snapshot"
-      className={cn(
-        "rounded-full w-12 h-12 shadow-soft interactive-glow"
-      )}
-      style={{
-        borderColor: 'hsl(var(--primary-hsl))',
-        color: 'hsl(var(--primary-hsl))'
-      }}
+      variant="ghost"
+      onClick={takeSnapshot}
+      disabled={isLoading}
+      className="text-base w-full"
     >
-      <Camera className="w-5 h-5" />
+      {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
+      Share Snapshot
     </Button>
   );
 };
