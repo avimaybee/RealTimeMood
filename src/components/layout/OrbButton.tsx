@@ -90,7 +90,6 @@ const OrbButton: React.FC = () => {
       background: 'rgba(255, 255, 255, 0.1)',
       boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
       backdropFilter: 'blur(12px)',
-      transition: morphTransition,
     },
     bar: {
       width: '80vw',
@@ -100,7 +99,6 @@ const OrbButton: React.FC = () => {
       background: gradientBackground,
       boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
       backdropFilter: 'blur(0px)',
-      transition: morphTransition,
     },
     charging: {
         width: '80px',
@@ -109,7 +107,6 @@ const OrbButton: React.FC = () => {
         background: 'rgba(255, 255, 255, 0.1)',
         backdropFilter: 'blur(12px)',
         boxShadow: chargeData ? `0 0 25px 8px ${moodToHslString(chargeData.mood)}, inset 0 0 10px 2px rgba(255,255,255,0.5)` : '0 12px 32px rgba(0,0,0,0.3)',
-        transition: { ...morphTransition, duration: 0.2 },
     }
   };
 
@@ -132,6 +129,7 @@ const OrbButton: React.FC = () => {
         variants={orbVariants}
         initial="orb"
         animate={isCharging ? "charging" : (isBar ? "bar" : "orb")}
+        transition={morphTransition}
         onTap={isBar ? handleBarInteraction : handleOrbTap}
         className={cn(
             "relative flex items-center justify-center cursor-pointer",
