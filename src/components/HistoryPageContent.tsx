@@ -70,7 +70,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return (
       <div className="p-2 rounded-lg shadow-soft frosted-glass">
         <p className="label">{`Time: ${label}`}</p>
-        <p className="intro" style={{ color: moodColor, textShadow: `0 0 5px ${moodColor}` }}>
+        <p className="intro" style={{ color: moodColor }}>
           {`Dominant Mood Hue: ${hue}°`}
         </p>
       </div>

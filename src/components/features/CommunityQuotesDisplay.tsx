@@ -2,7 +2,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import type { Quote } from '@/types';
-import { useMood } from '@/contexts/MoodContext';
 
 const mockQuotes: Quote[] = [
   { id: '1', text: "The best way to predict the future is to create it.", author: "Peter Drucker" },
@@ -14,7 +13,6 @@ const mockQuotes: Quote[] = [
 const CommunityQuotesDisplay: React.FC = () => {
   const [currentQuote, setCurrentQuote] = useState<Quote | null>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const { appState } = useMood();
 
   useEffect(() => {
     const showNewQuote = () => {
@@ -34,10 +32,9 @@ const CommunityQuotesDisplay: React.FC = () => {
 
   if (!currentQuote) return null;
 
-  const quoteStyle = {
-    textShadow: `0 0 5px hsla(${appState.currentMood.hue}, ${appState.currentMood.saturation}%, ${appState.currentMood.lightness}%, 0.5)`,
+  const quoteStyle: React.CSSProperties = {
     color: `hsl(var(--foreground-hsl))`,
-    transition: 'opacity 1s ease-in-out, text-shadow 0.5s ease-in-out',
+    transition: 'opacity 1s ease-in-out',
     opacity: isVisible ? 1 : 0,
   };
 

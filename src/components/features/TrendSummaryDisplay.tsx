@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useEffect } from 'react';
 import { summarizeTrends } from '@/ai/flows/summarize-mood-trends';
@@ -61,14 +62,9 @@ const TrendSummaryDisplay: React.FC<TrendSummaryDisplayProps> = ({ historyData }
 
   if (!result) return null;
 
-  // A more subtle glow effect that matches the screenshot
-  const glowStyle = result.dominantHue !== null ? {
-    textShadow: `0 0 10px hsla(${result.dominantHue}, 80%, 65%, 0.6)`,
-  } : {};
-
   return (
     <div className="mt-4 pt-4 border-t border-border/50">
-      <p style={glowStyle} className="text-base text-foreground transition-all duration-500">
+      <p className="text-base text-foreground transition-all duration-500">
         {displayedSummary}
       </p>
     </div>
