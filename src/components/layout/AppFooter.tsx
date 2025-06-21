@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { Separator } from '../ui/separator';
+import CommunityQuotesDisplay from '../features/CommunityQuotesDisplay';
 
 interface AppFooterProps {
   isMenuOpen: boolean;
@@ -42,7 +43,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
       style={{ x: "-50%" }}
       animate={{
         y: isCollectiveShifting ? 8 : 0,
-        height: isMenuOpen ? '180px' : '52px',
+        height: isMenuOpen ? '300px' : '52px',
       }}
       transition={{
         y: { type: "spring", stiffness: 100, damping: 10 },
@@ -78,23 +79,27 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
 
       <AnimatePresence>
         {isMenuOpen && (
-          <motion.nav 
-            className="flex-grow w-full flex flex-col items-center justify-center gap-2"
+          <motion.div
+            className="flex-grow w-full flex flex-col items-center justify-start pt-2"
             variants={menuContentVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
           >
-            <h3 className="text-lg font-semibold text-foreground text-shadow-pop">Menu</h3>
-            <Separator className="w-1/2 my-1" />
-            <Button asChild variant="ghost" className="text-lg w-full">
-              <Link href="/history">
-                <BarChart2 className="mr-2 h-5 w-5" />
-                View Mood History
-              </Link>
-            </Button>
-             <p className="text-xs text-muted-foreground">More features coming soon.</p>
-          </motion.nav>
+            <div className="w-full flex flex-col items-center mb-2">
+                <h3 className="text-lg font-semibold text-foreground text-shadow-pop">Menu</h3>
+                <Separator className="w-1/2 my-1" />
+                <Button asChild variant="ghost" className="text-base w-full">
+                  <Link href="/history">
+                    <BarChart2 className="mr-2 h-4 w-4" />
+                    View Mood History
+                  </Link>
+                </Button>
+            </div>
+            
+            <CommunityQuotesDisplay /> 
+
+          </motion.div>
         )}
       </AnimatePresence>
     </motion.footer>

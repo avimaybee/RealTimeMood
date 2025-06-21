@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Quote } from '@/types';
+import { Separator } from '../ui/separator';
 
 // More anonymous, mood-related quotes
 const mockQuotes: Quote[] = [
@@ -27,36 +28,40 @@ const CommunityQuotesDisplay: React.FC = () => {
   const currentQuote = mockQuotes[index];
 
   const quoteVariants = {
-    initial: { opacity: 0, y: 20 },
+    initial: { opacity: 0, y: 15 },
     animate: {
       opacity: 1,
       y: 0,
-      transition: { duration: 1, ease: 'easeOut' },
+      transition: { duration: 0.8, ease: 'easeOut' },
     },
     exit: {
       opacity: 0,
-      y: -20,
-      transition: { duration: 1, ease: 'easeIn' },
+      y: -15,
+      transition: { duration: 0.8, ease: 'easeIn' },
     },
   };
   
   return (
-    // This container reserves layout space, preventing content jumps during transitions.
-    // It acts as the "minimal and modern container" for the quote content.
-    <div className="relative w-full max-w-3xl h-28 flex items-center justify-center pointer-events-none">
-      <AnimatePresence mode="wait">
-        <motion.blockquote
-          key={currentQuote.id}
-          variants={quoteVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          className="text-center"
-        >
-            <p className="text-xl md:text-2xl font-medium text-shadow-pop">"{currentQuote.text}"</p>
-            <footer className="mt-2 text-base opacity-80">- Anonymous</footer>
-        </motion.blockquote>
-      </AnimatePresence>
+    <div className="w-full flex flex-col items-center gap-2 text-center">
+        <Separator className="w-1/2" />
+        <h4 className="text-sm font-semibold text-foreground/80 text-shadow-pop">Community Reflection</h4>
+        
+        {/* Container to give animating quote a fixed height and prevent layout shifts */}
+        <div className="relative w-full h-24 flex items-center justify-center">
+            <AnimatePresence mode="wait">
+                <motion.blockquote
+                key={currentQuote.id}
+                variants={quoteVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="absolute"
+                >
+                    <p className="text-base font-medium text-shadow-pop">"{currentQuote.text}"</p>
+                    <footer className="mt-1 text-xs opacity-70">- Anonymous</footer>
+                </motion.blockquote>
+            </AnimatePresence>
+        </div>
     </div>
   );
 };
