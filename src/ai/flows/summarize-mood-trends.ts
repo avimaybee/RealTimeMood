@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI flow to analyze and summarize historical mood data.
@@ -14,12 +15,12 @@ const TrendDataPointSchema = z.object({
   hue: z.number().min(0).max(360),
 });
 
-export const SummarizeTrendsInputSchema = z.object({
+const SummarizeTrendsInputSchema = z.object({
   historyData: z.array(TrendDataPointSchema).describe('An array of historical mood data points, each with a date and a color hue (0-360).'),
 });
 export type SummarizeTrendsInput = z.infer<typeof SummarizeTrendsInputSchema>;
 
-export const SummarizeTrendsOutputSchema = z.object({
+const SummarizeTrendsOutputSchema = z.object({
   summary: z.string().describe('A concise, insightful summary of the mood trends observed in the data. The tone should be like a data analyst presenting findings. It should be about 2-3 sentences long.'),
   dominantHue: z.number().min(0).max(360).describe('The single numerical hue value (0-360) that best represents the overall dominant mood of the entire period.'),
 });
