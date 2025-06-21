@@ -24,6 +24,13 @@ const MilestoneFireworks: React.FC = () => {
     const crossedMilestone = milestones.find(m => prevCount < m && currentCount >= m);
 
     if (crossedMilestone) {
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        // Strong, celebratory vibration pattern
+        navigator.vibrate([200, 100, 200]); 
+      }
+      // TODO: Play triumphant, escalating chime sequence + soft "pop" sound
+      // TODO: Play deep, resonant "gong" or "bell" sound as message appears
+
       let timer: NodeJS.Timeout;
       setMilestoneNumber(crossedMilestone);
       setShowFireworks(true);
