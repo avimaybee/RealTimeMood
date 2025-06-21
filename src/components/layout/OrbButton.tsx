@@ -1,10 +1,9 @@
-
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import type { Mood } from '@/types';
 import { Plus } from 'lucide-react';
 import { useMood } from '@/contexts/MoodContext';
-import { PREDEFINED_MOODS, moodToHslString } from '@/lib/colorUtils';
+import { PREDEFINED_MOODS, moodToHslString, getDerivedColors } from '@/lib/colorUtils';
 import { Button as ShadcnButton } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -95,7 +94,7 @@ const OrbButton: React.FC = () => {
       setIsTapped(true);
       setTimeout(() => setIsTapped(false), 500);
       setShowColorWell(true);
-      recordContribution(newMood);
+      recordContribution(newMood, tapPoint);
       setTimeout(() => setShowColorWell(false), 1000);
     }
 
@@ -131,16 +130,19 @@ const OrbButton: React.FC = () => {
     scaleToAnimate = 0.9; // Depress effect on hold
     transitionConfig = { type: "spring", stiffness: 400, damping: 20 };
   } else {
-    scaleToAnimate = [1, 1.1, 1]; // Enhanced breathing pulse for better visibility
+    scaleToAnimate = [1, 1.05, 1]; // Simplified breathing pulse
     transitionConfig = {
       duration: 3,
-      ease: [0.42, 0, 0.58, 1], // Organic easing
+      ease: "easeInOut",
       repeat: Infinity,
     };
   }
 
   const hoverScale = radialBloomActive ? scaleToAnimate : 1.08;
   const tapScale = radialBloomActive ? scaleToAnimate : 0.95;
+  
+  const derivedColors = getDerivedColors(appState.currentMood);
+  const plusIconColor = `hsl(${derivedColors.primaryForegroundHue}, ${derivedColors.primaryForegroundSaturation}%, ${derivedColors.primaryForegroundLightness}%)`;
 
   return (
     <>
@@ -176,8 +178,9 @@ const OrbButton: React.FC = () => {
             }}
           />
           <Plus 
-            className="w-8 h-8 md:w-10 md:h-10 text-primary-foreground" 
+            className="w-8 h-8 md:w-10 md:h-10" 
             strokeWidth={2} 
+            style={{ color: plusIconColor }}
           />
         </MotionShadcnButton>
       </div>

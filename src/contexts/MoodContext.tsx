@@ -7,10 +7,11 @@ import { PREDEFINED_MOODS, moodToHslString } from '@/lib/colorUtils';
 const initialTotalUserCount = 1873;
 const initialState: AppState = {
   currentMood: PREDEFINED_MOODS[0],
-  userCount: initialTotalUserCount, // Reverted to single userCount
+  userCount: initialTotalUserCount,
   contributionCount: 12587, 
   lastContributionTime: null,
   lastContributorMoodColor: null,
+  lastContributionPosition: null,
   recentContributions: [PREDEFINED_MOODS[0]],
 };
 
@@ -18,7 +19,7 @@ const MoodContext = createContext<{
   appState: AppState;
   setAppState: React.Dispatch<React.SetStateAction<AppState>>;
   updateMood: (newMood: Mood) => void;
-  recordContribution: (mood: Mood) => void;
+  recordContribution: (mood: Mood, position: { x: number; y: number }) => void;
   triggerCollectiveShift: () => void;
   isCollectiveShifting: boolean;
 }>({
@@ -40,7 +41,7 @@ export const MoodProvider = ({ children }: { children: ReactNode }) => {
     setAppState(prev => ({ ...prev, currentMood: newMood }));
   }, []);
   
-  const recordContribution = useCallback((mood: Mood) => {
+  const recordContribution = useCallback((mood: Mood, position: { x: number, y: number }) => {
     const contributorMoodColor = moodToHslString(mood);
     setAppState(prev => {
       const newContributions = [mood, ...(prev.recentContributions || [])].slice(0, 5); // Keep last 5 contributions
@@ -49,12 +50,17 @@ export const MoodProvider = ({ children }: { children: ReactNode }) => {
         contributionCount: prev.contributionCount + 1,
         lastContributionTime: Date.now(),
         lastContributorMoodColor: contributorMoodColor,
+        lastContributionPosition: position,
         recentContributions: newContributions,
       };
     });
-    // Reset lastContributorMoodColor after a delay to allow ripple animation to finish
+    // Reset after a delay to allow ripple animation to finish
     setTimeout(() => {
-      setAppState(prev => ({...prev, lastContributorMoodColor: null}));
+      setAppState(prev => ({
+          ...prev, 
+          lastContributorMoodColor: null,
+          lastContributionPosition: null,
+        }));
     }, 2000); 
   }, []);
 

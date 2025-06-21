@@ -8,10 +8,11 @@ export interface Mood {
 
 export interface AppState {
   currentMood: Mood;
-  userCount: number; // Reverted to single userCount
+  userCount: number; 
   contributionCount: number;
   lastContributionTime: number | null;
   lastContributorMoodColor: string | null; // HSL string for the ripple
+  lastContributionPosition: { x: number; y: number } | null;
   recentContributions?: Mood[];
 }
 
