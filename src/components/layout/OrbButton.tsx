@@ -8,7 +8,7 @@ import { useMood } from '@/contexts/MoodContext';
 import { findClosestMood, moodToHslString } from '@/lib/colorUtils';
 import type { Mood } from '@/types';
 import { cn } from '@/lib/utils';
-import { motion, type PanInfo, AnimatePresence } from 'framer-motion';
+import { motion, type PanInfo, AnimatePresence, useMotionValue, useMotionValueEvent } from 'framer-motion';
 import RadialBloomEffect from '@/components/ui-fx/RadialBloomEffect';
 import MoodSelectionButtons from '@/components/features/MoodSelectionButtons';
 
@@ -23,9 +23,52 @@ const OrbButton: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
   const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const hueX = useMotionValue(0);
+  const THUMB_WIDTH = 40; // Corresponds to w-10 on the thumb
+
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  useMotionValueEvent(hueX, "change", (latestX) => {
+    if (interactionMode !== 'bar' || !motionDivRef.current) return;
+
+    const bar = motionDivRef.current;
+    const barWidth = bar.offsetWidth;
+    const draggableWidth = barWidth - THUMB_WIDTH;
+    const percentage = Math.max(0, Math.min(1, latestX / draggableWidth));
+    const selectedHue = Math.round(percentage * 360);
+
+    const closestMood = findClosestMood(selectedHue);
+    setPreviewMood({
+        ...closestMood,
+        hue: selectedHue,
+        saturation: 85,
+        lightness: 60,
+    });
+  });
+
+  const handleDragEnd = () => {
+    if (!motionDivRef.current) return;
+    const bar = motionDivRef.current;
+    const barWidth = bar.offsetWidth;
+    const draggableWidth = barWidth - THUMB_WIDTH;
+    const percentage = Math.max(0, Math.min(1, hueX.get() / draggableWidth));
+    const selectedHue = Math.round(percentage * 360);
+
+    const closestMood = findClosestMood(selectedHue);
+    const newMood: Mood = {
+        ...closestMood,
+        hue: selectedHue,
+        saturation: 85,
+        lightness: 60,
+    };
+    
+    setInteractionMode('orb'); // Start morphing back to orb
+    setChargeData({ mood: newMood });
+    setIsCharging(true); // Begin the charge sequence
+    setPreviewMood(null);
+  };
 
   const handleTap = (event: MouseEvent | TouchEvent | ReactPointerEvent, info: PanInfo) => {
     clearLongPressTimeout();
@@ -33,33 +76,16 @@ const OrbButton: React.FC = () => {
 
     if (interactionMode === 'orb') {
       setInteractionMode('bar');
+      setPreviewMood(null);
+      // Center the thumb initially
+      const barWidth = window.innerWidth * 0.8;
+      const draggableWidth = barWidth > 500 ? 500 - THUMB_WIDTH : barWidth - THUMB_WIDTH;
+      hueX.set(draggableWidth / 2);
+
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         navigator.vibrate(50);
       }
       return;
-    }
-
-    if (interactionMode === 'bar') {
-        if (!motionDivRef.current) return;
-
-        const bar = motionDivRef.current;
-        const rect = bar.getBoundingClientRect();
-        const tapX = info.point.x - rect.left;
-        const width = rect.width;
-        const percentage = Math.max(0, Math.min(1, tapX / width));
-        const selectedHue = Math.round(percentage * 360);
-
-        const closestMood = findClosestMood(selectedHue);
-        const newMood: Mood = {
-            ...closestMood,
-            hue: selectedHue,
-            saturation: 85,
-            lightness: 60,
-        };
-        
-        setInteractionMode('orb'); // Start morphing back to orb
-        setChargeData({ mood: newMood });
-        setIsCharging(true); // Begin the charge sequence
     }
   };
 
@@ -131,7 +157,7 @@ const OrbButton: React.FC = () => {
       backdropFilter: 'blur(12px)', scale: 1, opacity: 1,
     },
     bar: {
-      width: '80vw', maxWidth: '500px', height: '16px', borderRadius: '16px',
+      width: '80vw', maxWidth: '500px', height: '48px', borderRadius: '24px',
       background: gradientBackground, boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
       backdropFilter: 'blur(0px)', scale: 1, opacity: 1,
     },
@@ -178,10 +204,23 @@ const OrbButton: React.FC = () => {
           onPointerUp={clearLongPressTimeout}
           onPointerLeave={clearLongPressTimeout}
           className={cn(
-              "relative flex items-center justify-center cursor-pointer",
-              (isCharging || bloomPoint) && "pointer-events-none"
+              "relative flex items-center justify-center",
+              (isCharging || bloomPoint) && "pointer-events-none",
+              !isBar && "cursor-pointer"
           )}
         >
+          {animationState === 'bar' && (
+            <motion.div
+              className="absolute h-10 w-10 bg-white/80 backdrop-blur-sm rounded-full shadow-lg cursor-grab active:cursor-grabbing z-10"
+              style={{ x: hueX, top: '50%', y: '-50%' }}
+              drag="x"
+              dragConstraints={motionDivRef}
+              dragElastic={0.1}
+              dragMomentum={false}
+              onDragEnd={handleDragEnd}
+            />
+          )}
+
           <motion.div variants={iconVariants} animate={animationState}>
             <Plus className="w-10 h-10 text-white" strokeWidth={2} />
           </motion.div>
