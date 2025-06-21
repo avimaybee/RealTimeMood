@@ -146,6 +146,15 @@
     transform: scale(1.1);
   }
 
+  /* When the radial bloom is active, fade out the main UI elements */
+  .radial-bloom-active-page > header,
+  .radial-bloom-active-page > main,
+  .radial-bloom-active-page > footer {
+    transition: opacity 0.4s ease-in-out;
+    opacity: 0.2;
+    pointer-events: none;
+  }
+
   @keyframes logo-calm {
     0%, 100% { filter: drop-shadow(0 0 3px hsl(var(--primary-hsl))); transform: scale(1); }
     50% { filter: drop-shadow(0 0 6px hsl(var(--primary-hsl))); transform: scale(1.02); }

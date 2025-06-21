@@ -2,12 +2,15 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
 import type { PointerEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { Plus } from 'lucide-react';
 import { useMood } from '@/contexts/MoodContext';
 import { findClosestMood, moodToHslString } from '@/lib/colorUtils';
 import type { Mood } from '@/types';
 import { cn } from '@/lib/utils';
 import { motion, type PanInfo } from 'framer-motion';
+import RadialBloomEffect from '@/components/ui-fx/RadialBloomEffect';
+
 
 const OrbButton: React.FC = () => {
   const { recordContribution, isCollectiveShifting } = useMood();
@@ -15,9 +18,30 @@ const OrbButton: React.FC = () => {
   const [isCharging, setIsCharging] = useState(false);
   const [chargeData, setChargeData] = useState<{ mood: Mood } | null>(null);
   const motionDivRef = useRef<HTMLDivElement>(null);
+  const [bloomPoint, setBloomPoint] = useState<{ x: number; y: number } | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    const handlePointerUp = () => {
+      setBloomPoint(null);
+    };
+
+    if (bloomPoint) {
+      window.addEventListener('pointerup', handlePointerUp);
+    }
+
+    return () => {
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [bloomPoint]);
+
 
   const handleTap = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (isCharging) return;
+    if (isCharging || bloomPoint) return;
 
     if (interactionMode === 'orb') {
       setInteractionMode('bar');
@@ -51,13 +75,17 @@ const OrbButton: React.FC = () => {
     }
   };
 
+  const handleLongPressStart = (e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (interactionMode === 'bar' || isCharging) return;
+    setBloomPoint(info.point);
+  };
+
   useEffect(() => {
     if (isCharging && chargeData) {
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         navigator.vibrate(100); 
       }
 
-      // After a delay, release the ripple from the orb's center
       const chargeTimeout = setTimeout(() => {
         if (motionDivRef.current) {
             const orbRect = motionDivRef.current.getBoundingClientRect();
@@ -79,8 +107,6 @@ const OrbButton: React.FC = () => {
   const isBar = interactionMode === 'bar';
 
   const orbContainerBaseClasses = "fixed bottom-24 md:bottom-32 z-40 flex items-center justify-center";
-
-  // A single, unified transition for all animations
   const morphTransition = { type: 'spring', stiffness: 400, damping: 35 };
 
   const gradientBackground = 'linear-gradient(to right, hsl(0 100% 60%), hsl(30 100% 60%), hsl(60 100% 60%), hsl(90 100% 60%), hsl(120 100% 60%), hsl(150 100% 60%), hsl(180 100% 60%), hsl(210 100% 60%), hsl(240 100% 60%), hsl(270 100% 60%), hsl(300 100% 60%), hsl(330 100% 60%), hsl(360 100% 60%))';
@@ -126,36 +152,47 @@ const OrbButton: React.FC = () => {
   };
 
   return (
-    <motion.div
-      className={cn(orbContainerBaseClasses, "left-1/2")}
-      style={{ x: "-50%" }}
-      animate={{ y: isCollectiveShifting ? 8 : 0 }}
-      transition={{ type: 'spring', stiffness: 100, damping: 10 }}
-    >
+    <>
       <motion.div
-        ref={motionDivRef}
-        variants={orbVariants}
-        initial="orb"
-        animate={isCharging ? "charging" : (isBar ? "bar" : "orb")}
-        onTap={handleTap}
-        className={cn(
-            "relative flex items-center justify-center cursor-pointer",
-            isCharging && "cursor-default"
-        )}
+        className={cn(orbContainerBaseClasses, "left-1/2")}
+        style={{ x: "-50%" }}
+        animate={{ y: isCollectiveShifting ? 8 : 0 }}
+        transition={{ type: 'spring', stiffness: 100, damping: 10 }}
       >
-        <motion.div 
-            variants={iconVariants}
-            animate={isCharging ? 'charging' : isBar ? 'bar' : 'orb'}
-            initial="orb"
+        <motion.div
+          ref={motionDivRef}
+          variants={orbVariants}
+          initial="orb"
+          animate={isCharging ? "charging" : (isBar ? "bar" : "orb")}
+          onTap={handleTap}
+          onLongPressStart={handleLongPressStart}
+          className={cn(
+              "relative flex items-center justify-center cursor-pointer",
+              isCharging && "cursor-default"
+          )}
         >
-          <Plus 
-            className="w-10 h-10 text-white" 
-            strokeWidth={2}
-          />
+          <motion.div 
+              variants={iconVariants}
+              animate={isCharging ? 'charging' : isBar ? 'bar' : 'orb'}
+              initial="orb"
+          >
+            <Plus 
+              className="w-10 h-10 text-white" 
+              strokeWidth={2}
+            />
+          </motion.div>
         </motion.div>
       </motion.div>
-    </motion.div>
+      {isClient && bloomPoint && createPortal(
+        <>
+          <div data-radial-bloom-active-page-marker />
+          <RadialBloomEffect point={bloomPoint} />
+        </>,
+        document.body
+      )}
+    </>
   );
 };
 
 export default OrbButton;
+
