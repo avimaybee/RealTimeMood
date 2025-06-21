@@ -1,6 +1,6 @@
 
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import type { PointerEvent } from 'react';
 import { Plus } from 'lucide-react';
 import { useMood } from '@/contexts/MoodContext';
@@ -12,6 +12,7 @@ import { motion, type PanInfo } from 'framer-motion';
 const OrbButton: React.FC = () => {
   const { recordContribution, isCollectiveShifting } = useMood();
   const [interactionMode, setInteractionMode] = useState<'orb' | 'bar'>('orb');
+  const motionDivRef = useRef<HTMLDivElement>(null);
 
   const handleOrbTap = () => {
     setInteractionMode('bar');
@@ -21,7 +22,9 @@ const OrbButton: React.FC = () => {
   };
 
   const handleBarInteraction = (event: PointerEvent<HTMLDivElement> | MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const bar = event.currentTarget as HTMLDivElement;
+    if (!motionDivRef.current) return;
+
+    const bar = motionDivRef.current;
     const rect = bar.getBoundingClientRect();
     const tapX = info.point.x - rect.left;
     const width = rect.width;
@@ -37,8 +40,6 @@ const OrbButton: React.FC = () => {
     };
 
     recordContribution(newMood, { x: info.point.x, y: info.point.y });
-    
-    // The "thwack" haptic is now inside recordContribution
     
     setInteractionMode('orb'); // Morph back
   };
@@ -77,6 +78,7 @@ const OrbButton: React.FC = () => {
       transition={{ type: 'spring', stiffness: 100, damping: 10 }}
     >
       <motion.div
+        ref={motionDivRef}
         layout
         variants={orbVariants}
         initial="orb"
