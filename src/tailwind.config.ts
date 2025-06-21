@@ -92,8 +92,8 @@ export default {
           },
         },
         'global-pulse': { 
-          '0%, 100%': { filter: 'brightness(100%) saturate(100%)' },
-          '50%': { filter: 'brightness(80%) saturate(80%)' },
+          '0%, 100%': { filter: 'brightness(100%) saturate(100%)', transform: 'scale(1)' },
+          '50%': { filter: 'brightness(80%) saturate(80%)', transform: 'scale(0.99)' },
         },
         'orb-pulse': { 
           '0%, 100%': { transform: 'scale(1)' },
@@ -109,7 +109,7 @@ export default {
         },
          'global-ripple-effect': { 
           '0%': { transform: 'translate(-50%, -50%) scale(0.1)', opacity: '0.5' },
-          '83%': { opacity: '0.5' },
+          '83.33%': { opacity: '0.5' }, // 1000ms / 1200ms
           '100%': { transform: 'translate(-50%, -50%) scale(200)', opacity: '0' },
         },
         'particle-calm-motion': {
@@ -184,7 +184,7 @@ export default {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'global-pulse': 'global-pulse 2s ease-in-out', 
+        'global-pulse': 'global-pulse 2s ease-in-out infinite', 
         'orb-pulse': 'orb-pulse 3s ease-in-out infinite', 
         'typewriter': 'typewriter 2s steps(40) 1s 1 normal both',
         'fade-in': 'fade-in 1s ease-out forwards',

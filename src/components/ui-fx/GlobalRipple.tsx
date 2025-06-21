@@ -7,7 +7,7 @@ const GlobalRipple: React.FC = () => {
   const { appState } = useMood();
   const { lastContributorMoodColor, lastContributionPosition } = appState;
 
-  if (!lastContributorMoodColor || !lastContributionPosition) {
+  if (!lastContributorMoodColor) {
     return null;
   }
   
@@ -16,6 +16,12 @@ const GlobalRipple: React.FC = () => {
     { delay: '150ms', primary: false }, // Fainter ring 1
     { delay: '300ms', primary: false }, // Fainter ring 2
   ];
+
+  // Default to center of screen if no position is provided (for global events)
+  const positionStyle = lastContributionPosition
+    ? { top: `${lastContributionPosition.y}px`, left: `${lastContributionPosition.x}px` }
+    : { top: '50%', left: '50%' };
+
 
   return (
     <div
@@ -27,14 +33,13 @@ const GlobalRipple: React.FC = () => {
             key={index}
             className="absolute aspect-square rounded-full animate-global-ripple-effect"
             style={{
-              top: `${lastContributionPosition.y}px`,
-              left: `${lastContributionPosition.x}px`,
+              ...positionStyle,
               width: '10px', 
               height: '10px',
               border: layer.primary 
-                ? `1px solid rgba(255, 255, 255, 0.5)`
-                : `1px solid rgba(255, 255, 255, 0.2)`,
-              boxShadow: `0 0 8px 1px ${lastContributorMoodColor}, 0 0 12px 2px ${lastContributorMoodColor} inset`,
+                ? `1px solid rgba(255, 255, 255, 0.7)` // Brighter primary
+                : `1px solid rgba(255, 255, 255, 0.3)`,
+              boxShadow: `0 0 12px 2px ${lastContributorMoodColor}, 0 0 18px 3px ${lastContributorMoodColor} inset`,
               animationDelay: layer.delay,
               opacity: 0, 
             }}

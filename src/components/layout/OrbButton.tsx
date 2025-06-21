@@ -1,9 +1,10 @@
+
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import type { Mood } from '@/types';
 import { Plus } from 'lucide-react';
 import { useMood } from '@/contexts/MoodContext';
-import { PREDEFINED_MOODS, moodToHslString, getDerivedColors } from '@/lib/colorUtils';
+import { PREDEFINED_MOODS, getDerivedColors } from '@/lib/colorUtils';
 import { Button as ShadcnButton } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -13,15 +14,14 @@ const MotionShadcnButton = motion(ShadcnButton);
 const OrbButton: React.FC = () => {
   const { recordContribution, appState, isCollectiveShifting } = useMood();
   const [isInteracting, setIsInteracting] = useState(false);
-  const [showColorWell, setShowColorWell] = useState(false);
   const [radialBloomActive, setRadialBloomActive] = useState(false);
   const [tapPoint, setTapPoint] = useState({ x: 0, y: 0 });
-  const [isTapped, setIsTapped] = useState(false);
   const [glowHue, setGlowHue] = useState(appState.currentMood.hue);
-  const [personalMood, setPersonalMood] = useState<Mood | null>(null);
   const interactionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const holdTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
 
   // Anticipatory glow hue calculation based on recent mood contributions (simplified assumption)
   useEffect(() => {
@@ -86,16 +86,17 @@ const OrbButton: React.FC = () => {
         marker.parentNode.removeChild(marker);
       }
     } else {
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(10); // "light, crisp pop" haptic
-      }
       const newMood = PREDEFINED_MOODS[Math.floor(Math.random() * PREDEFINED_MOODS.length)];
-      setPersonalMood(newMood);
-      setIsTapped(true);
-      setTimeout(() => setIsTapped(false), 500);
-      setShowColorWell(true);
-      recordContribution(newMood, tapPoint);
-      setTimeout(() => setShowColorWell(false), 1000);
+      
+      let position = null;
+      if(buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        position = {
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2,
+        };
+      }
+      recordContribution(newMood, position);
     }
 
     setIsInteracting(false);
@@ -120,10 +121,7 @@ const OrbButton: React.FC = () => {
   let scaleToAnimate;
   let transitionConfig;
 
-  if (isTapped) {
-    scaleToAnimate = 0;
-    transitionConfig = { duration: 0.3, ease: "easeIn" };
-  } else if (radialBloomActive) {
+  if (radialBloomActive) {
     scaleToAnimate = 1.1;
     transitionConfig = { type: "spring", stiffness: 400, damping: 20 };
   } else if (isInteracting) {
@@ -148,6 +146,7 @@ const OrbButton: React.FC = () => {
     <>
       <div className={cn(orbContainerBaseClasses, shiftClasses, "orb-button-container")}>
         <MotionShadcnButton
+          ref={buttonRef}
           aria-label="Contribute Mood"
           className={cn(
             "rounded-full w-[60px] h-[60px] md:w-20 md:h-20 p-0 flex items-center justify-center",
@@ -184,35 +183,6 @@ const OrbButton: React.FC = () => {
           />
         </MotionShadcnButton>
       </div>
-
-      {showColorWell && personalMood && (
-        <div
-          className="fixed pointer-events-none z-50"
-          style={{ left: tapPoint.x, top: tapPoint.y, transform: 'translate(-50%, -50%)' }}
-          aria-hidden="true"
-        >
-          {Array.from({ length: 20 }).map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute rounded-full"
-              style={{
-                width: 5,
-                height: 5,
-                background: moodToHslString(personalMood),
-              }}
-              initial={{ scale: 1, opacity: 1 }}
-              animate={{
-                x: Math.cos((i / 20) * 360 * (Math.PI / 180)) * (50 + Math.random() * 50),
-                y: Math.sin((i / 20) * 360 * (Math.PI / 180)) * (50 + Math.random() * 50),
-                scale: 0,
-                opacity: 0,
-                rotate: 360,
-              }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            />
-          ))}
-        </div>
-      )}
 
       {radialBloomActive && (
         <div
