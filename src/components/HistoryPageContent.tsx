@@ -121,16 +121,16 @@ const HistoryPageContent = () => {
         transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
       >
         <header className="w-full max-w-5xl mx-auto flex items-center justify-between z-10 mb-6">
-            <Button asChild variant="outline" className="frosted-glass shadow-soft interactive-glow">
+            <Button asChild variant="outline" className="frosted-glass shadow-soft interactive-glow rounded-full w-10 h-10 p-0 md:w-auto md:px-4">
               <Link href="/">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Live
+                <ArrowLeft className="h-4 w-4" />
+                <span className="hidden md:inline md:ml-2">Back to Live</span>
               </Link>
             </Button>
             <h1 className="text-2xl md:text-3xl font-bold text-shadow-pop">
               Collective Mood History
             </h1>
-            <div className="w-24"></div> {/* Spacer */}
+            <div className="w-10 md:w-24"></div> {/* Spacer */}
         </header>
 
         <main className="w-full flex-grow flex items-center justify-center">
