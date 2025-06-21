@@ -1,6 +1,6 @@
-
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
+import type { Mood } from '@/types';
 import { Plus } from 'lucide-react';
 import { useMood } from '@/contexts/MoodContext';
 import { PREDEFINED_MOODS, moodToHslString } from '@/lib/colorUtils';
