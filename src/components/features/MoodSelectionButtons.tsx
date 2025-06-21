@@ -1,6 +1,6 @@
 
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import type { Mood } from '@/types';
 import { PREDEFINED_MOODS } from '@/lib/colorUtils';
@@ -14,7 +14,6 @@ interface MoodSelectionButtonsProps {
 }
 
 const MOOD_CHOICES = PREDEFINED_MOODS.slice(0, 8);
-const ARC_RADIUS = 120; // in pixels
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -38,9 +37,9 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, scale: 0.5 },
-  visible: (i: number) => ({
-    x: ARC_RADIUS * Math.cos((i / MOOD_CHOICES.length) * Math.PI * 2 - Math.PI / 2),
-    y: ARC_RADIUS * Math.sin((i / MOOD_CHOICES.length) * Math.PI * 2 - Math.PI / 2),
+  visible: (custom: { i: number; arcRadius: number }) => ({
+    x: custom.arcRadius * Math.cos((custom.i / MOOD_CHOICES.length) * Math.PI * 2 - Math.PI / 2),
+    y: custom.arcRadius * Math.sin((custom.i / MOOD_CHOICES.length) * Math.PI * 2 - Math.PI / 2),
     opacity: 1,
     scale: 1,
     transition: { type: 'spring', damping: 15, stiffness: 200 },
@@ -69,6 +68,17 @@ const itemVariants = {
 
 const MoodSelectionButtons: React.FC<MoodSelectionButtonsProps> = ({ point, onSelect, onPreviewChange }) => {
   const [exitingWith, setExitingWith] = useState<Mood | null>(null);
+  const [arcRadius, setArcRadius] = useState(120);
+
+  useEffect(() => {
+    const updateRadius = () => {
+      setArcRadius(window.innerWidth < 480 ? 90 : 120);
+    };
+
+    updateRadius();
+    window.addEventListener('resize', updateRadius);
+    return () => window.removeEventListener('resize', updateRadius);
+  }, []);
 
   const handleSelect = (mood: Mood) => {
     if (exitingWith) return; // Prevent multiple clicks while exiting
@@ -106,7 +116,7 @@ const MoodSelectionButtons: React.FC<MoodSelectionButtonsProps> = ({ point, onSe
       {MOOD_CHOICES.map((mood, i) => (
         <motion.div
           key={mood.name}
-          custom={i}
+          custom={{ i, arcRadius }}
           variants={itemVariants}
           animate={
             exitingWith

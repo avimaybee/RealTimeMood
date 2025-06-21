@@ -177,7 +177,7 @@ const CollectiveThoughtsPage = () => {
                 </Card>
             </main>
             
-            <footer className="w-full max-w-2xl mx-auto flex justify-center items-center py-8 h-24">
+            <footer className="w-full max-w-2xl mx-auto flex justify-center items-center py-4">
               <motion.form
                 onSubmit={handleFormSubmit}
                 onClick={() => {
@@ -187,7 +187,7 @@ const CollectiveThoughtsPage = () => {
                 animate={{
                   width: isInputVisible ? '100%' : '220px',
                   height: '56px',
-                  borderRadius: '9999px',
+                  borderRadius: isInputVisible ? '1rem' : '9999px',
                 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 30, mass: 0.8 }}
                 initial={false}

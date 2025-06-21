@@ -143,7 +143,7 @@ const HistoryPageContent = () => {
               <TrendSummaryDisplay historyData={mockHistoryData} />
             </CardHeader>
             <CardContent>
-              <ChartContainer config={{}} className="h-[400px] w-full">
+              <ChartContainer config={{}} className="h-[300px] sm:h-[400px] w-full">
                 <ResponsiveContainer>
                   <LineChart
                     data={mockHistoryData}
