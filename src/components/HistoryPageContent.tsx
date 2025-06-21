@@ -12,6 +12,7 @@ import LivingParticles from '@/components/ui-fx/LivingParticles';
 import TrendSummaryDisplay from '@/components/features/TrendSummaryDisplay';
 import React, { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 
 // Define a static, near-white mood for the history page's background
@@ -101,7 +102,12 @@ const HistoryPageContent = () => {
       <div className="vignette-overlay" />
       <div className="noise-overlay" />
       <LivingParticles />
-      <div className="min-h-screen w-full flex flex-col items-center p-4 md:p-6">
+      <motion.div
+        className="min-h-screen w-full flex flex-col items-center p-4 md:p-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
+      >
         <header className="w-full max-w-5xl mx-auto flex items-center justify-between z-10 mb-6">
             <Button asChild variant="outline" className="frosted-glass shadow-soft interactive-glow">
               <Link href="/">
@@ -203,7 +209,7 @@ const HistoryPageContent = () => {
             </CardContent>
           </Card>
         </main>
-      </div>
+      </motion.div>
     </>
   );
 };

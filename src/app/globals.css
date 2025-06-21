@@ -159,9 +159,10 @@
   .menu-open-recede-children > header,
   .menu-open-recede-children > main,
   .menu-open-recede-children > [data-orb-button-container] {
-    transition: opacity 0.4s ease-in-out, filter 0.4s ease-in-out;
+    transition: opacity 0.4s ease-in-out, filter 0.4s ease-in-out, transform 0.4s ease-in-out;
     opacity: 0.2;
     filter: blur(8px);
+    transform: scale(0.95);
     pointer-events: none;
   }
 

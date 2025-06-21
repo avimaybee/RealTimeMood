@@ -120,7 +120,12 @@ const CollectiveThoughtsPage = () => {
     };
 
     return (
-        <div className="min-h-screen w-full flex flex-col items-center p-4 md:p-8 bg-background text-foreground">
+        <motion.div
+            className="min-h-screen w-full flex flex-col items-center p-4 md:p-8 bg-background text-foreground"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
+        >
             <header className="w-full max-w-5xl mx-auto flex items-center justify-between z-10 mb-8">
                 <Button asChild variant="outline" className="rounded-full px-4 py-2">
                     <Link href="/">
@@ -237,7 +242,7 @@ const CollectiveThoughtsPage = () => {
                 </motion.div>
               </motion.form>
             </footer>
-        </div>
+        </motion.div>
     );
 }
 
