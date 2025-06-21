@@ -16,10 +16,10 @@ const CommunityQuotesDisplay: React.FC = () => {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    // Cycle quote every 10 seconds (8s display, plus transition times)
+    // Cycle quote every 8 seconds
     const interval = setInterval(() => {
       setIndex((prevIndex) => (prevIndex + 1) % mockQuotes.length);
-    }, 10000); 
+    }, 8000); 
 
     return () => clearInterval(interval);
   }, []);
@@ -27,41 +27,22 @@ const CommunityQuotesDisplay: React.FC = () => {
   const currentQuote = mockQuotes[index];
 
   const quoteVariants = {
-    initial: { opacity: 0.2, filter: 'blur(4px)', y: 5 },
+    initial: { opacity: 0, y: 20 },
     animate: {
-      opacity: 0.8,
-      filter: 'blur(0px)',
+      opacity: 0.7,
       y: 0,
-      transition: { duration: 0.5, ease: 'easeOut' },
+      transition: { duration: 1, ease: 'easeOut' },
     },
     exit: {
-      opacity: 0.2,
-      filter: 'blur(2px)',
-      y: -5,
-      transition: { duration: 0.5, ease: 'easeIn' },
+      opacity: 0,
+      y: -20,
+      transition: { duration: 1, ease: 'easeIn' },
     },
   };
   
-  const containerVariants = {
-    initial: { y: 0 },
-    animate: {
-        y: [5, -5], // +/- 5px float
-        transition: {
-            duration: 10,
-            repeat: Infinity,
-            repeatType: "mirror",
-            ease: "easeInOut"
-        }
-    }
-  };
-
   return (
-    <motion.div 
-        className="fixed bottom-20 md:bottom-24 left-4 md:left-8 z-20 max-w-xs md:max-w-sm pointer-events-none"
-        variants={containerVariants}
-        initial="initial"
-        animate="animate"
-    >
+    // Container ensures layout space is reserved, preventing jumps.
+    <div className="relative w-full max-w-3xl h-28 flex items-center justify-center pointer-events-none">
       <AnimatePresence mode="wait">
         <motion.blockquote
           key={currentQuote.id}
@@ -69,13 +50,13 @@ const CommunityQuotesDisplay: React.FC = () => {
           initial="initial"
           animate="animate"
           exit="exit"
-          className="text-shadow-pop"
+          className="text-center"
         >
-            <p className="text-base md:text-lg italic">"{currentQuote.text}"</p>
-            <footer className="mt-1 text-sm opacity-70">- Anonymous</footer>
+            <p className="text-xl md:text-2xl text-shadow-pop">"{currentQuote.text}"</p>
+            <footer className="mt-2 text-base opacity-80 text-shadow-pop">- Anonymous</footer>
         </motion.blockquote>
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 };
 

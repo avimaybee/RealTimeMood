@@ -58,13 +58,12 @@ const PageContent: React.FC = () => {
       <AppHeader />
 
       <main className={cn(
-        "flex-grow flex flex-col items-center justify-center w-full px-4 text-center z-10",
+        "flex-grow flex flex-col items-center justify-center w-full px-4 text-center z-10 gap-12 md:gap-16",
         isCollectiveShifting ? 'opacity-90' : 'opacity-100',
         )}>
         <MainPromptDisplay />
+        <CommunityQuotesDisplay />
       </main>
-      
-      <CommunityQuotesDisplay />
       
       <OrbButton /> 
       
