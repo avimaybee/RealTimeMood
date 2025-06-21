@@ -38,10 +38,20 @@ const OrbButton: React.FC = () => {
     const barWidth = bar.offsetWidth;
     const draggableWidth = barWidth - THUMB_WIDTH;
     
-    // Guard against calculation errors during animation
     if (draggableWidth <= 0) return;
 
-    const percentage = Math.max(0, Math.min(1, latestX / draggableWidth));
+    // Manually clamp the value to ensure it's within bounds.
+    // This is more reliable than dragConstraints with a ref when the initial position is dynamic.
+    const clampedX = Math.max(0, Math.min(latestX, draggableWidth));
+    
+    // If the value was clamped, set the motion value to the clamped value.
+    // Framer Motion is smart enough not to cause an infinite loop here.
+    if (clampedX !== latestX) {
+      hueX.set(clampedX);
+      return; // The change event will fire again with the clamped value
+    }
+
+    const percentage = clampedX / draggableWidth;
     const selectedHue = Math.round(percentage * 360);
 
     const closestMood = findClosestMood(selectedHue);
@@ -59,7 +69,13 @@ const OrbButton: React.FC = () => {
     const bar = motionDivRef.current;
     const barWidth = bar.offsetWidth;
     const draggableWidth = barWidth - THUMB_WIDTH;
-    const percentage = Math.max(0, Math.min(1, hueX.get() / draggableWidth));
+
+    if (draggableWidth <= 0) return;
+
+    // Use the same clamping and calculation logic as the "change" event for consistency.
+    const finalX = hueX.get();
+    const clampedX = Math.max(0, Math.min(finalX, draggableWidth));
+    const percentage = clampedX / draggableWidth;
     const selectedHue = Math.round(percentage * 360);
 
     const closestMood = findClosestMood(selectedHue);
@@ -84,16 +100,15 @@ const OrbButton: React.FC = () => {
     if (interactionMode === 'orb') {
       setInteractionMode('bar');
       setPreviewMood(null);
-      // Center the thumb initially
-      const estimatedBarWidth = Math.min(window.innerWidth * 0.8, 500);
-      const draggableWidth = estimatedBarWidth - THUMB_WIDTH;
-      const initialX = draggableWidth / 2;
-      hueX.set(initialX);
-
-      const percentage = Math.max(0, Math.min(1, initialX / draggableWidth));
-      const selectedHue = Math.round(percentage * 360);
-      const closestMood = findClosestMood(selectedHue);
-      setPreviewAdjective(closestMood.adjective);
+      // Use a timeout to ensure the bar has its final width before we calculate the center.
+      setTimeout(() => {
+        if (motionDivRef.current) {
+          const barWidth = motionDivRef.current.offsetWidth;
+          const draggableWidth = barWidth - THUMB_WIDTH;
+          const initialX = draggableWidth / 2;
+          hueX.set(initialX);
+        }
+      }, 0);
 
 
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -218,7 +233,7 @@ const OrbButton: React.FC = () => {
           onPointerUp={clearLongPressTimeout}
           onPointerLeave={clearLongPressTimeout}
           className={cn(
-              "relative flex items-center justify-center",
+              "relative flex items-center",
               (isCharging || bloomPoint) && "pointer-events-none",
               !isBar && "cursor-pointer"
           )}
@@ -228,7 +243,6 @@ const OrbButton: React.FC = () => {
               className="absolute h-10 w-10 bg-white/80 backdrop-blur-sm rounded-full shadow-lg cursor-grab active:cursor-grabbing z-10"
               style={{ x: hueX, top: '50%', y: '-50%' }}
               drag="x"
-              dragConstraints={motionDivRef}
               dragElastic={0.1}
               dragMomentum={false}
               onDragEnd={handleDragEnd}
@@ -249,7 +263,7 @@ const OrbButton: React.FC = () => {
             </motion.div>
           )}
 
-          <motion.div variants={iconVariants} animate={animationState}>
+          <motion.div variants={iconVariants} animate={animationState} className="flex items-center justify-center">
             <Plus className="w-10 h-10 text-white" strokeWidth={2} />
           </motion.div>
         </motion.div>
