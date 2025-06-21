@@ -29,7 +29,7 @@ const CommunityQuotesDisplay: React.FC = () => {
   const quoteVariants = {
     initial: { opacity: 0, y: 20 },
     animate: {
-      opacity: 0.7,
+      opacity: 1,
       y: 0,
       transition: { duration: 1, ease: 'easeOut' },
     },
@@ -41,7 +41,8 @@ const CommunityQuotesDisplay: React.FC = () => {
   };
   
   return (
-    // Container ensures layout space is reserved, preventing jumps.
+    // This container reserves layout space, preventing content jumps during transitions.
+    // It acts as the "minimal and modern container" for the quote content.
     <div className="relative w-full max-w-3xl h-28 flex items-center justify-center pointer-events-none">
       <AnimatePresence mode="wait">
         <motion.blockquote
@@ -52,8 +53,8 @@ const CommunityQuotesDisplay: React.FC = () => {
           exit="exit"
           className="text-center"
         >
-            <p className="text-xl md:text-2xl text-shadow-pop">"{currentQuote.text}"</p>
-            <footer className="mt-2 text-base opacity-80 text-shadow-pop">- Anonymous</footer>
+            <p className="text-xl md:text-2xl font-medium text-shadow-pop">"{currentQuote.text}"</p>
+            <footer className="mt-2 text-base opacity-80">- Anonymous</footer>
         </motion.blockquote>
       </AnimatePresence>
     </div>
