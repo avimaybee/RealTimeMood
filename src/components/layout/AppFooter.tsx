@@ -1,14 +1,13 @@
 
 "use client";
 import React from 'react';
-import { Menu, BarChart2, X } from 'lucide-react';
+import { Menu, BarChart2, MessageSquareQuote, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { Separator } from '../ui/separator';
-import CommunityQuotesDisplay from '../features/CommunityQuotesDisplay';
 
 interface AppFooterProps {
   isMenuOpen: boolean;
@@ -43,7 +42,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
       style={{ x: "-50%" }}
       animate={{
         y: isCollectiveShifting ? 8 : 0,
-        height: isMenuOpen ? '300px' : '52px',
+        height: isMenuOpen ? '200px' : '52px',
       }}
       transition={{
         y: { type: "spring", stiffness: 100, damping: 10 },
@@ -86,19 +85,22 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
             animate="visible"
             exit="exit"
           >
-            <div className="w-full flex flex-col items-center mb-2">
+            <div className="w-full flex flex-col items-center">
                 <h3 className="text-lg font-semibold text-foreground text-shadow-pop">Menu</h3>
-                <Separator className="w-1/2 my-1" />
+                <Separator className="w-1/2 my-2" />
                 <Button asChild variant="ghost" className="text-base w-full">
                   <Link href="/history">
                     <BarChart2 className="mr-2 h-4 w-4" />
                     View Mood History
                   </Link>
                 </Button>
+                 <Button asChild variant="ghost" className="text-base w-full">
+                  <Link href="/thoughts">
+                    <MessageSquareQuote className="mr-2 h-4 w-4" />
+                    Collective Thoughts
+                  </Link>
+                </Button>
             </div>
-            
-            <CommunityQuotesDisplay /> 
-
           </motion.div>
         )}
       </AnimatePresence>
