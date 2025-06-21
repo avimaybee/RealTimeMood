@@ -39,7 +39,7 @@ const AppHeader: React.FC = () => {
       className={cn(headerBaseClasses, sizeClasses, "left-1/2")}
       style={{ x: "-50%" }}
       animate={{ y: isCollectiveShifting ? -8 : 0 }}
-      transition={{ type: 'spring', stiffness: 100, damping: 10 }}
+      transition={{ type: 'spring', stiffness: 100, damping: 10, delay: 0.1 }}
     >
       <AppHeaderLogo animationClass={animationClass} />
       <span className="ml-3 text-xl md:text-2xl font-medium text-foreground opacity-90 text-shadow-pop transition-opacity group-hover:opacity-100">

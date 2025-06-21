@@ -46,7 +46,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
         height: isMenuOpen ? 'auto' : '52px',
       }}
       transition={{
-        y: { type: "spring", stiffness: 100, damping: 10 },
+        y: { type: "spring", stiffness: 100, damping: 10, delay: 0.1 },
         height: { type: "spring", stiffness: 400, damping: 30, mass: 0.8 },
       }}
     >
