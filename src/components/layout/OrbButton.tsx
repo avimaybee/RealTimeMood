@@ -16,36 +16,39 @@ const OrbButton: React.FC = () => {
   const [chargeData, setChargeData] = useState<{ mood: Mood } | null>(null);
   const motionDivRef = useRef<HTMLDivElement>(null);
 
-  const handleOrbTap = () => {
-    if (isCharging) return; 
+  const handleTap = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (isCharging) return;
 
-    setInteractionMode('bar');
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(50);
+    if (interactionMode === 'orb') {
+      setInteractionMode('bar');
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+      return;
     }
-  };
 
-  const handleBarInteraction = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (!motionDivRef.current || isCharging) return;
+    if (interactionMode === 'bar') {
+        if (!motionDivRef.current) return;
 
-    const bar = motionDivRef.current;
-    const rect = bar.getBoundingClientRect();
-    const tapX = info.point.x - rect.left;
-    const width = rect.width;
-    const percentage = Math.max(0, Math.min(1, tapX / width));
-    const selectedHue = Math.round(percentage * 360);
+        const bar = motionDivRef.current;
+        const rect = bar.getBoundingClientRect();
+        const tapX = info.point.x - rect.left;
+        const width = rect.width;
+        const percentage = Math.max(0, Math.min(1, tapX / width));
+        const selectedHue = Math.round(percentage * 360);
 
-    const closestMood = findClosestMood(selectedHue);
-    const newMood: Mood = {
-        ...closestMood,
-        hue: selectedHue,
-        saturation: 85,
-        lightness: 60,
-    };
-
-    setChargeData({ mood: newMood });
-    setIsCharging(true);
-    setInteractionMode('orb');
+        const closestMood = findClosestMood(selectedHue);
+        const newMood: Mood = {
+            ...closestMood,
+            hue: selectedHue,
+            saturation: 85,
+            lightness: 60,
+        };
+        
+        setInteractionMode('orb'); // Start morphing back to orb
+        setChargeData({ mood: newMood });
+        setIsCharging(true); // Begin the charge sequence
+    }
   };
 
   useEffect(() => {
@@ -54,21 +57,20 @@ const OrbButton: React.FC = () => {
         navigator.vibrate(100); 
       }
 
+      // After a delay, release the ripple from the orb's center
       const chargeTimeout = setTimeout(() => {
-        let ripplePosition: { x: number; y: number } | null = null;
         if (motionDivRef.current) {
-          const orbRect = motionDivRef.current.getBoundingClientRect();
-          ripplePosition = {
-            x: orbRect.left + orbRect.width / 2,
-            y: orbRect.top + orbRect.height / 2,
-          };
+            const orbRect = motionDivRef.current.getBoundingClientRect();
+            const ripplePosition = {
+                x: orbRect.left + orbRect.width / 2,
+                y: orbRect.top + orbRect.height / 2,
+            };
+            recordContribution(chargeData.mood, ripplePosition);
         }
-        
-        recordContribution(chargeData.mood, ripplePosition);
         
         setIsCharging(false);
         setChargeData(null);
-      }, 500); 
+      }, 500); // 500ms charge duration
 
       return () => clearTimeout(chargeTimeout);
     }
@@ -78,6 +80,7 @@ const OrbButton: React.FC = () => {
 
   const orbContainerBaseClasses = "fixed bottom-24 md:bottom-32 z-40 flex items-center justify-center";
 
+  // A single, unified transition for all animations
   const morphTransition = { type: 'spring', stiffness: 400, damping: 35 };
 
   const gradientBackground = 'linear-gradient(to right, hsl(0 100% 60%), hsl(30 100% 60%), hsl(60 100% 60%), hsl(90 100% 60%), hsl(120 100% 60%), hsl(150 100% 60%), hsl(180 100% 60%), hsl(210 100% 60%), hsl(240 100% 60%), hsl(270 100% 60%), hsl(300 100% 60%), hsl(330 100% 60%), hsl(360 100% 60%))';
@@ -90,6 +93,7 @@ const OrbButton: React.FC = () => {
       background: 'rgba(255, 255, 255, 0.1)',
       boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
       backdropFilter: 'blur(12px)',
+      transition: morphTransition,
     },
     bar: {
       width: '80vw',
@@ -99,21 +103,26 @@ const OrbButton: React.FC = () => {
       background: gradientBackground,
       boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
       backdropFilter: 'blur(0px)',
+      transition: morphTransition,
     },
     charging: {
         width: '80px',
         height: '80px',
         borderRadius: '9999px',
-        background: 'rgba(255, 255, 255, 0.1)',
+        background: 'rgba(255, 255, 255, 0.1)', // Preserve background
         backdropFilter: 'blur(12px)',
         boxShadow: chargeData ? `0 0 25px 8px ${moodToHslString(chargeData.mood)}, inset 0 0 10px 2px rgba(255,255,255,0.5)` : '0 12px 32px rgba(0,0,0,0.3)',
+        transition: {
+            ...morphTransition,
+            boxShadow: { duration: 0.1, type: "tween" }, // Fast glow
+        },
     }
   };
 
   const iconVariants = {
-    orb: { scale: 1, opacity: 1, transition: { delay: 0.1 } },
-    bar: { scale: 0, opacity: 0 },
-    charging: { scale: 0, opacity: 0 },
+    orb: { scale: 1, opacity: 1, transition: { delay: 0.1, ...morphTransition } },
+    bar: { scale: 0, opacity: 0, transition: { duration: 0.15 } },
+    charging: { scale: 0, opacity: 0, transition: { duration: 0.15 } },
   };
 
   return (
@@ -125,12 +134,10 @@ const OrbButton: React.FC = () => {
     >
       <motion.div
         ref={motionDivRef}
-        layout
         variants={orbVariants}
         initial="orb"
         animate={isCharging ? "charging" : (isBar ? "bar" : "orb")}
-        transition={morphTransition}
-        onTap={isBar ? handleBarInteraction : handleOrbTap}
+        onTap={handleTap}
         className={cn(
             "relative flex items-center justify-center cursor-pointer",
             isCharging && "cursor-default"
@@ -139,6 +146,7 @@ const OrbButton: React.FC = () => {
         <motion.div 
             variants={iconVariants}
             animate={isCharging ? 'charging' : isBar ? 'bar' : 'orb'}
+            initial="orb"
         >
           <Plus 
             className="w-10 h-10 text-white" 
