@@ -91,10 +91,6 @@ export default {
             height: '0',
           },
         },
-        'orb-pulse': { 
-          '0%, 100%': { transform: 'scale(1)' },
-          '50%': { transform: 'scale(1.05)' },
-        },
         'typewriter': {
           from: { width: '0' },
           to: { width: '100%' },
@@ -133,7 +129,7 @@ export default {
         },
         'shockwave-effect': {
           '0%': { transform: 'scale(0)', opacity: '0.75', filter: 'blur(1px)' },
-          '100%': { transform: 'scale(1)', opacity: '0', filter: 'blur(15px)' },
+          '100%': { transform: 'scale(250)', opacity: '0', filter: 'blur(15px)' },
         },
         'firework-particle-anim': { 
           '0%': {
