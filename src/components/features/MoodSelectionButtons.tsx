@@ -28,7 +28,9 @@ const containerVariants = {
   exit: {
     opacity: 0,
     transition: {
-      when: "afterChildren", // Wait for children to finish exiting
+      staggerChildren: 0.05,
+      staggerDirection: -1,
+      when: "afterChildren",
       duration: 0.1,
     },
   },
@@ -50,11 +52,18 @@ const itemVariants = {
     opacity: 0,
     transition: { duration: 0.4, ease: [0.76, 0, 0.24, 1] }, // liquid drop
   },
-  exitOther: { // "Fade out" animation
+  exitOther: { // "Fade out" animation for non-selected items on selection
     scale: 0.5,
     opacity: 0,
     transition: { duration: 0.2, ease: 'easeOut' },
   },
+  exit: { // Generic exit for dismissal
+    x: 0,
+    y: 0,
+    scale: 0.5,
+    opacity: 0,
+    transition: { duration: 0.3, ease: 'easeIn' },
+  }
 };
 
 
@@ -86,7 +95,8 @@ const MoodSelectionButtons: React.FC<MoodSelectionButtonsProps> = ({ point, onSe
       }}
       variants={containerVariants}
       initial="hidden"
-      animate={exitingWith ? "exit" : "visible"}
+      animate="visible"
+      exit="exit"
       onAnimationComplete={() => {
         if (exitingWith) {
           onSelect(exitingWith);
@@ -105,6 +115,7 @@ const MoodSelectionButtons: React.FC<MoodSelectionButtonsProps> = ({ point, onSe
                 : "exitOther"
               : "visible"
           }
+          exit="exit" // Use the generic exit for AnimatePresence dismissal
           className="absolute"
           onHoverStart={() => handleHover(mood)}
           onHoverEnd={() => handleHover(null)}

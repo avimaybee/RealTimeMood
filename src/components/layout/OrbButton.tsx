@@ -8,7 +8,7 @@ import { useMood } from '@/contexts/MoodContext';
 import { findClosestMood, moodToHslString } from '@/lib/colorUtils';
 import type { Mood } from '@/types';
 import { cn } from '@/lib/utils';
-import { motion, type PanInfo } from 'framer-motion';
+import { motion, type PanInfo, AnimatePresence } from 'framer-motion';
 import RadialBloomEffect from '@/components/ui-fx/RadialBloomEffect';
 import MoodSelectionButtons from '@/components/features/MoodSelectionButtons';
 
@@ -69,7 +69,6 @@ const OrbButton: React.FC = () => {
   };
   
   const handlePointerDown = (event: ReactPointerEvent) => {
-    // Only allow long press from the orb state
     if (interactionMode !== 'orb' || isCharging || bloomPoint) return;
     
     const { clientX, clientY } = event;
@@ -85,25 +84,21 @@ const OrbButton: React.FC = () => {
   };
 
   const handleMoodSelectionFromBloom = (mood: Mood) => {
-    setBloomPoint(null); // Dismiss the bloom and buttons
-    setPreviewMood(null); // Also clear preview
-    
-    // Heavy "thump" haptic on successful submission.
+    setBloomPoint(null);
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate(100); 
     }
-    
-    // This is the key: we use the selected mood to "charge" the orb
-    // as it reforms.
-    setInteractionMode('orb'); // Ensure it's in orb mode for the variants
+    setInteractionMode('orb');
     setChargeData({ mood: mood });
-    setIsCharging(true); // Begin the charge sequence
+    setIsCharging(true);
+  };
+  
+  const handleDismissBloom = () => {
+    setBloomPoint(null);
   };
 
   useEffect(() => {
     if (isCharging && chargeData) {
-      // This effect handles the "charge" duration and then fires the contribution.
-      // It allows the orb to reform and glow before the ripple.
       const chargeTimeout = setTimeout(() => {
         if (motionDivRef.current) {
             const orbRect = motionDivRef.current.getBoundingClientRect();
@@ -116,7 +111,7 @@ const OrbButton: React.FC = () => {
         
         setIsCharging(false);
         setChargeData(null);
-      }, 500); // 500ms charge duration
+      }, 500);
 
       return () => clearTimeout(chargeTimeout);
     }
@@ -125,59 +120,37 @@ const OrbButton: React.FC = () => {
   const isBar = interactionMode === 'bar';
 
   const orbContainerBaseClasses = "fixed bottom-24 md:bottom-32 z-40 flex items-center justify-center";
-  // A single, unified transition for all morphs ensures smoothness.
   const morphTransition = { type: 'spring', stiffness: 400, damping: 35 };
 
   const gradientBackground = 'linear-gradient(to right, hsl(0 100% 60%), hsl(30 100% 60%), hsl(60 100% 60%), hsl(90 100% 60%), hsl(120 100% 60%), hsl(150 100% 60%), hsl(180 100% 60%), hsl(210 100% 60%), hsl(240 100% 60%), hsl(270 100% 60%), hsl(300 100% 60%), hsl(330 100% 60%), hsl(360 100% 60%))';
   
   const orbVariants = {
     orb: {
-      width: '80px',
-      height: '80px',
-      borderRadius: '9999px',
-      background: 'rgba(255, 255, 255, 0.1)',
-      boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
-      backdropFilter: 'blur(12px)',
-      scale: 1,
-      opacity: 1,
+      width: '80px', height: '80px', borderRadius: '9999px',
+      background: 'rgba(255, 255, 255, 0.1)', boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
+      backdropFilter: 'blur(12px)', scale: 1, opacity: 1,
     },
     bar: {
-      width: '80vw',
-      maxWidth: '500px',
-      height: '16px',
-      borderRadius: '16px',
-      background: gradientBackground,
-      boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
-      backdropFilter: 'blur(0px)',
-      scale: 1,
-      opacity: 1,
+      width: '80vw', maxWidth: '500px', height: '16px', borderRadius: '16px',
+      background: gradientBackground, boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
+      backdropFilter: 'blur(0px)', scale: 1, opacity: 1,
     },
     charging: {
-        width: '80px',
-        height: '80px',
-        borderRadius: '9999px',
-        background: 'rgba(255, 255, 255, 0.1)',
-        backdropFilter: 'blur(12px)',
+        width: '80px', height: '80px', borderRadius: '9999px',
+        background: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(12px)',
         boxShadow: chargeData ? `0 0 25px 8px ${moodToHslString(chargeData.mood)}, inset 0 0 10px 2px rgba(255,255,255,0.5)` : '0 12px 32px rgba(0,0,0,0.3)',
-        scale: 1,
-        opacity: 1,
+        scale: 1, opacity: 1,
     },
-    hidden: {
-        scale: 0,
-        opacity: 0,
-    }
+    hidden: { scale: 0, opacity: 0 }
   };
 
   const iconVariants = {
-    // Show icon in orb state
     orb: { scale: 1, opacity: 1, transition: { delay: 0.1 } },
-    // Hide icon for all other states
     bar: { scale: 0, opacity: 0 },
     charging: { scale: 0, opacity: 0 },
     hidden: { scale: 0, opacity: 0},
   };
 
-  // Determine the current animation state string
   const getAnimationState = () => {
     if (bloomPoint) return 'hidden';
     if (isCharging) return 'charging';
@@ -197,43 +170,51 @@ const OrbButton: React.FC = () => {
         <motion.div
           ref={motionDivRef}
           variants={orbVariants}
-          initial={false} // Don't animate on initial load
+          initial={false}
           animate={animationState}
           transition={morphTransition}
-          // Only allow interactions when not in bloom/charging
           onTap={handleTap}
           onPointerDown={handlePointerDown}
           onPointerUp={clearLongPressTimeout}
           onPointerLeave={clearLongPressTimeout}
           className={cn(
               "relative flex items-center justify-center cursor-pointer",
-              (isCharging || bloomPoint) && "pointer-events-none" // Disable pointer events during bloom
+              (isCharging || bloomPoint) && "pointer-events-none"
           )}
         >
-          <motion.div 
-              variants={iconVariants}
-              animate={animationState}
-          >
-            <Plus 
-              className="w-10 h-10 text-white" 
-              strokeWidth={2}
-            />
+          <motion.div variants={iconVariants} animate={animationState}>
+            <Plus className="w-10 h-10 text-white" strokeWidth={2} />
           </motion.div>
         </motion.div>
       </motion.div>
 
-      {/* Portal for the full-screen bloom effect and mood buttons */}
-      {isClient && bloomPoint && createPortal(
-        <>
-          {/* This marker is used by CSS to fade out other UI */}
-          <div data-radial-bloom-active-page-marker />
-          <RadialBloomEffect point={bloomPoint} />
-          <MoodSelectionButtons 
-            point={bloomPoint} 
-            onSelect={handleMoodSelectionFromBloom} 
-            onPreviewChange={setPreviewMood}
-          />
-        </>,
+      {isClient && createPortal(
+        <AnimatePresence onExitComplete={() => setPreviewMood(null)}>
+          {bloomPoint && (
+            <motion.div key="bloom-container">
+              <div data-radial-bloom-active-page-marker />
+
+              {/* Backdrop for dismissal */}
+              <motion.div
+                className="fixed inset-0 z-30"
+                onPointerDown={handleDismissBloom}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+              />
+
+              <RadialBloomEffect point={bloomPoint} />
+              
+              <MoodSelectionButtons 
+                key="mood-buttons"
+                point={bloomPoint} 
+                onSelect={handleMoodSelectionFromBloom} 
+                onPreviewChange={setPreviewMood}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>,
         document.body
       )}
     </>
