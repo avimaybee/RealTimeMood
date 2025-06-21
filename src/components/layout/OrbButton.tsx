@@ -115,7 +115,7 @@ const OrbButton: React.FC = () => {
     };
   }, []);
 
-  const orbContainerBaseClasses = "fixed bottom-24 md:bottom-32 left-1/2 -translate-x-1/2 z-40";
+  const orbContainerBaseClasses = "fixed bottom-24 md:bottom-32 z-40";
 
   let scaleToAnimate;
   let transitionConfig;
@@ -144,7 +144,8 @@ const OrbButton: React.FC = () => {
   return (
     <>
       <motion.div 
-        className={cn(orbContainerBaseClasses, "orb-button-container")}
+        className={cn(orbContainerBaseClasses, "orb-button-container", "left-1/2")}
+        style={{ x: "-50%" }}
         animate={{ y: isCollectiveShifting ? 8 : 0 }}
         transition={{ type: 'spring', stiffness: 100, damping: 10 }}
       >

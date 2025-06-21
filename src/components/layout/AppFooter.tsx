@@ -19,12 +19,13 @@ const AppFooter: React.FC = () => {
     });
   };
 
-  const footerBaseClasses = "fixed bottom-0 left-1/2 -translate-x-1/2 mb-4 md:mb-6 p-1 z-30 frosted-glass rounded-full shadow-soft flex items-center justify-between";
+  const footerBaseClasses = "fixed bottom-0 mb-4 md:mb-6 p-1 z-30 frosted-glass rounded-full shadow-soft flex items-center justify-between";
   const sizeClasses = "h-11 min-w-[200px] md:min-w-[280px] px-4";
 
   return (
     <motion.footer 
-      className={cn(footerBaseClasses, sizeClasses)}
+      className={cn(footerBaseClasses, sizeClasses, "left-1/2")}
+      style={{ x: "-50%" }}
       animate={{ y: isCollectiveShifting ? 8 : 0 }}
       transition={{ type: "spring", stiffness: 100, damping: 10 }}
     >

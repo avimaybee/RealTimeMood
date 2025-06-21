@@ -31,12 +31,13 @@ const AppHeader: React.FC = () => {
     (adjective === 'Joyful' || adjective === 'Energetic' || adjective === 'Passionate') ? 'animate-logo-joyful' :
     'animate-logo-calm';
 
-  const headerBaseClasses = "fixed top-0 left-1/2 -translate-x-1/2 mt-4 md:mt-6 p-1 z-30 frosted-glass rounded-full shadow-soft flex items-center justify-center group";
+  const headerBaseClasses = "fixed top-0 mt-4 md:mt-6 p-1 z-30 frosted-glass rounded-full shadow-soft flex items-center justify-center group";
   const sizeClasses = "h-11 md:h-16 px-4 md:px-6 min-w-[220px] md:min-w-[280px]";
 
   return (
     <motion.header 
-      className={cn(headerBaseClasses, sizeClasses)}
+      className={cn(headerBaseClasses, sizeClasses, "left-1/2")}
+      style={{ x: "-50%" }}
       animate={{ y: isCollectiveShifting ? -8 : 0 }}
       transition={{ type: 'spring', stiffness: 100, damping: 10 }}
     >
