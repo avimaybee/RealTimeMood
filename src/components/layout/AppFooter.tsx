@@ -1,6 +1,6 @@
 
 "use client";
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMood } from '@/contexts/MoodContext';
@@ -9,19 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const AppFooter: React.FC = () => {
   const { appState, isCollectiveShifting } = useMood();
-  const [animatedContribCount, setAnimatedContribCount] = useState(appState.contributionCount);
   const { toast } = useToast();
-
-  useEffect(() => {
-    const contribDiff = appState.contributionCount - animatedContribCount;
-    if (Math.abs(contribDiff) > 0) {
-      const increment = Math.sign(contribDiff) * Math.max(1, Math.floor(Math.abs(contribDiff) / 10));
-      const timer = setTimeout(() => setAnimatedContribCount(prev => prev + increment), 50);
-      return () => clearTimeout(timer);
-    } else if (appState.contributionCount !== animatedContribCount) {
-      setAnimatedContribCount(appState.contributionCount);
-    }
-  }, [appState.contributionCount, animatedContribCount]);
 
   const handleMenuClick = () => {
     toast({
@@ -37,7 +25,7 @@ const AppFooter: React.FC = () => {
   return (
     <footer className={cn(footerBaseClasses, sizeClasses, shiftClasses)}>
       <div className="text-xs md:text-sm text-shadow-pop opacity-90">
-        {animatedContribCount.toLocaleString()} moods shared
+        {appState.contributionCount.toLocaleString()} moods shared
       </div>
       <Button 
         variant="ghost" 
