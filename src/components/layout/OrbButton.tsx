@@ -1,10 +1,10 @@
 
 "use client";
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { PointerEvent } from 'react';
 import { Plus } from 'lucide-react';
 import { useMood } from '@/contexts/MoodContext';
-import { findClosestMood } from '@/lib/colorUtils';
+import { findClosestMood, moodToHslString } from '@/lib/colorUtils';
 import type { Mood } from '@/types';
 import { cn } from '@/lib/utils';
 import { motion, type PanInfo } from 'framer-motion';
@@ -12,9 +12,13 @@ import { motion, type PanInfo } from 'framer-motion';
 const OrbButton: React.FC = () => {
   const { recordContribution, isCollectiveShifting } = useMood();
   const [interactionMode, setInteractionMode] = useState<'orb' | 'bar'>('orb');
+  const [isCharging, setIsCharging] = useState(false);
+  const [chargeData, setChargeData] = useState<{ mood: Mood; position: { x: number; y: number } } | null>(null);
   const motionDivRef = useRef<HTMLDivElement>(null);
 
   const handleOrbTap = () => {
+    if (isCharging) return; // Prevent interaction while charging
+
     setInteractionMode('bar');
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate(50); // Sharp haptic for morph start
@@ -39,10 +43,31 @@ const OrbButton: React.FC = () => {
         lightness: 60, // Use a vibrant, consistent lightness for selections
     };
 
-    recordContribution(newMood, { x: info.point.x, y: info.point.y });
-    
+    // Store charge data and start the charging sequence
+    setChargeData({ mood: newMood, position: { x: info.point.x, y: info.point.y } });
+    setIsCharging(true);
     setInteractionMode('orb'); // Morph back
   };
+
+  useEffect(() => {
+    if (isCharging && chargeData) {
+      // Intense haptic for starting the charge
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(100); 
+      }
+
+      const chargeTimeout = setTimeout(() => {
+        // Release the energy!
+        recordContribution(chargeData.mood, chargeData.position);
+        
+        // Reset state after the ripple is triggered
+        setIsCharging(false);
+        setChargeData(null);
+      }, 500); // 500ms moment of tension
+
+      return () => clearTimeout(chargeTimeout);
+    }
+  }, [isCharging, chargeData, recordContribution]);
 
   const isBar = interactionMode === 'bar';
 
@@ -57,6 +82,7 @@ const OrbButton: React.FC = () => {
     },
     bar: {
       width: '80vw',
+      maxWidth: '500px',
       height: '16px',
       borderRadius: '16px',
       transition: { type: 'spring', stiffness: 400, damping: 30 }
@@ -65,10 +91,28 @@ const OrbButton: React.FC = () => {
 
   const iconVariants = {
     orb: { scale: 1, opacity: 1, transition: { delay: 0.1 } },
-    bar: { scale: 0, opacity: 0 }
+    bar: { scale: 0, opacity: 0 },
+    charging: { scale: 0, opacity: 0 },
   };
   
   const gradientBackground = 'linear-gradient(to right, hsl(0 100% 60%), hsl(30 100% 60%), hsl(60 100% 60%), hsl(90 100% 60%), hsl(120 100% 60%), hsl(150 100% 60%), hsl(180 100% 60%), hsl(210 100% 60%), hsl(240 100% 60%), hsl(270 100% 60%), hsl(300 100% 60%), hsl(330 100% 60%), hsl(360 100% 60%))';
+
+  const motionStyle: React.CSSProperties = {
+      backdropFilter: isBar ? 'none' : 'blur(12px)',
+      transition: 'box-shadow 0.2s ease-in-out, background 0.2s ease-in-out',
+  };
+
+  if (isBar) {
+      motionStyle.background = gradientBackground;
+      motionStyle.boxShadow = '0 12px 32px rgba(0,0,0,0.3)';
+  } else if (isCharging && chargeData) {
+      const chargeColor = moodToHslString(chargeData.mood);
+      motionStyle.background = chargeColor;
+      motionStyle.boxShadow = `0 0 35px 15px ${chargeColor}, inset 0 0 15px 5px rgba(255,255,255,0.7)`;
+  } else {
+      motionStyle.background = 'rgba(255, 255, 255, 0.1)';
+      motionStyle.boxShadow = '0 12px 32px rgba(0,0,0,0.3)';
+  }
 
   return (
     <motion.div
@@ -85,14 +129,16 @@ const OrbButton: React.FC = () => {
         animate={isBar ? "bar" : "orb"}
         onTapStart={!isBar ? handleOrbTap : undefined}
         onTap={isBar ? handleBarInteraction : undefined}
-        className="relative flex cursor-pointer items-center justify-center shadow-lg"
-        style={{
-          background: isBar ? gradientBackground : 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: isBar ? 'none' : 'blur(12px)',
-          boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
-        }}
+        className={cn(
+            "relative flex items-center justify-center",
+            isCharging ? "cursor-default" : "cursor-pointer"
+        )}
+        style={motionStyle}
       >
-        <motion.div variants={iconVariants}>
+        <motion.div 
+            variants={iconVariants}
+            animate={isCharging ? 'charging' : isBar ? 'bar' : 'orb'}
+        >
           <Plus 
             className="w-10 h-10 text-white" 
             strokeWidth={2}
