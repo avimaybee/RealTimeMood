@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
@@ -10,9 +11,11 @@ import { cn } from '@/lib/utils';
 import { motion, type PanInfo, AnimatePresence } from 'framer-motion';
 import RadialBloomEffect from '@/components/ui-fx/RadialBloomEffect';
 import MoodSelectionButtons from '@/components/features/MoodSelectionButtons';
+import { useToast } from '@/hooks/use-toast';
 
 const OrbButton: React.FC = () => {
   const { recordContribution, isCollectiveShifting, setPreviewMood } = useMood();
+  const { toast } = useToast();
   const [interactionMode, setInteractionMode] = useState<'orb' | 'bar'>('orb');
   const [isCharging, setIsCharging] = useState(false);
   const [chargeData, setChargeData] = useState<{ mood: Mood } | null>(null);
@@ -117,12 +120,21 @@ const OrbButton: React.FC = () => {
               y: orbRect.top + orbRect.height / 2,
             };
             recordContribution(chargeData.mood, ripplePosition);
+            toast({
+              title: "Mood Submitted",
+              description: `Your feeling of "${chargeData.mood.adjective}" has been added to the collective.`,
+            });
           }
           setIsCharging(false);
           setChargeData(null);
           setInteractionMode('orb');
         } catch (error) {
           console.error('Error during charging sequence:', error);
+          toast({
+            title: "Error",
+            description: "Could not submit mood.",
+            variant: "destructive",
+          });
           setIsCharging(false);
           setChargeData(null);
         }
@@ -130,7 +142,7 @@ const OrbButton: React.FC = () => {
 
       return () => clearTimeout(chargeTimeout);
     }
-  }, [isCharging, chargeData, recordContribution]);
+  }, [isCharging, chargeData, recordContribution, toast]);
   
   const isBar = interactionMode === 'bar';
   const orbContainerBaseClasses = "fixed bottom-24 md:bottom-32 z-40 flex items-center justify-center";
