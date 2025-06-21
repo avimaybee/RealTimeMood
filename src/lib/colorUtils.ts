@@ -93,3 +93,21 @@ export const PREDEFINED_MOODS: Mood[] = [
   { hue: 0, saturation: 90, lightness: 60, name: "Passionate Red", adjective: "Passionate" }, // Red
   { hue: 260, saturation: 50, lightness: 55, name: "Anxious Indigo", adjective: "Anxious" }, // New mood for erratic behavior
 ];
+
+const shortestAngleDiff = (a: number, b: number): number => {
+    const diff = Math.abs(a - b);
+    return Math.min(diff, 360 - diff);
+};
+  
+export function findClosestMood(hue: number): Mood {
+    if (!PREDEFINED_MOODS.length) {
+      // Return a fallback mood if the array is empty
+      return { hue: 54, saturation: 95, lightness: 65, name: "Joyful Yellow", adjective: "Joyful" };
+    }
+  
+    return PREDEFINED_MOODS.reduce((prev, curr) => {
+      const prevDiff = shortestAngleDiff(hue, prev.hue);
+      const currDiff = shortestAngleDiff(hue, curr.hue);
+      return currDiff < prevDiff ? curr : prev;
+    });
+}
