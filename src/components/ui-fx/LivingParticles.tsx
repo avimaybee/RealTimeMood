@@ -33,8 +33,18 @@ const LivingParticles: React.FC = () => {
   const lastShiftStateRef = useRef<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // This ref gives the animation loop a "live window" into the latest state from the context.
+  const latestStateRef = useRef({ appState, isCollectiveShifting, lastContributionTime, lastContributionPosition });
+
+  // Keep the ref updated with the latest state on every render.
+  useEffect(() => {
+    latestStateRef.current = { appState, isCollectiveShifting, lastContributionTime, lastContributionPosition };
+  }, [appState, isCollectiveShifting, lastContributionTime, lastContributionPosition]);
+
+
   const resetParticle = (p: Partial<Particle>, width: number, height: number, emanateFromCenter: boolean): Particle => {
-    const { hue, saturation, lightness } = appState.currentMood;
+    // Use the latest state for resetting particles
+    const { hue, saturation, lightness } = latestStateRef.current.appState.currentMood;
     const maxLife = 200 + Math.random() * 200;
     const angle = Math.random() * Math.PI * 2;
     const baseSpeed = 0.5 + Math.random() * 0.5;
@@ -46,7 +56,7 @@ const LivingParticles: React.FC = () => {
       y = height / 2 + Math.sin(angle) * radius;
     } else {
       x = Math.random() * width;
-      y = Math.random() * height;
+      y = height / 2 + (Math.random() - 0.5) * height * 0.5; // Spawn more centrally
     }
 
     return {
@@ -76,79 +86,91 @@ const LivingParticles: React.FC = () => {
     const height = window.innerHeight;
 
     particlesRef.current = Array.from({ length: NUM_PARTICLES }).map((_, i) =>
-      resetParticle({ id: i }, width, height, false)
+      resetParticle({ id: i }, width, height, true)
     );
 
     const animate = () => {
       animationFrameRef.current = requestAnimationFrame(animate);
       if (!containerRef.current) return;
 
+      // Access the live state inside the animation loop via the ref.
+      const {
+        appState: latestAppState,
+        isCollectiveShifting: latestIsCollectiveShifting,
+        lastContributionTime: latestLastContributionTime,
+        lastContributionPosition: latestLastContributionPosition,
+      } = latestStateRef.current;
+
       const width = containerRef.current.offsetWidth;
       const height = containerRef.current.offsetHeight;
       const centerX = width / 2;
       const centerY = height / 2;
-      const { currentMood } = appState;
+      const { currentMood } = latestAppState;
 
-      const rippleJustFired = lastContributionTime !== null && lastContributionTime !== lastRippleTimeRef.current;
+      const rippleJustFired = latestLastContributionTime !== null && latestLastContributionTime !== lastRippleTimeRef.current;
       if (rippleJustFired) {
-        const rippleOrigin = lastContributionPosition || { x: centerX, y: centerY };
+        const rippleOrigin = latestLastContributionPosition || { x: centerX, y: centerY };
         particlesRef.current.forEach(p => {
           const dx = p.x - rippleOrigin.x;
           const dy = p.y - rippleOrigin.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 400 && dist > 0) {
+          if (dist < 400 && dist > 0) { // Ripple has a 400px radius of effect
             const angle = Math.atan2(dy, dx);
-            const force = (1 - dist / 400) * 4;
+            const force = (1 - dist / 400) * 4; // Force is stronger closer to the origin
             p.pushX += Math.cos(angle) * force;
             p.pushY += Math.sin(angle) * force;
           }
         });
-        lastRippleTimeRef.current = lastContributionTime;
+        lastRippleTimeRef.current = latestLastContributionTime;
       }
 
-      const shockwaveJustFired = isCollectiveShifting && !lastShiftStateRef.current;
+      const shockwaveJustFired = latestIsCollectiveShifting && !lastShiftStateRef.current;
       if (shockwaveJustFired) {
         particlesRef.current.forEach(p => {
           const dx = p.x - centerX;
           const dy = p.y - centerY;
           const angle = Math.atan2(dy, dx);
-          const force = 8 + Math.random() * 4;
+          const force = 8 + Math.random() * 4; // Stronger, more chaotic force
           p.pushX += Math.cos(angle) * force;
           p.pushY += Math.sin(angle) * force;
         });
       }
-      lastShiftStateRef.current = isCollectiveShifting;
+      lastShiftStateRef.current = latestIsCollectiveShifting;
 
       particlesRef.current.forEach(p => {
+        // Seamlessly transition color
         const hueDiff = (currentMood.hue - p.hue + 360) % 360;
         p.hue += (hueDiff > 180 ? hueDiff - 360 : hueDiff) * 0.05;
         p.saturation += (currentMood.saturation - p.saturation) * 0.05;
         p.lightness += (currentMood.lightness - p.lightness) * 0.05;
 
-        const speed = p.baseSpeed * (isCollectiveShifting ? 2.5 : 1);
+        // Apply mood-based behavior
+        const speed = p.baseSpeed * (latestIsCollectiveShifting ? 2.5 : 1);
         const angle = Math.atan2(p.vy, p.vx);
         let angleChange = 0;
         
-        if (currentMood.adjective === 'Anxious' || (isCollectiveShifting && p.life % 2 === 0)) {
-          angleChange = (Math.random() - 0.5) * 0.5;
+        if (currentMood.adjective === 'Anxious' || (latestIsCollectiveShifting && p.life % 2 === 0)) {
+          angleChange = (Math.random() - 0.5) * 0.5; // Erratic
         } else if (currentMood.adjective === 'Joyful') {
-          angleChange = Math.sin(p.life / 20) * 0.1;
+          angleChange = Math.sin(p.life / 20) * 0.1; // Arcing
         } else {
-          angleChange = (Math.random() - 0.5) * 0.1;
+          angleChange = (Math.random() - 0.5) * 0.1; // Gentle brownian motion
         }
 
         const newAngle = angle + angleChange;
         p.vx = Math.cos(newAngle) * speed;
         p.vy = Math.sin(newAngle) * speed;
 
+        // Gentle pull towards center if they get too far
         const dxCenter = p.x - centerX;
         const dyCenter = p.y - centerY;
         const distFromCenter = Math.sqrt(dxCenter * dxCenter + dyCenter * dyCenter);
-        if (distFromCenter > 1) {
-          p.vx += (dxCenter / distFromCenter) * 0.02;
-          p.vy += (dyCenter / distFromCenter) * 0.02;
+        if (distFromCenter > Math.min(width, height) * 0.6) {
+             p.vx -= (dxCenter / distFromCenter) * 0.02;
+             p.vy -= (dyCenter / distFromCenter) * 0.02;
         }
 
+        // Apply and decay push forces
         p.vx += p.pushX;
         p.vy += p.pushY;
         p.pushX *= p.pushDecay;
@@ -158,18 +180,21 @@ const LivingParticles: React.FC = () => {
         p.y += p.vy;
         p.life++;
 
+        // Reset particle if it's dead or off-screen
         if (p.life > p.maxLife || p.x < -10 || p.x > width + 10 || p.y < -10 || p.y > height + 10) {
           Object.assign(p, resetParticle(p, width, height, true));
         }
 
+        // Update the particle's style on the DOM
         const node = p.nodeRef.current;
         if (node) {
-          const isPushed = Math.abs(p.pushX) > 1 || Math.abs(p.pushY) > 1;
-          node.style.transform = `translate3d(${p.x}px, ${p.y}px, 0px) scale(${isPushed ? 1.1 : 1})`;
+          const isPushed = Math.abs(p.pushX) > 0.5 || Math.abs(p.pushY) > 0.5;
+          node.style.transform = `translate3d(${p.x}px, ${p.y}px, 0px) scale(${isPushed ? 1.2 : 1})`;
           node.style.width = `${p.size}px`;
           node.style.height = `${p.size}px`;
           node.style.backgroundColor = `hsla(${p.hue}, ${p.saturation}%, ${p.lightness}%, ${p.opacity})`;
           node.style.filter = `brightness(${isPushed ? 1.5 : 1})`;
+          node.style.transition = 'transform 0.1s ease-out, filter 0.1s ease-out'; // For scale/brightness flash
         }
       });
     };
@@ -190,7 +215,6 @@ const LivingParticles: React.FC = () => {
           style={{
             top: 0,
             left: 0,
-            transition: 'filter 0.2s ease-out, transform 0.2s ease-out',
           }}
         />
       ))}
