@@ -20,7 +20,7 @@ interface Particle {
   nodeRef: React.RefObject<HTMLDivElement>;
 }
 
-const NUM_PARTICLES = 250;
+const NUM_PARTICLES = 120;
 
 const LivingParticles: React.FC = () => {
   const { appState, isCollectiveShifting, lastContributionTime, lastContributionPosition } = useMood();
@@ -63,7 +63,7 @@ const LivingParticles: React.FC = () => {
       vx: Math.cos(angle) * baseSpeed,
       vy: Math.sin(angle) * baseSpeed,
       size: 1 + Math.random() * 2,
-      opacity: 0.4 + Math.random() * 0.5,
+      opacity: 0.2 + Math.random() * 0.3,
       life: 0,
       maxLife,
       baseSpeed,
@@ -109,7 +109,7 @@ const LivingParticles: React.FC = () => {
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 400 && dist > 0) { // Ripple has a 400px radius of effect
             const angle = Math.atan2(dy, dx);
-            const force = (1 - dist / 400) * 8; // Increased force for more "shockwave" feel
+            const force = (1 - dist / 400) * 15; // Increased force for more "shockwave" feel
             p.pushX += Math.cos(angle) * force;
             p.pushY += Math.sin(angle) * force;
           }
