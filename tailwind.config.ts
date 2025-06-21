@@ -175,6 +175,10 @@ export default {
           '70%': { transform: 'translate(1px, 1px) scale(1)' },
           '90%': { transform: 'translate(0, 0) scale(0.98)', filter: 'drop-shadow(0 0 5px hsl(var(--primary-hsl)))' },
         },
+        'text-breathe': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.85' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -193,6 +197,7 @@ export default {
         'logo-calm': 'logo-calm 4s ease-in-out infinite',
         'logo-joyful': 'logo-joyful 1.5s ease-in-out infinite',
         'logo-anxious': 'logo-anxious 0.5s linear infinite',
+        'text-breathe': 'text-breathe 2s ease-in-out',
       },
       backdropBlur: {
         '24px': '24px', 
