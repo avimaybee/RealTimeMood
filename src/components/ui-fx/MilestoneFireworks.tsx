@@ -1,6 +1,6 @@
 
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useMood } from '@/contexts/MoodContext';
 import { moodToHslString } from '@/lib/colorUtils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,18 +9,35 @@ const MilestoneFireworks: React.FC = () => {
   const { appState, appState: { contributionCount } } = useMood();
   const [showFireworks, setShowFireworks] = useState(false);
   const [milestoneNumber, setMilestoneNumber] = useState(0);
+  const prevContributionCountRef = useRef(contributionCount);
+
+  // Define the milestone thresholds
+  const milestones = useMemo(() => [
+    10, 25, 50, 100, 250, 500, 1000, 2000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000,
+  ], []);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (contributionCount > 0 && contributionCount % 100 === 0) {
-      setMilestoneNumber(contributionCount);
+    const prevCount = prevContributionCountRef.current;
+    const currentCount = contributionCount;
+
+    // Find if any milestone has been crossed between the previous and current count
+    const crossedMilestone = milestones.find(m => prevCount < m && currentCount >= m);
+
+    if (crossedMilestone) {
+      let timer: NodeJS.Timeout;
+      setMilestoneNumber(crossedMilestone);
       setShowFireworks(true);
       timer = setTimeout(() => setShowFireworks(false), 5000); // Show for 5 seconds
+      
+      // Cleanup the timer
+      return () => {
+        if (timer) clearTimeout(timer);
+      };
     }
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [contributionCount]);
+
+    // Update the ref to the current count for the next check
+    prevContributionCountRef.current = currentCount;
+  }, [contributionCount, milestones]);
 
   const particleCount = 50; // Number of particles per firework burst
 
