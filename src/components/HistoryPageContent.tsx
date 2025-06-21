@@ -8,6 +8,7 @@ import { ChartContainer } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useDynamicColors } from '@/hooks/useDynamicColors';
 import type { Mood } from '@/types';
+import LivingParticles from '@/components/ui-fx/LivingParticles';
 
 // Define a static, near-white mood for the history page's background
 const historyPageMood: Mood = {
@@ -70,6 +71,7 @@ const HistoryPageContent = () => {
     <>
       <div className="vignette-overlay" />
       <div className="noise-overlay" />
+      <LivingParticles />
       <div className="min-h-screen w-full flex flex-col items-center p-4 md:p-6">
         <header className="w-full max-w-5xl mx-auto flex items-center justify-between z-10 mb-6">
             <Button asChild variant="outline" className="frosted-glass shadow-soft interactive-glow">
