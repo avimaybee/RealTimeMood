@@ -14,8 +14,8 @@ const LivingParticles: React.FC = () => {
     // --- Particle Count Scaling ---
     const minUserCountForScale = 100;
     const maxUserCountForScale = 10000;
-    const minParticles = 50;
-    const maxParticles = 500;
+    const minParticles = 100;
+    const maxParticles = 1000;
     let normalizedUserCount = (userCount - minUserCountForScale) / (maxUserCountForScale - minUserCountForScale);
     normalizedUserCount = Math.max(0, Math.min(1, normalizedUserCount)); 
     const numParticles = Math.floor(minParticles + normalizedUserCount * (maxParticles - minParticles));
