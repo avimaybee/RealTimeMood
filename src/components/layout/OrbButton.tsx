@@ -8,7 +8,7 @@ import { useMood } from '@/contexts/MoodContext';
 import { findClosestMood, moodToHslString } from '@/lib/colorUtils';
 import type { Mood } from '@/types';
 import { cn } from '@/lib/utils';
-import { motion, type PanInfo, AnimatePresence, useMotionValue, useMotionValueEvent } from 'framer-motion';
+import { motion, type PanInfo, AnimatePresence, useMotionValue } from 'framer-motion';
 import RadialBloomEffect from '@/components/ui-fx/RadialBloomEffect';
 import MoodSelectionButtons from '@/components/features/MoodSelectionButtons';
 
@@ -18,66 +18,66 @@ const OrbButton: React.FC = () => {
   const [interactionMode, setInteractionMode] = useState<'orb' | 'bar'>('orb');
   const [isCharging, setIsCharging] = useState(false);
   const [chargeData, setChargeData] = useState<{ mood: Mood } | null>(null);
-  const motionDivRef = useRef<HTMLDivElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
   const [bloomPoint, setBloomPoint] = useState<{ x: number; y: number } | null>(null);
   const [isClient, setIsClient] = useState(false);
   const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const hueX = useMotionValue(0);
-  const THUMB_WIDTH = 40; // Corresponds to w-10 on the thumb
+  // Simplified state for the thumb and preview
+  const thumbX = useMotionValue(0);
   const [previewAdjective, setPreviewAdjective] = useState('');
+  const [isInteractingWithBar, setIsInteractingWithBar] = useState(false);
+  const THUMB_WIDTH = 40;
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  useMotionValueEvent(hueX, "change", (latestX) => {
-    if (interactionMode !== 'bar' || !motionDivRef.current) return;
-
-    const bar = motionDivRef.current;
+  const updateMoodFromPosition = (pageX: number) => {
+    if (!barRef.current) return;
+    const bar = barRef.current;
+    const barRect = bar.getBoundingClientRect();
     const barWidth = bar.offsetWidth;
-    const draggableWidth = barWidth - THUMB_WIDTH;
-    
-    if (draggableWidth <= 0) return;
 
-    // Manually clamp the value to ensure it's within bounds.
-    // This is more reliable than dragConstraints with a ref when the initial position is dynamic.
-    const clampedX = Math.max(0, Math.min(latestX, draggableWidth));
-    
-    // If the value was clamped, set the motion value to the clamped value.
-    // Framer Motion is smart enough not to cause an infinite loop here.
-    if (clampedX !== latestX) {
-      hueX.set(clampedX);
-      return; // The change event will fire again with the clamped value
-    }
+    if (barWidth <= 0) return;
 
-    const percentage = clampedX / draggableWidth;
+    const relativeX = pageX - barRect.left;
+    const clampedX = Math.max(0, Math.min(relativeX, barWidth));
+    const percentage = clampedX / barWidth;
     const selectedHue = Math.round(percentage * 360);
 
     const closestMood = findClosestMood(selectedHue);
     setPreviewMood({
-        ...closestMood,
-        hue: selectedHue,
-        saturation: 85,
-        lightness: 60,
+      ...closestMood,
+      hue: selectedHue,
+      saturation: 85,
+      lightness: 60,
     });
     setPreviewAdjective(closestMood.adjective);
-  });
+    thumbX.set(clampedX - THUMB_WIDTH / 2);
+  };
 
-  const handleDragEnd = () => {
-    if (!motionDivRef.current) return;
-    const bar = motionDivRef.current;
+  const handleInteractionStart = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    setIsInteractingWithBar(true);
+    updateMoodFromPosition(info.point.x);
+  };
+
+  const handleInteractionMove = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    updateMoodFromPosition(info.point.x);
+  };
+
+  const handleInteractionEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (!barRef.current) return;
+
+    const bar = barRef.current;
+    const barRect = bar.getBoundingClientRect();
     const barWidth = bar.offsetWidth;
-    const draggableWidth = barWidth - THUMB_WIDTH;
 
-    if (draggableWidth <= 0) return;
-
-    // Use the same clamping and calculation logic as the "change" event for consistency.
-    const finalX = hueX.get();
-    const clampedX = Math.max(0, Math.min(finalX, draggableWidth));
-    const percentage = clampedX / draggableWidth;
+    const relativeX = info.point.x - barRect.left;
+    const clampedX = Math.max(0, Math.min(relativeX, barWidth));
+    const percentage = clampedX / barWidth;
     const selectedHue = Math.round(percentage * 360);
-
+    
     const closestMood = findClosestMood(selectedHue);
     const newMood: Mood = {
         ...closestMood,
@@ -86,35 +86,22 @@ const OrbButton: React.FC = () => {
         lightness: 60,
     };
     
-    setInteractionMode('orb'); // Start morphing back to orb
+    setInteractionMode('orb');
     setChargeData({ mood: newMood });
-    setIsCharging(true); // Begin the charge sequence
+    setIsCharging(true);
     setPreviewMood(null);
     setPreviewAdjective('');
+    setIsInteractingWithBar(false);
   };
 
-  const handleTap = (event: MouseEvent | TouchEvent | ReactPointerEvent, info: PanInfo) => {
+  const handleOrbTap = () => {
     clearLongPressTimeout();
     if (isCharging || bloomPoint) return;
 
-    if (interactionMode === 'orb') {
-      setInteractionMode('bar');
-      setPreviewMood(null);
-      // Use a timeout to ensure the bar has its final width before we calculate the center.
-      setTimeout(() => {
-        if (motionDivRef.current) {
-          const barWidth = motionDivRef.current.offsetWidth;
-          const draggableWidth = barWidth - THUMB_WIDTH;
-          const initialX = draggableWidth / 2;
-          hueX.set(initialX);
-        }
-      }, 0);
-
-
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(50);
-      }
-      return;
+    setInteractionMode('bar');
+    setPreviewMood(null);
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(50);
     }
   };
 
@@ -156,8 +143,8 @@ const OrbButton: React.FC = () => {
   useEffect(() => {
     if (isCharging && chargeData) {
       const chargeTimeout = setTimeout(() => {
-        if (motionDivRef.current) {
-            const orbRect = motionDivRef.current.getBoundingClientRect();
+        if (barRef.current) {
+            const orbRect = barRef.current.getBoundingClientRect();
             const ripplePosition = {
                 x: orbRect.left + orbRect.width / 2,
                 y: orbRect.top + orbRect.height / 2,
@@ -183,7 +170,8 @@ const OrbButton: React.FC = () => {
   const orbVariants = {
     orb: {
       width: '80px', height: '80px', borderRadius: '9999px',
-      background: 'rgba(255, 255, 255, 0.1)', boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
+      background: 'rgba(var(--panel-background-rgba), 0.1)',
+      boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
       backdropFilter: 'blur(12px)', scale: 1, opacity: 1,
     },
     bar: {
@@ -193,7 +181,8 @@ const OrbButton: React.FC = () => {
     },
     charging: {
         width: '80px', height: '80px', borderRadius: '9999px',
-        background: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(12px)',
+        background: 'rgba(var(--panel-background-rgba), 0.1)',
+        backdropFilter: 'blur(12px)',
         boxShadow: chargeData ? `0 0 25px 8px ${moodToHslString(chargeData.mood)}, inset 0 0 10px 2px rgba(255,255,255,0.5)` : '0 12px 32px rgba(0,0,0,0.3)',
         scale: 1, opacity: 1,
     },
@@ -218,40 +207,40 @@ const OrbButton: React.FC = () => {
   return (
     <>
       <motion.div
-        className={cn(orbContainerBaseClasses, "left-1/2 justify-center")}
+        className={cn(orbContainerBaseClasses, "left-1/2")}
         style={{ x: "-50%" }}
         animate={{ y: isCollectiveShifting ? 8 : 0 }}
         transition={{ type: 'spring', stiffness: 100, damping: 10 }}
       >
         <motion.div
-          ref={motionDivRef}
+          ref={barRef}
           variants={orbVariants}
           initial={false}
           animate={animationState}
           transition={morphTransition}
-          onTap={handleTap}
+          onTap={animationState === 'orb' ? handleOrbTap : undefined}
+          onPanStart={animationState === 'bar' ? handleInteractionStart : undefined}
+          onPan={animationState === 'bar' ? handleInteractionMove : undefined}
+          onPanEnd={animationState === 'bar' ? handleInteractionEnd : undefined}
           onPointerDown={handlePointerDown}
           onPointerUp={clearLongPressTimeout}
           onPointerLeave={clearLongPressTimeout}
           className={cn(
               "relative flex items-center justify-center",
               (isCharging || bloomPoint) && "pointer-events-none",
-              !isBar && "cursor-pointer"
+              animationState === 'orb' && "cursor-pointer",
+              animationState === 'bar' && "cursor-grab"
           )}
         >
           {animationState === 'bar' && (
             <motion.div
-              className="absolute h-10 w-10 bg-white/80 backdrop-blur-sm rounded-full shadow-lg cursor-grab active:cursor-grabbing z-10"
-              style={{ x: hueX, top: '50%', y: '-50%' }}
-              drag="x"
-              dragElastic={0.1}
-              dragMomentum={false}
-              onDragEnd={handleDragEnd}
+              className="absolute h-10 w-10 bg-white/80 backdrop-blur-sm rounded-full shadow-lg pointer-events-none z-10"
+              style={{ x: thumbX, top: '50%', y: '-50%' }}
             >
               <AnimatePresence>
-                {previewAdjective && (
+                {isInteractingWithBar && previewAdjective && (
                   <motion.div
-                    className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-background/80 backdrop-blur-sm rounded-md text-sm text-foreground whitespace-nowrap shadow-md pointer-events-none"
+                    className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-background/80 backdrop-blur-sm rounded-md text-sm text-foreground whitespace-nowrap shadow-md"
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 5 }}
