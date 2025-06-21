@@ -148,7 +148,7 @@ const OrbButton: React.FC = () => {
           aria-label="Contribute Mood"
           className={cn(
             "rounded-full w-[60px] h-[60px] md:w-20 md:h-20 p-0 flex items-center justify-center",
-            "transition-all duration-300 ease-out"
+            "transition-all duration-300 ease-out backdrop-blur-2xl"
           )}
           style={{
             // @ts-ignore
