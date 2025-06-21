@@ -47,6 +47,16 @@ const itemVariants = {
 
 
 const MoodSelectionButtons: React.FC<MoodSelectionButtonsProps> = ({ point, onSelect, onPreviewChange }) => {
+  const handleHover = (mood: Mood | null) => {
+    onPreviewChange(mood);
+    if (mood && typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(10); // A short, sharp vibration for a "click" feel
+    }
+    // As per project guidelines, audio playback is simulated. In a real implementation:
+    // const audio = new Audio('/sounds/radial-sparkle.mp3');
+    // audio.play();
+  };
+
   return (
     <motion.div
       className="fixed inset-0 z-40 flex items-center justify-center"
@@ -67,8 +77,8 @@ const MoodSelectionButtons: React.FC<MoodSelectionButtonsProps> = ({ point, onSe
           custom={i}
           variants={itemVariants}
           className="absolute"
-          onHoverStart={() => onPreviewChange(mood)}
-          onHoverEnd={() => onPreviewChange(null)}
+          onHoverStart={() => handleHover(mood)}
+          onHoverEnd={() => handleHover(null)}
         >
           <Button
             onClick={() => onSelect(mood)}
