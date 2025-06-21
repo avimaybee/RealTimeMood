@@ -1,4 +1,3 @@
-
 "use client";
 import React from 'react';
 import { Menu, BarChart2, MessageSquareQuote, X, Camera } from 'lucide-react';
@@ -27,13 +26,13 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
       opacity: 1, 
       y: 0, 
       filter: 'blur(0px)',
-      transition: { delay: 0.1, duration: 0.3 }
+      transition: { delay: 0.1, duration: 0.3, ease: "easeOut" }
     },
     exit: { 
       opacity: 0, 
-      y: -10, 
+      y: 10, 
       filter: 'blur(5px)',
-      transition: { duration: 0.2 }
+      transition: { duration: 0.2, ease: "easeIn" }
     }
   };
 
@@ -43,11 +42,11 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
       style={{ x: "-50%" }}
       animate={{
         y: isCollectiveShifting ? 8 : 0,
-        height: isMenuOpen ? 'auto' : '52px',
+        height: isMenuOpen ? '220px' : '52px',
       }}
       transition={{
         y: { type: "spring", stiffness: 100, damping: 10, delay: 0.1 },
-        height: { type: "spring", stiffness: 400, damping: 30, mass: 0.8 },
+        height: { type: "tween", duration: 0.5, ease: [0.4, 0, 0.2, 1] },
       }}
     >
       <div className="flex-shrink-0 w-full flex items-center justify-between h-[36px]">
