@@ -12,6 +12,7 @@ import OrbButton from '@/components/layout/OrbButton';
 import AppFooter from '@/components/layout/AppFooter';
 import MainPromptDisplay from '@/components/layout/MainPromptDisplay';
 import { cn } from '@/lib/utils';
+import CommunityQuotesDisplay from '@/components/features/CommunityQuotesDisplay';
 
 const PageContent: React.FC = () => {
   const { isCollectiveShifting } = useMood();
@@ -62,6 +63,8 @@ const PageContent: React.FC = () => {
         )}>
         <MainPromptDisplay />
       </main>
+      
+      <CommunityQuotesDisplay />
       
       <OrbButton /> 
       
