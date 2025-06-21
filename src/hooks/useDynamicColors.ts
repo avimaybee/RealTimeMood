@@ -4,6 +4,13 @@ import { useEffect, useRef } from 'react';
 import type { Mood } from '@/types';
 import { getDerivedColors } from '@/lib/colorUtils';
 
+const ANIMATION_DURATION = 800; // ms
+
+// Cubic ease-in-out: starts slow, speeds up, ends slow.
+const easeInOutCubic = (t: number): number => {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+};
+
 const lerp = (start: number, end: number, t: number): number => {
   return start * (1 - t) + end * t;
 };
@@ -19,50 +26,67 @@ const lerpAngle = (startAngle: number, endAngle: number, t: number): number => {
 };
 
 export const useDynamicColors = (targetMood: Mood) => {
+  // Ref for the latest target mood, to avoid stale closures in animate()
   const targetMoodRef = useRef(targetMood);
   targetMoodRef.current = targetMood;
 
+  // Refs for the animation state
   const currentHslRef = useRef<{ hue: number; saturation: number; lightness: number } | null>(null);
+  const startHslRef = useRef<{ hue: number; saturation: number; lightness: number } | null>(null);
+  const startTimeRef = useRef<number | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
     const root = document.documentElement;
 
+    // Initialize currentHslRef on first run
     if (currentHslRef.current === null) {
       const initialHue = parseFloat(getComputedStyle(root).getPropertyValue('--mood-hue'));
       const initialSaturation = parseFloat(getComputedStyle(root).getPropertyValue('--mood-saturation-value'));
       const initialLightness = parseFloat(getComputedStyle(root).getPropertyValue('--mood-lightness-value'));
       currentHslRef.current = {
-        hue: isNaN(initialHue) ? targetMoodRef.current.hue : initialHue,
-        saturation: isNaN(initialSaturation) ? targetMoodRef.current.saturation : initialSaturation,
-        lightness: isNaN(initialLightness) ? targetMoodRef.current.lightness : initialLightness,
+        hue: !isNaN(initialHue) ? initialHue : targetMood.hue,
+        saturation: !isNaN(initialSaturation) ? initialSaturation : targetMood.saturation,
+        lightness: !isNaN(initialLightness) ? initialLightness : targetMood.lightness,
       };
     }
 
-    const animate = () => {
-      if (!currentHslRef.current) return;
+    // When targetMood changes, start a new animation from the current state
+    startHslRef.current = { ...currentHslRef.current };
+    startTimeRef.current = performance.now();
+    
+    // Cancel any existing animation frame
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
 
-      const currentTarget = targetMoodRef.current;
-      const currentHsl = currentHslRef.current;
+    const animate = (now: number) => {
+      if (!startTimeRef.current || !startHslRef.current) {
+        return;
+      }
+      
+      const elapsed = now - startTimeRef.current;
+      const rawProgress = Math.min(elapsed / ANIMATION_DURATION, 1);
+      const easedProgress = easeInOutCubic(rawProgress);
 
-      const t = 0.08; // Interpolation factor, controls animation speed
-      const newHue = lerpAngle(currentHsl.hue, currentTarget.hue, t);
-      const newSaturation = lerp(currentHsl.saturation, currentTarget.saturation, t);
-      const newLightness = lerp(currentHsl.lightness, currentTarget.lightness, t);
+      const start = startHslRef.current;
+      const end = targetMoodRef.current;
 
+      // Interpolate all values
+      const newHue = lerpAngle(start.hue, end.hue, easedProgress);
+      const newSaturation = lerp(start.saturation, end.saturation, easedProgress);
+      const newLightness = lerp(start.lightness, end.lightness, easedProgress);
+      
       currentHslRef.current = { hue: newHue, saturation: newSaturation, lightness: newLightness };
       
+      // Update CSS variables
       root.style.setProperty('--mood-hue', newHue.toFixed(2));
       root.style.setProperty('--mood-saturation', `${newSaturation.toFixed(2)}%`);
       root.style.setProperty('--mood-lightness', `${newLightness.toFixed(2)}%`);
       root.style.setProperty('--mood-saturation-value', newSaturation.toFixed(2));
       root.style.setProperty('--mood-lightness-value', newLightness.toFixed(2));
       
-      const interpolatedMoodForDerived: Mood = {
-        name: currentTarget.name, 
-        adjective: currentTarget.adjective,
-        hue: newHue, saturation: newSaturation, lightness: newLightness
-      };
+      const interpolatedMoodForDerived: Mood = { name: end.name, adjective: end.adjective, ...currentHslRef.current };
       const {
         foregroundHue, foregroundSaturation, foregroundLightness,
         primaryForegroundHue, primaryForegroundSaturation, primaryForegroundLightness,
@@ -73,37 +97,23 @@ export const useDynamicColors = (targetMood: Mood) => {
       root.style.setProperty('--primary-foreground-hsl', `${primaryForegroundHue.toFixed(2)} ${primaryForegroundSaturation.toFixed(2)}% ${primaryForegroundLightness.toFixed(2)}%`);
       root.style.setProperty('--panel-background-rgba', panelBackgroundRgba);
 
-      const distance =
-        Math.abs(shortestAngleDiff(newHue, currentTarget.hue)) +
-        Math.abs(newSaturation - currentTarget.saturation) +
-        Math.abs(newLightness - currentTarget.lightness);
 
-      if (distance > 0.1) {
+      if (rawProgress < 1) {
         animationFrameRef.current = requestAnimationFrame(animate);
       } else {
-        root.style.setProperty('--mood-hue', currentTarget.hue.toFixed(2));
-        root.style.setProperty('--mood-saturation', `${currentTarget.saturation.toFixed(2)}%`);
-        root.style.setProperty('--mood-lightness', `${currentTarget.lightness.toFixed(2)}%`);
-        currentHslRef.current = { hue: currentTarget.hue, saturation: currentTarget.saturation, lightness: currentTarget.lightness };
-        
-        const finalDerived = getDerivedColors(currentTarget);
-        root.style.setProperty('--foreground-hsl', `${finalDerived.foregroundHue.toFixed(2)} ${finalDerived.foregroundSaturation.toFixed(2)}% ${finalDerived.foregroundLightness.toFixed(2)}%`);
-        root.style.setProperty('--primary-foreground-hsl', `${finalDerived.primaryForegroundHue.toFixed(2)} ${finalDerived.primaryForegroundSaturation.toFixed(2)}% ${finalDerived.primaryForegroundLightness.toFixed(2)}%`);
-        root.style.setProperty('--panel-background-rgba', finalDerived.panelBackgroundRgba);
-
         animationFrameRef.current = null;
       }
     };
+    
+    // Start the animation
+    animationFrameRef.current = requestAnimationFrame(animate);
 
-    if (!animationFrameRef.current) {
-      animate();
-    }
-
+    // Cleanup function
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
       }
     };
-  }, [targetMood]);
+  }, [targetMood]); // Re-trigger the effect only when the target mood object changes
 };
