@@ -91,4 +91,5 @@ export const PREDEFINED_MOODS: Mood[] = [
   { hue: 130, saturation: 70, lightness: 60, name: "Peaceful Green", adjective: "Peaceful" },  // Green
   { hue: 300, saturation: 80, lightness: 65, name: "Creative Purple", adjective: "Creative" }, // Purple
   { hue: 0, saturation: 90, lightness: 60, name: "Passionate Red", adjective: "Passionate" }, // Red
+  { hue: 260, saturation: 50, lightness: 55, name: "Anxious Indigo", adjective: "Anxious" }, // New mood for erratic behavior
 ];

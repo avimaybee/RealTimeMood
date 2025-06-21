@@ -111,13 +111,28 @@ export default {
           '0%': { transform: 'scale(0.1) translate(-50%, -50%)', opacity: '0.7' }, 
           '100%': { transform: 'scale(3) translate(-50%, -50%)', opacity: '0' }, 
         },
-        'particle-float': {
-          '0%': { transform: 'translateY(0) translateX(0) scale(0.7)', opacity: '0' },
-          '10%': { opacity: '0.7' }, 
-          '20%': { opacity: '1' }, 
-          '80%': { opacity: '1' }, 
-          '50%': { transform: 'translateY(-15vh) translateX(var(--particle-drift-x, 0px)) scale(1)'},
-          '100%': { transform: 'translateY(-30vh) translateX(calc(var(--particle-drift-x, 0px) * 2)) scale(0.7)', opacity: '0' },
+        'particle-calm-motion': {
+          '0%': { transform: 'translateY(0) translateX(0) scale(1)', opacity: '0' },
+          '10%': { opacity: '0.7' },
+          '50%': { transform: 'translateY(-20vh) translateX(var(--particle-drift-x, 0px)) scale(1)' },
+          '90%': { opacity: '0.7' },
+          '100%': { transform: 'translateY(-40vh) translateX(calc(var(--particle-drift-x, 0px) * 2)) scale(1)', opacity: '0' },
+        },
+        'particle-joyful-motion': {
+          '0%': { transform: 'translateY(0) scale(0.7)', opacity: '0' },
+          '15%': { opacity: '1' },
+          '50%': { transform: 'translateY(-25vh) translateX(var(--particle-drift-x)) scale(1.5)' }, /* Pop */
+          '85%': { opacity: '1' },
+          '100%': { transform: 'translateY(-50vh) translateX(calc(var(--particle-drift-x) * 2)) scale(0.7)', opacity: '0' },
+        },
+        'particle-anxious-motion': {
+          '0%': { transform: 'translate(0, 0)', opacity: '0' },
+          '10%': { opacity: '1' },
+          '25%': { transform: 'translate(calc(var(--particle-drift-x) * 0.5), -10vh)' },
+          '50%': { transform: 'translate(calc(var(--particle-drift-x) * -0.2), -20vh)' }, /* Jagged */
+          '75%': { transform: 'translate(calc(var(--particle-drift-x) * 1.2), -30vh)' },
+          '90%': { opacity: '0.5', transform: 'translate(calc(var(--particle-drift-x) * 1.1), -35vh) scale(1.2)' }, /* Glitch */
+          '100%': { transform: 'translate(calc(var(--particle-drift-x) * 2), -40vh)', opacity: '0' },
         },
         'collective-shift-wave': {
           '0%': { transform: 'translateX(-100%) skewX(-15deg)', opacity: '0.3' },
@@ -153,7 +168,9 @@ export default {
         'typewriter': 'typewriter 2s steps(40) 1s 1 normal both',
         'fade-in': 'fade-in 1s ease-out forwards',
         'global-ripple-effect': 'global-ripple-effect 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards', 
-        'particle-float': 'particle-float var(--animation-duration, 20s) ease-in-out var(--animation-delay, 0s) infinite', 
+        'particle-calm': 'particle-calm-motion var(--animation-duration, 25s) ease-in-out var(--animation-delay, 0s) infinite',
+        'particle-joyful': 'particle-joyful-motion var(--animation-duration, 10s) ease-out var(--animation-delay, 0s) infinite',
+        'particle-anxious': 'particle-anxious-motion var(--animation-duration, 7s) linear var(--animation-delay, 0s) infinite',
         'collective-shift-wave': 'collective-shift-wave 1.5s ease-out forwards', 
         'firework-particle-anim': 'firework-particle-anim var(--animation-duration, 2s) var(--animation-timing-function, ease-out) var(--animation-delay, 0s) forwards',
         'count-bounce': 'count-bounce 0.6s ease-out',

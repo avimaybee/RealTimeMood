@@ -1,11 +1,12 @@
 
 "use client";
 import React, { useEffect, useState } from 'react';
+import type { Mood } from '@/types';
 import { useMood } from '@/contexts/MoodContext';
 
 const LivingParticles: React.FC = () => {
   const { appState } = useMood();
-  const [particles, setParticles] = useState<Array<{ id: number; style: React.CSSProperties }>>([]);
+  const [particles, setParticles] = useState<Array<{ id: number; style: React.CSSProperties; className: string }>>([]);
 
   useEffect(() => {
     const { userCount, currentMood } = appState;
@@ -20,33 +21,52 @@ const LivingParticles: React.FC = () => {
     const numParticles = Math.floor(minParticles + normalizedUserCount * (maxParticles - minParticles));
 
     // --- Dynamic Behavior based on Mood ---
-    const { hue, saturation, lightness } = currentMood;
+    const { hue, saturation, lightness, adjective } = currentMood;
 
-    // Normalize mood properties (0 to 1) for calculations
-    const normSaturation = saturation / 100;
-    const normLightness = lightness / 100;
+    let behavior: {
+        animationClass: string;
+        baseSize: number;
+        baseDuration: number;
+    };
+
+    const joyfulAdjectives = ["Joyful", "Energetic", "Passionate"];
+
+    if (joyfulAdjectives.includes(adjective)) {
+        behavior = {
+            animationClass: 'animate-particle-joyful',
+            baseSize: 1.5, // smaller
+            baseDuration: 10, // faster
+        };
+    } else if (adjective === "Anxious") {
+        behavior = {
+            animationClass: 'animate-particle-anxious',
+            baseSize: 1, // very small
+            baseDuration: 7, // very fast
+        };
+    } else { // Default to Calm
+        behavior = {
+            animationClass: 'animate-particle-calm',
+            baseSize: 3, // larger
+            baseDuration: 25, // slower
+        };
+    }
 
     const newParticles = Array.from({ length: numParticles }).map((_, i) => {
-      // Size based on saturation (more saturated = bigger particles)
-      const size = (2.5 + normSaturation * 3) * (Math.random() * 0.5 + 0.75); // base size * random variance
-
-      // Duration (speed) based on lightness (brighter/calmer = slower/longer duration)
-      // Base duration from 10s (fast) to 25s (slow)
-      const duration = (25 - normLightness * 15) * (Math.random() * 0.5 + 0.75); // base duration * random variance
-
+      // Size influenced by saturation
+      const size = (behavior.baseSize + Math.random()) * (0.5 + (saturation / 200));
+      // Duration influenced by lightness (brighter = slower)
+      const duration = (behavior.baseDuration + Math.random() * 5) * (1.5 - (lightness / 200));
       const delay = Math.random() * duration; 
-      
-      // Intensity (alpha) based on saturation (more saturated = more intense)
-      const particleAlpha = (0.4 + normSaturation * 0.4) * (Math.random() * 0.4 + 0.8); // base alpha * random variance
+      const particleAlpha = (0.4 + (saturation / 100) * 0.4) * (Math.random() * 0.4 + 0.8);
+      const particleDriftX = `${(Math.random() - 0.5) * 20}vw`; 
 
-      // A subtle horizontal drift for more organic movement
-      const particleDriftX = `${(Math.random() - 0.5) * 10}vw`; 
-
-      // Color now based on mood hue, with high lightness to appear as a glow
-      const particleLightness = 80 + Math.random() * 20; // 80% to 100% lightness for a bright particle
+      // Analogous color: shift hue slightly (+/- 15 degrees)
+      const analogousHue = (hue + (Math.random() - 0.5) * 30 + 360) % 360;
+      const particleLightness = 80 + Math.random() * 15;
 
       return {
         id: i,
+        className: `absolute rounded-full ${behavior.animationClass}`,
         style: {
           width: `${size}px`,
           height: `${size}px`,
@@ -54,9 +74,9 @@ const LivingParticles: React.FC = () => {
           top: `${Math.random() * 100 + 100}%`, // Start below the screen
           animationDuration: `${duration}s`,
           animationDelay: `${delay}s`,
-          backgroundColor: `hsla(${hue}, ${saturation}%, ${particleLightness}%, ${particleAlpha})`,
+          backgroundColor: `hsla(${analogousHue}, ${saturation}%, ${particleLightness}%, ${particleAlpha})`,
           '--particle-drift-x': particleDriftX,
-          transition: 'background-color 0.5s ease-in-out', // Add transition for color change
+          transition: 'background-color 0.5s ease-in-out',
         } as React.CSSProperties,
       };
     });
@@ -68,7 +88,7 @@ const LivingParticles: React.FC = () => {
       {particles.map(p => (
         <div
           key={p.id}
-          className="absolute rounded-full animate-particle-float"
+          className={p.className}
           style={p.style}
           aria-hidden="true"
         />
