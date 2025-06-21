@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
@@ -8,10 +7,9 @@ import { useMood } from '@/contexts/MoodContext';
 import { findClosestMood, moodToHslString } from '@/lib/colorUtils';
 import type { Mood } from '@/types';
 import { cn } from '@/lib/utils';
-import { motion, type PanInfo, AnimatePresence, useMotionValue } from 'framer-motion';
+import { motion, type PanInfo, AnimatePresence, useMotionValue, useMotionValueEvent } from 'framer-motion';
 import RadialBloomEffect from '@/components/ui-fx/RadialBloomEffect';
 import MoodSelectionButtons from '@/components/features/MoodSelectionButtons';
-
 
 const OrbButton: React.FC = () => {
   const { recordContribution, isCollectiveShifting, setPreviewMood } = useMood();
@@ -23,35 +21,85 @@ const OrbButton: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
   const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [barGeometry, setBarGeometry] = useState({ width: 0, left: 0 });
-
-  // Simplified state for the thumb and preview
+  // Motion value and state for thumb handling
   const thumbX = useMotionValue(0);
   const [previewAdjective, setPreviewAdjective] = useState('');
   const [isInteractingWithBar, setIsInteractingWithBar] = useState(false);
-  const THUMB_WIDTH = 40;
+  const THUMB_WIDTH = 40; // w-10
 
+  // New states to track bar dimensions
+  const [barRect, setBarRect] = useState<DOMRect | null>(null);
+  
   useEffect(() => {
     setIsClient(true);
     
-    const calculateGeometry = () => {
-      const vw = window.innerWidth;
-      const width = Math.min(vw * 0.8, 500);
-      const left = (vw - width) / 2;
-      setBarGeometry({ width, left });
+    const updateBarRect = () => {
+      if (barRef.current) {
+        setBarRect(barRef.current.getBoundingClientRect());
+      }
     };
-
-    calculateGeometry();
-    window.addEventListener('resize', calculateGeometry);
-    return () => window.removeEventListener('resize', calculateGeometry);
+    
+    updateBarRect();
+    window.addEventListener('resize', updateBarRect);
+    
+    return () => window.removeEventListener('resize', updateBarRect);
   }, []);
 
-  const updateMoodFromPosition = useCallback((pageX: number) => {
-    if (barGeometry.width <= 0) return;
+  // Update bar rect whenever interaction mode changes to bar
+  useEffect(() => {
+    if (interactionMode === 'bar' && barRef.current) {
+      const newBarRect = barRef.current.getBoundingClientRect();
+      setBarRect(newBarRect);
+    }
+  }, [interactionMode]);
 
-    const relativeX = pageX - barGeometry.left;
-    const clampedX = Math.max(0, Math.min(relativeX, barGeometry.width));
-    const percentage = clampedX / barGeometry.width;
+  // Handle mouse/touch interactions for the bar
+  const handleInteractionStart = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    setIsInteractingWithBar(true);
+    updateMoodFromPosition(info.point.x);
+  };
+
+  const handleInteractionMove = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    updateMoodFromPosition(info.point.x);
+  };
+
+  const handleInteractionEnd = () => {
+    if (!barRect) return;
+    
+    // Calculate final mood based on thumb position
+    const x = thumbX.get() + THUMB_WIDTH / 2; // Get center of thumb
+    const percentage = Math.min(1, Math.max(0, x / barRect.width));
+    const selectedHue = Math.round(percentage * 360);
+    
+    const closestMood = findClosestMood(selectedHue);
+    const newMood: Mood = {
+      ...closestMood,
+      hue: selectedHue,
+      saturation: 85,
+      lightness: 60,
+    };
+    
+    setInteractionMode('orb');
+    setChargeData({ mood: newMood });
+    setIsCharging(true);
+    setPreviewMood(null);
+    setPreviewAdjective('');
+    setIsInteractingWithBar(false);
+  };
+
+  const updateMoodFromPosition = (clientX: number) => {
+    if (!barRect) return;
+    
+    // Calculate relative position within the bar
+    let relativeX = clientX - barRect.left;
+    relativeX = Math.max(0, Math.min(relativeX, barRect.width));
+    
+    // Set thumb position (centered on cursor)
+    const thumbPosition = relativeX - THUMB_WIDTH / 2;
+    thumbX.set(Math.max(0, Math.min(thumbPosition, barRect.width - THUMB_WIDTH)));
+    
+    // Calculate mood based on position
+    const percentage = relativeX / barRect.width;
     const selectedHue = Math.round(percentage * 360);
 
     const closestMood = findClosestMood(selectedHue);
@@ -62,48 +110,13 @@ const OrbButton: React.FC = () => {
       lightness: 60,
     });
     setPreviewAdjective(closestMood.adjective);
-    thumbX.set(clampedX - THUMB_WIDTH / 2);
-  }, [barGeometry, setPreviewMood, thumbX]);
-
-  const handleInteractionStart = useCallback((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    setIsInteractingWithBar(true);
-    updateMoodFromPosition(info.point.x);
-  }, [updateMoodFromPosition]);
-
-  const handleInteractionMove = useCallback((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    updateMoodFromPosition(info.point.x);
-  }, [updateMoodFromPosition]);
-
-  const handleInteractionEnd = useCallback((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (barGeometry.width <= 0) return;
-
-    const relativeX = info.point.x - barGeometry.left;
-    const clampedX = Math.max(0, Math.min(relativeX, barGeometry.width));
-    const percentage = clampedX / barGeometry.width;
-    const selectedHue = Math.round(percentage * 360);
-    
-    const closestMood = findClosestMood(selectedHue);
-    const newMood: Mood = {
-        ...closestMood,
-        hue: selectedHue,
-        saturation: 85,
-        lightness: 60,
-    };
-    
-    setInteractionMode('orb');
-    setChargeData({ mood: newMood });
-    setIsCharging(true);
-    setPreviewMood(null);
-    setPreviewAdjective('');
-    setIsInteractingWithBar(false);
-  }, [barGeometry, setPreviewMood]);
+  };
 
   const handleOrbTap = () => {
     clearLongPressTimeout();
     if (isCharging || bloomPoint) return;
-
+    
     setInteractionMode('bar');
-    setPreviewMood(null);
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate(50);
     }
@@ -126,6 +139,7 @@ const OrbButton: React.FC = () => {
   const clearLongPressTimeout = () => {
     if (longPressTimeoutRef.current) {
       clearTimeout(longPressTimeoutRef.current);
+      longPressTimeoutRef.current = null;
     }
   };
 
@@ -134,32 +148,50 @@ const OrbButton: React.FC = () => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate(100); 
     }
-    setInteractionMode('orb');
     setChargeData({ mood: mood });
     setIsCharging(true);
   };
   
   const handleDismissBloom = useCallback(() => {
     setBloomPoint(null);
-    setPreviewMood(null); // Clear preview when dismissed
+    setPreviewMood(null);
   }, [setPreviewMood]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && interactionMode === 'bar') {
+        setInteractionMode('orb');
+        setPreviewMood(null);
+        setPreviewAdjective('');
+      }
+    };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [interactionMode, setPreviewMood]);
 
   useEffect(() => {
     if (isCharging && chargeData) {
       const chargeTimeout = setTimeout(() => {
-        // Use barRef for final position if available, fallback to center
-        const position = barRef.current
-          ? barRef.current.getBoundingClientRect()
-          : { left: window.innerWidth / 2 - 40, top: window.innerHeight - 160, width: 80, height: 80 };
+        try {
+          if (barRef.current) {
+            const orbRect = barRef.current.getBoundingClientRect();
+            const ripplePosition = {
+              x: orbRect.left + orbRect.width / 2,
+              y: orbRect.top + orbRect.height / 2,
+            };
+            recordContribution(chargeData.mood, ripplePosition);
+          }
+          setIsCharging(false);
+          setChargeData(null);
 
-        const ripplePosition = {
-          x: position.left + position.width / 2,
-          y: position.top + position.height / 2,
-        };
-        recordContribution(chargeData.mood, ripplePosition);
-        
-        setIsCharging(false);
-        setChargeData(null);
+          // Always return to orb mode after charging
+          setInteractionMode('orb');
+        } catch (error) {
+          console.error('Error during charging sequence:', error);
+          setIsCharging(false);
+          setChargeData(null);
+        }
       }, 500);
 
       return () => clearTimeout(chargeTimeout);
@@ -176,30 +208,36 @@ const OrbButton: React.FC = () => {
   const orbVariants = {
     orb: {
       width: '80px', height: '80px', borderRadius: '9999px',
-      background: 'rgba(var(--panel-background-rgba), 0.1)',
+      background: 'rgba(255, 255, 255, 0.1)', 
       boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
       backdropFilter: 'blur(12px)', scale: 1, opacity: 1,
+      transition: { ...morphTransition }
     },
     bar: {
       width: '80vw', maxWidth: '500px', height: '48px', borderRadius: '24px',
       background: gradientBackground, boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
       backdropFilter: 'blur(0px)', scale: 1, opacity: 1,
+      transition: { ...morphTransition }
     },
     charging: {
         width: '80px', height: '80px', borderRadius: '9999px',
-        background: 'rgba(var(--panel-background-rgba), 0.1)',
+        background: 'rgba(255, 255, 255, 0.1)', 
         backdropFilter: 'blur(12px)',
         boxShadow: chargeData ? `0 0 25px 8px ${moodToHslString(chargeData.mood)}, inset 0 0 10px 2px rgba(255,255,255,0.5)` : '0 12px 32px rgba(0,0,0,0.3)',
         scale: 1, opacity: 1,
+        transition: { ...morphTransition }
     },
-    hidden: { scale: 0, opacity: 0 }
+    hidden: { 
+      scale: 0, opacity: 0,
+      transition: { ...morphTransition }
+    }
   };
 
   const iconVariants = {
-    orb: { scale: 1, opacity: 1, transition: { delay: 0.1 } },
-    bar: { scale: 0, opacity: 0 },
-    charging: { scale: 0, opacity: 0 },
-    hidden: { scale: 0, opacity: 0},
+    orb: { scale: 1, opacity: 1, transition: { delay: 0.1, ...morphTransition } },
+    bar: { scale: 0, opacity: 0, transition: morphTransition },
+    charging: { scale: 0, opacity: 0, transition: morphTransition },
+    hidden: { scale: 0, opacity: 0, transition: morphTransition },
   };
 
   const getAnimationState = () => {
@@ -208,6 +246,7 @@ const OrbButton: React.FC = () => {
     if (isBar) return 'bar';
     return 'orb';
   }
+  
   const animationState = getAnimationState();
 
   return (
@@ -223,7 +262,22 @@ const OrbButton: React.FC = () => {
           variants={orbVariants}
           initial={false}
           animate={animationState}
-          transition={morphTransition}
+          onAnimationComplete={() => {
+            // Set thumb to center when bar appears
+            if (interactionMode === 'bar' && barRef.current) {
+              const barRect = barRef.current.getBoundingClientRect();
+              thumbX.set(barRect.width / 2 - THUMB_WIDTH / 2);
+              const centerHue = 180; // Start at cyan in the middle
+              const closestMood = findClosestMood(centerHue);
+              setPreviewMood({
+                ...closestMood,
+                hue: centerHue,
+                saturation: 85,
+                lightness: 60,
+              });
+              setPreviewAdjective(closestMood.adjective);
+            }
+          }}
           onTap={animationState === 'orb' ? handleOrbTap : undefined}
           onPanStart={animationState === 'bar' ? handleInteractionStart : undefined}
           onPan={animationState === 'bar' ? handleInteractionMove : undefined}
@@ -232,19 +286,24 @@ const OrbButton: React.FC = () => {
           onPointerUp={clearLongPressTimeout}
           onPointerLeave={clearLongPressTimeout}
           className={cn(
-              "relative flex items-center justify-center",
-              (isCharging || bloomPoint) && "pointer-events-none",
-              animationState === 'orb' && "cursor-pointer",
-              animationState === 'bar' && "cursor-grab"
+            "relative flex items-center justify-center",
+            (isCharging || bloomPoint) && "pointer-events-none",
+            animationState === 'orb' && "cursor-pointer",
+            animationState === 'bar' && "cursor-grab"
           )}
         >
           {animationState === 'bar' && (
             <motion.div
-              className="absolute h-10 w-10 bg-white/80 backdrop-blur-sm rounded-full shadow-lg pointer-events-none z-10"
-              style={{ x: thumbX, top: '50%', y: '-50%' }}
+              className="absolute h-10 w-10 bg-white/80 backdrop-blur-sm rounded-full shadow-lg z-10 focus:outline-none"
+              style={{ 
+                x: thumbX, 
+                top: '50%', 
+                y: '-50%',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
+              }}
             >
               <AnimatePresence>
-                {isInteractingWithBar && previewAdjective && (
+                {previewAdjective && (
                   <motion.div
                     className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-background/80 backdrop-blur-sm rounded-md text-sm text-foreground whitespace-nowrap shadow-md"
                     initial={{ opacity: 0, y: 5 }}
@@ -259,8 +318,18 @@ const OrbButton: React.FC = () => {
             </motion.div>
           )}
 
-          <motion.div variants={iconVariants} animate={animationState} className="flex items-center justify-center">
-            <Plus className="w-10 h-10 text-white" strokeWidth={2} />
+          {/* Plus icon */}
+          <motion.div 
+            variants={iconVariants} 
+            animate={animationState} 
+            className="flex items-center justify-center"
+          >
+            <Plus 
+              className={cn(
+                "w-10 h-10 stroke-2",
+                animationState === 'orb' ? "text-white" : "text-transparent"
+              )} 
+            />
           </motion.div>
         </motion.div>
       </motion.div>
@@ -273,7 +342,7 @@ const OrbButton: React.FC = () => {
 
               {/* Backdrop for dismissal */}
               <motion.div
-                className="fixed inset-0 z-30"
+                className="fixed inset-0 z-30 bg-black/10"
                 onPointerDown={handleDismissBloom}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
