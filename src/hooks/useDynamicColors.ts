@@ -26,11 +26,9 @@ const lerpAngle = (startAngle: number, endAngle: number, t: number): number => {
 };
 
 export const useDynamicColors = (targetMood: Mood) => {
-  // Ref for the latest target mood, to avoid stale closures in animate()
   const targetMoodRef = useRef(targetMood);
   targetMoodRef.current = targetMood;
 
-  // Refs for the animation state
   const currentHslRef = useRef<{ hue: number; saturation: number; lightness: number } | null>(null);
   const startHslRef = useRef<{ hue: number; saturation: number; lightness: number } | null>(null);
   const startTimeRef = useRef<number | null>(null);
@@ -54,7 +52,7 @@ export const useDynamicColors = (targetMood: Mood) => {
     // When targetMood changes, start a new animation from the current state
     startHslRef.current = { ...currentHslRef.current };
     startTimeRef.current = performance.now();
-    
+
     // Cancel any existing animation frame
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
@@ -64,7 +62,7 @@ export const useDynamicColors = (targetMood: Mood) => {
       if (!startTimeRef.current || !startHslRef.current) {
         return;
       }
-      
+
       const elapsed = now - startTimeRef.current;
       const rawProgress = Math.min(elapsed / ANIMATION_DURATION, 1);
       const easedProgress = easeInOutCubic(rawProgress);
@@ -76,16 +74,16 @@ export const useDynamicColors = (targetMood: Mood) => {
       const newHue = lerpAngle(start.hue, end.hue, easedProgress);
       const newSaturation = lerp(start.saturation, end.saturation, easedProgress);
       const newLightness = lerp(start.lightness, end.lightness, easedProgress);
-      
+
       currentHslRef.current = { hue: newHue, saturation: newSaturation, lightness: newLightness };
-      
+
       // Update CSS variables
       root.style.setProperty('--mood-hue', newHue.toFixed(2));
       root.style.setProperty('--mood-saturation', `${newSaturation.toFixed(2)}%`);
       root.style.setProperty('--mood-lightness', `${newLightness.toFixed(2)}%`);
       root.style.setProperty('--mood-saturation-value', newSaturation.toFixed(2));
       root.style.setProperty('--mood-lightness-value', newLightness.toFixed(2));
-      
+
       const interpolatedMoodForDerived: Mood = { name: end.name, adjective: end.adjective, ...currentHslRef.current };
       const {
         foregroundHue, foregroundSaturation, foregroundLightness,
@@ -97,14 +95,13 @@ export const useDynamicColors = (targetMood: Mood) => {
       root.style.setProperty('--primary-foreground-hsl', `${primaryForegroundHue.toFixed(2)} ${primaryForegroundSaturation.toFixed(2)}% ${primaryForegroundLightness.toFixed(2)}%`);
       root.style.setProperty('--panel-background-rgba', panelBackgroundRgba);
 
-
       if (rawProgress < 1) {
         animationFrameRef.current = requestAnimationFrame(animate);
       } else {
         animationFrameRef.current = null;
       }
     };
-    
+
     // Start the animation
     animationFrameRef.current = requestAnimationFrame(animate);
 
@@ -115,5 +112,5 @@ export const useDynamicColors = (targetMood: Mood) => {
         animationFrameRef.current = null;
       }
     };
-  }, [targetMood]); // Re-trigger the effect only when the target mood object changes
+  }, [targetMood]);
 };
