@@ -1,9 +1,8 @@
-
 "use client";
 import type { ReactNode } from 'react';
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { AppState, Mood } from '@/types';
-import { PREDEFINED_MOODS } from '@/lib/colorUtils';
+import { PREDEFINED_MOODS, moodToHslString } from '@/lib/colorUtils';
 
 const initialTotalUserCount = 1873;
 const initialState: AppState = {
@@ -12,13 +11,14 @@ const initialState: AppState = {
   contributionCount: 12587, 
   lastContributionTime: null,
   lastContributorMoodColor: null,
+  recentContributions: [PREDEFINED_MOODS[0]],
 };
 
 const MoodContext = createContext<{
   appState: AppState;
   setAppState: React.Dispatch<React.SetStateAction<AppState>>;
   updateMood: (newMood: Mood) => void;
-  recordContribution: (contributorMoodColor: string) => void;
+  recordContribution: (mood: Mood) => void;
   triggerCollectiveShift: () => void;
   isCollectiveShifting: boolean;
 }>({
@@ -40,13 +40,18 @@ export const MoodProvider = ({ children }: { children: ReactNode }) => {
     setAppState(prev => ({ ...prev, currentMood: newMood }));
   }, []);
   
-  const recordContribution = useCallback((contributorMoodColor: string) => {
-    setAppState(prev => ({
-      ...prev,
-      contributionCount: prev.contributionCount + 1,
-      lastContributionTime: Date.now(),
-      lastContributorMoodColor: contributorMoodColor,
-    }));
+  const recordContribution = useCallback((mood: Mood) => {
+    const contributorMoodColor = moodToHslString(mood);
+    setAppState(prev => {
+      const newContributions = [mood, ...(prev.recentContributions || [])].slice(0, 5); // Keep last 5 contributions
+      return {
+        ...prev,
+        contributionCount: prev.contributionCount + 1,
+        lastContributionTime: Date.now(),
+        lastContributorMoodColor: contributorMoodColor,
+        recentContributions: newContributions,
+      };
+    });
     // Reset lastContributorMoodColor after a delay to allow ripple animation to finish
     setTimeout(() => {
       setAppState(prev => ({...prev, lastContributorMoodColor: null}));

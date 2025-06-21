@@ -23,8 +23,12 @@ const OrbButton: React.FC = () => {
   const holdTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
+  // Anticipatory glow hue calculation based on recent mood contributions (simplified assumption)
   useEffect(() => {
-    const targetHue = appState.currentMood.hue;
+    // Assuming appState provides recentContributions as an array of Mood objects
+    const recentContributions = appState.recentContributions || [appState.currentMood];
+    const averageHue = recentContributions.reduce((sum, mood) => sum + mood.hue, 0) / recentContributions.length;
+    const targetHue = averageHue;
 
     const animateHue = () => {
       setGlowHue(prevHue => {
@@ -51,8 +55,7 @@ const OrbButton: React.FC = () => {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [appState.currentMood.hue]);
-
+  }, [appState.currentMood.hue, appState.recentContributions]);
 
   const handleInteractionStart = (event: React.MouseEvent | React.TouchEvent) => {
     setIsInteracting(true);
@@ -91,7 +94,7 @@ const OrbButton: React.FC = () => {
       setIsTapped(true);
       setTimeout(() => setIsTapped(false), 500);
       setShowColorWell(true);
-      recordContribution(moodToHslString(newMood));
+      recordContribution(newMood);
       setTimeout(() => setShowColorWell(false), 1000);
     }
 
@@ -127,7 +130,7 @@ const OrbButton: React.FC = () => {
     scaleToAnimate = 0.9; // Depress effect on hold
     transitionConfig = { type: "spring", stiffness: 400, damping: 20 };
   } else {
-    scaleToAnimate = [1, 1.05, 1]; // Breathing pulse
+    scaleToAnimate = [1, 1.1, 1]; // Enhanced breathing pulse for better visibility
     transitionConfig = {
       duration: 3,
       ease: [0.42, 0, 0.58, 1], // Organic easing
@@ -150,7 +153,7 @@ const OrbButton: React.FC = () => {
           style={{
             // @ts-ignore
             background: 'var(--orb-background)',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+            boxShadow: '0 12px 32px rgba(0,0,0,0.3)', // Enhanced shadow for premium look
             position: 'relative',
           }}
           onMouseDown={handleInteractionStart}
@@ -166,12 +169,15 @@ const OrbButton: React.FC = () => {
           <div
             className="absolute inset-0 rounded-full"
             style={{
-              background: `hsl(${glowHue}, 70%, 60%)`, // Adjusted Saturation/Lightness for a more vibrant glow
-              filter: 'blur(20px)',
-              opacity: 0.4, // Slightly increased opacity for more presence
+              background: `hsl(${glowHue}, 80%, 60%)`, // More vibrant glow
+              filter: 'blur(15px)', // Reduced blur for better visibility
+              opacity: 0.6, // Increased opacity for discernibility
             }}
           />
-          <Plus className="w-8 h-8 md:w-10 md:h-10 text-primary-foreground" strokeWidth={2} />
+          <Plus 
+            className="w-8 h-8 md:w-10 md:h-10 text-primary-foreground" 
+            strokeWidth={2} 
+          />
         </MotionShadcnButton>
       </div>
 
@@ -219,11 +225,11 @@ const OrbButton: React.FC = () => {
 
       <style jsx>{`
         :root {
-          --orb-background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.1));
+          --orb-background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.2)); // More pronounced gradient
         }
         @media (prefers-color-scheme: dark) {
           :root {
-            --orb-background: linear-gradient(145deg, rgba(0,0,0,0.05), rgba(0,0,0,0.1));
+            --orb-background: linear-gradient(145deg, rgba(0,0,0,0.1), rgba(0,0,0,0.2));
           }
         }
         .orb-radial-bloom-effect {

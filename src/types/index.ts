@@ -12,6 +12,7 @@ export interface AppState {
   contributionCount: number;
   lastContributionTime: number | null;
   lastContributorMoodColor: string | null; // HSL string for the ripple
+  recentContributions?: Mood[];
 }
 
 export interface Quote {
