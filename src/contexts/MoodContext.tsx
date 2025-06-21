@@ -1,7 +1,7 @@
 
 "use client";
 import type { ReactNode } from 'react';
-import React, from 'react';
+import React, { useRef } from 'react';
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { AppState, Mood } from '@/types';
 import { PREDEFINED_MOODS, moodToHslString } from '@/lib/colorUtils';
@@ -38,31 +38,47 @@ export const useMood = () => useContext(MoodContext);
 export const MoodProvider = ({ children }: { children: ReactNode }) => {
   const [appState, setAppState] = useState<AppState>(initialState);
   const [isCollectiveShifting, setIsCollectiveShifting] = useState(false);
+  const lastPulsedHueRef = useRef<number>(initialState.currentMood.hue);
+
+  const triggerCollectiveShift = useCallback(() => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([100, 30, 100]); // Short, intense rumble
+    }
+
+    setIsCollectiveShifting(true);
+    setTimeout(() => setIsCollectiveShifting(false), 1500); // Duration of shockwave animation
+  }, []);
 
   const updateMood = useCallback((newMood: Mood) => {
+    const hueDifference = Math.abs(newMood.hue - lastPulsedHueRef.current);
+    const wrappedHueDifference = Math.min(hueDifference, 360 - hueDifference);
+    
+    if (wrappedHueDifference > 15) {
+      triggerCollectiveShift();
+      lastPulsedHueRef.current = newMood.hue;
+    }
+
     setAppState(prev => ({ ...prev, currentMood: newMood }));
-  }, []);
+  }, [triggerCollectiveShift]);
 
   const recordContribution = useCallback((mood: Mood, position: { x: number, y: number } | null) => {
     const contributorMoodColor = moodToHslString(mood);
     
-    // Trigger haptics for the unified ripple
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(50); // Vibration.impact(medium) equivalent
+      navigator.vibrate(50); 
     }
 
     setAppState(prev => {
-      const newContributions = [mood, ...(prev.recentContributions || [])].slice(0, 5); // Keep last 5 contributions
+      const newContributions = [mood, ...(prev.recentContributions || [])].slice(0, 5);
       return {
         ...prev,
         contributionCount: prev.contributionCount + 1,
         lastContributionTime: Date.now(),
         lastContributorMoodColor: contributorMoodColor,
-        lastContributionPosition: position, // Can be null for global events
+        lastContributionPosition: position,
         recentContributions: newContributions,
       };
     });
-    // Reset after a delay to allow ripple animation to finish
     setTimeout(() => {
       setAppState(prev => ({
           ...prev,
@@ -72,44 +88,30 @@ export const MoodProvider = ({ children }: { children: ReactNode }) => {
     }, 2000);
   }, []);
 
-  const triggerCollectiveShift = useCallback(() => {
-    setIsCollectiveShifting(true);
-    setTimeout(() => setIsCollectiveShifting(false), 2000);
-  }, []);
-
   useEffect(() => {
-    // This interval now simulates both mood changes and global contributions
     const moodInterval = setInterval(() => {
       const randomIndex = Math.floor(Math.random() * PREDEFINED_MOODS.length);
       const newMood = PREDEFINED_MOODS[randomIndex];
       updateMood(newMood);
       
-      // Simulate a global contribution from another user
-      if (Math.random() > 0.5) { // 50% chance each interval
-          recordContribution(newMood, null); // null position for centered global ripple
+      if (Math.random() > 0.5) {
+          recordContribution(newMood, null);
       }
 
-    }, 15000);
+    }, 5000); // Check for mood changes more frequently
 
     const countInterval = setInterval(() => {
       setAppState(prev => ({
         ...prev,
-        userCount: Math.max(0, prev.userCount + Math.floor(Math.random() * 10) - 4.5), // Fluctuating total user count
+        userCount: Math.max(0, prev.userCount + Math.floor(Math.random() * 10) - 4.5),
       }));
     }, 5000);
     
-    // This can remain as the "Big Boom" trigger
-    const shiftInterval = setInterval(() => {
-      triggerCollectiveShift();
-    }, 60000);
-
-
     return () => {
       clearInterval(moodInterval);
       clearInterval(countInterval);
-      clearInterval(shiftInterval);
     };
-  }, [updateMood, recordContribution, triggerCollectiveShift]);
+  }, [updateMood, recordContribution]);
 
   return (
     <MoodContext.Provider value={{ appState, setAppState, updateMood, recordContribution, triggerCollectiveShift, isCollectiveShifting }}>

@@ -115,8 +115,7 @@ const OrbButton: React.FC = () => {
     };
   }, []);
 
-  const orbContainerBaseClasses = "fixed bottom-24 md:bottom-32 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 ease-in-out";
-  const shiftClasses = isCollectiveShifting ? "translate-y-1" : "translate-y-0";
+  const orbContainerBaseClasses = "fixed bottom-24 md:bottom-32 left-1/2 -translate-x-1/2 z-40";
 
   let scaleToAnimate;
   let transitionConfig;
@@ -144,7 +143,11 @@ const OrbButton: React.FC = () => {
 
   return (
     <>
-      <div className={cn(orbContainerBaseClasses, shiftClasses, "orb-button-container")}>
+      <motion.div 
+        className={cn(orbContainerBaseClasses, "orb-button-container")}
+        animate={{ y: isCollectiveShifting ? 8 : 0 }}
+        transition={{ type: 'spring', stiffness: 100, damping: 10 }}
+      >
         <MotionShadcnButton
           ref={buttonRef}
           aria-label="Contribute Mood"
@@ -182,7 +185,7 @@ const OrbButton: React.FC = () => {
             style={{ color: plusIconColor }}
           />
         </MotionShadcnButton>
-      </div>
+      </motion.div>
 
       {radialBloomActive && (
         <div

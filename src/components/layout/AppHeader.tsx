@@ -3,6 +3,7 @@
 import React from 'react';
 import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 const AppHeaderLogo: React.FC<{ animationClass: string }> = ({ animationClass }) => (
   <svg
@@ -30,17 +31,20 @@ const AppHeader: React.FC = () => {
     (adjective === 'Joyful' || adjective === 'Energetic' || adjective === 'Passionate') ? 'animate-logo-joyful' :
     'animate-logo-calm';
 
-  const headerBaseClasses = "fixed top-0 left-1/2 -translate-x-1/2 mt-4 md:mt-6 p-1 z-30 frosted-glass rounded-full shadow-soft transition-transform duration-500 ease-in-out flex items-center justify-center group";
+  const headerBaseClasses = "fixed top-0 left-1/2 -translate-x-1/2 mt-4 md:mt-6 p-1 z-30 frosted-glass rounded-full shadow-soft flex items-center justify-center group";
   const sizeClasses = "h-11 md:h-16 px-4 md:px-6 min-w-[220px] md:min-w-[280px]";
-  const shiftClasses = isCollectiveShifting ? "translate-y-1" : "translate-y-0";
 
   return (
-    <header className={cn(headerBaseClasses, sizeClasses, shiftClasses)}>
+    <motion.header 
+      className={cn(headerBaseClasses, sizeClasses)}
+      animate={{ y: isCollectiveShifting ? -8 : 0 }}
+      transition={{ type: 'spring', stiffness: 100, damping: 10 }}
+    >
       <AppHeaderLogo animationClass={animationClass} />
       <span className="ml-3 text-xl md:text-2xl font-medium text-foreground opacity-90 text-shadow-pop transition-opacity group-hover:opacity-100">
         RealTimeMood
       </span>
-    </header>
+    </motion.header>
   );
 };
 

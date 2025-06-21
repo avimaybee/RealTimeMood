@@ -8,18 +8,19 @@ const CollectiveShiftEffect: React.FC = () => {
 
   if (!isCollectiveShifting) return null;
 
-  // This is a very simplified representation of a "distortion wave" using CSS.
-  // A true physics-based distortion wave would require WebGL shaders.
   return (
     <div 
-      className="fixed inset-0 pointer-events-none z-50 overflow-hidden"
+      className="fixed inset-0 pointer-events-none z-50 overflow-hidden flex items-center justify-center"
       aria-hidden="true"
     >
       <div 
-        className="absolute inset-y-0 w-1/3 h-full animate-collective-shift-wave"
+        className="absolute aspect-square rounded-full animate-shockwave"
         style={{
-          background: `linear-gradient(90deg, transparent, ${appState.currentMood.hue} ${appState.currentMood.saturation}% ${appState.currentMood.lightness}% / 0.2, transparent)`,
-          // backdropFilter: 'blur(5px) contrast(1.5)', // This can be performance-heavy
+          width: '10px',
+          height: '10px',
+          background: 'transparent',
+          boxShadow: `0 0 30px 10px hsla(${appState.currentMood.hue}, ${appState.currentMood.saturation}%, ${appState.currentMood.lightness}%, 0.5), 0 0 50px 20px hsla(${appState.currentMood.hue}, ${appState.currentMood.saturation}%, ${appState.currentMood.lightness}%, 0.3) inset`,
+          opacity: 0,
         }}
       />
     </div>

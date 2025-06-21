@@ -34,9 +34,7 @@ const PageContent: React.FC = () => {
   return (
     <div 
       className={cn(
-        "min-h-screen w-full flex flex-col items-center", // Removed 'relative' and 'overflow-hidden'
-        // justify-between is removed to allow main content to naturally fill space
-        isCollectiveShifting ? 'animate-global-pulse opacity-95' : 'opacity-100', 
+        "min-h-screen w-full flex flex-col items-center",
         isRadialBloomActive ? 'radial-bloom-active-page' : ''
       )}
     >

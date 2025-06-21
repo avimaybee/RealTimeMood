@@ -91,10 +91,6 @@ export default {
             height: '0',
           },
         },
-        'global-pulse': { 
-          '0%, 100%': { filter: 'brightness(100%) saturate(100%)', transform: 'scale(1)' },
-          '50%': { filter: 'brightness(80%) saturate(80%)', transform: 'scale(0.99)' },
-        },
         'orb-pulse': { 
           '0%, 100%': { transform: 'scale(1)' },
           '50%': { transform: 'scale(1.05)' },
@@ -135,10 +131,9 @@ export default {
           '90%': { opacity: '0.5', transform: 'translate(calc(var(--particle-drift-x) * 1.1), -35vh) scale(1.2)' }, /* Glitch */
           '100%': { transform: 'translate(calc(var(--particle-drift-x) * 2), -40vh)', opacity: '0' },
         },
-        'collective-shift-wave': {
-          '0%': { transform: 'translateX(-100%) skewX(-15deg)', opacity: '0.3' },
-          '20%': { transform: 'translateX(0) skewX(0deg)', opacity: '0.1' },
-          '100%': { transform: 'translateX(100%) skewX(15deg)', opacity: '0.3' },
+        'shockwave-effect': {
+          '0%': { transform: 'scale(0)', opacity: '0.75', filter: 'blur(1px)' },
+          '100%': { transform: 'scale(1)', opacity: '0', filter: 'blur(15px)' },
         },
         'firework-particle-anim': { 
           '0%': {
@@ -176,15 +171,10 @@ export default {
           '70%': { transform: 'translate(1px, 1px) scale(1)' },
           '90%': { transform: 'translate(0, 0) scale(0.98)', filter: 'drop-shadow(0 0 5px hsl(var(--primary-hsl)))' },
         },
-        'text-breathe': {
-          '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.85' },
-        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'global-pulse': 'global-pulse 2s ease-in-out infinite', 
         'orb-pulse': 'orb-pulse 3s ease-in-out infinite', 
         'typewriter': 'typewriter 2s steps(40) 1s 1 normal both',
         'fade-in': 'fade-in 1s ease-out forwards',
@@ -192,13 +182,12 @@ export default {
         'particle-calm': 'particle-calm-motion var(--animation-duration, 25s) ease-in-out var(--animation-delay, 0s) infinite',
         'particle-joyful': 'particle-joyful-motion var(--animation-duration, 10s) ease-out var(--animation-delay, 0s) infinite',
         'particle-anxious': 'particle-anxious-motion var(--animation-duration, 7s) linear var(--animation-delay, 0s) infinite',
-        'collective-shift-wave': 'collective-shift-wave 1.5s ease-out forwards', 
+        'shockwave': 'shockwave-effect 1.5s ease-out forwards', 
         'firework-particle-anim': 'firework-particle-anim var(--animation-duration, 2s) var(--animation-timing-function, ease-out) var(--animation-delay, 0s) forwards',
         'count-bounce': 'count-bounce 0.6s ease-out',
         'logo-calm': 'logo-calm 4s ease-in-out infinite',
         'logo-joyful': 'logo-joyful 1.5s ease-in-out infinite',
         'logo-anxious': 'logo-anxious 0.5s linear infinite',
-        'text-breathe': 'text-breathe 2s ease-in-out',
       },
       backdropBlur: {
         '24px': '24px', 

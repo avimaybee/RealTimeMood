@@ -8,16 +8,21 @@ const MainPromptDisplay: React.FC = () => {
   const { appState, isCollectiveShifting } = useMood();
 
   return (
-    <div className="flex flex-col items-center justify-center gap-y-3 md:gap-y-4 p-4">
+    <motion.div 
+      className="flex flex-col items-center justify-center gap-y-3 md:gap-y-4 p-4"
+      animate={{ 
+        scale: isCollectiveShifting ? 0.95 : 1,
+        y: isCollectiveShifting ? -4 : 0,
+      }}
+      transition={{ type: 'spring', stiffness: 100, damping: 10 }}
+    >
       <h1 className={cn(
-          "text-3xl md:text-4xl font-light text-shadow-pop transition-opacity",
-          isCollectiveShifting && "animate-text-breathe"
+          "text-3xl md:text-4xl font-light text-shadow-pop transition-opacity"
         )}>
         How are you feeling right now?
       </h1>
       <p className={cn(
-        "text-lg md:text-xl text-shadow-pop transition-opacity",
-        isCollectiveShifting && "animate-text-breathe"
+        "text-lg md:text-xl text-shadow-pop transition-opacity"
       )}>
         The Collective Mood: <span className="font-semibold">{appState.currentMood.adjective}</span>
       </p>
@@ -33,7 +38,7 @@ const MainPromptDisplay: React.FC = () => {
         </motion.span>
         {' '}minds connected
       </p>
-    </div>
+    </motion.div>
   );
 };
 
