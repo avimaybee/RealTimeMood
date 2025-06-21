@@ -75,7 +75,7 @@ const OrbButton: React.FC = () => {
     }
   };
 
-  const handleLongPressStart = (e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleLongPress = (e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (interactionMode === 'bar' || isCharging) return;
     setBloomPoint(info.point);
   };
@@ -165,7 +165,7 @@ const OrbButton: React.FC = () => {
           initial="orb"
           animate={isCharging ? "charging" : (isBar ? "bar" : "orb")}
           onTap={handleTap}
-          onLongPressStart={handleLongPressStart}
+          onLongPress={handleLongPress}
           className={cn(
               "relative flex items-center justify-center cursor-pointer",
               isCharging && "cursor-default"
