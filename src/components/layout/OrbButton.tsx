@@ -37,6 +37,10 @@ const OrbButton: React.FC = () => {
     const bar = motionDivRef.current;
     const barWidth = bar.offsetWidth;
     const draggableWidth = barWidth - THUMB_WIDTH;
+    
+    // Guard against calculation errors during animation
+    if (draggableWidth <= 0) return;
+
     const percentage = Math.max(0, Math.min(1, latestX / draggableWidth));
     const selectedHue = Math.round(percentage * 360);
 
@@ -81,8 +85,8 @@ const OrbButton: React.FC = () => {
       setInteractionMode('bar');
       setPreviewMood(null);
       // Center the thumb initially
-      const barWidth = window.innerWidth * 0.8;
-      const draggableWidth = barWidth > 500 ? 500 - THUMB_WIDTH : barWidth - THUMB_WIDTH;
+      const estimatedBarWidth = Math.min(window.innerWidth * 0.8, 500);
+      const draggableWidth = estimatedBarWidth - THUMB_WIDTH;
       const initialX = draggableWidth / 2;
       hueX.set(initialX);
 
