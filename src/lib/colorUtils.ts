@@ -44,7 +44,7 @@ export function getDerivedColors(mood: Mood): {
   // Determine foreground color for general text (#1F1F1F or #EAEAEA)
   // #1F1F1F -> hsl(204, 10%, 10%)
   // #EAEAEA -> hsl(200, 0%, 91.8%)
-  const isBgLight = bgLuminance > 0.5; 
+  const isBgLight = bgLuminance > 0.25; // Lowered threshold for better dark text selection
   const fgLightness = isBgLight ? 10 : 91.8; 
   const fgHue = isBgLight ? 204 : 200; 
   const fgSat = isBgLight ? 10 : 0;
@@ -56,12 +56,13 @@ export function getDerivedColors(mood: Mood): {
   const primarySaturation = mood.saturation; // Use mood's saturation
   
   const primaryLuminance = getRelativeLuminance(primaryHue, primarySaturation, primaryLightness);
-  const isPrimaryLight = primaryLuminance > 0.5;
+  const isPrimaryLight = primaryLuminance > 0.25; // Lowered threshold for better dark text selection
   const pfgLightness = isPrimaryLight ? 10 : 91.8;
   const pfgHue = isPrimaryLight ? 204 : 200;
   const pfgSat = isPrimaryLight ? 10 : 0;
 
   // Determine panel background based on main background's lightness
+  // Use the same threshold as text for consistency
   const panelRgba = isBgLight ? '255, 255, 255' : '0, 0, 0';
 
   return {
