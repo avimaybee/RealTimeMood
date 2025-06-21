@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useDynamicColors } from '@/hooks/useDynamicColors';
 import type { Mood } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -32,11 +31,17 @@ const mockQuotes = [
 
 
 const CollectiveThoughtsPage = () => {
-    useDynamicColors(thoughtsPageMood);
     const { toast } = useToast();
     const [index, setIndex] = useState(0);
     const [isInputVisible, setIsInputVisible] = useState(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    useEffect(() => {
+        if (isInputVisible) {
+            textareaRef.current?.focus();
+        }
+    }, [isInputVisible]);
 
     const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -153,58 +158,64 @@ const CollectiveThoughtsPage = () => {
             </main>
             
             <footer className="w-full max-w-2xl mx-auto flex justify-center items-center py-8 h-24">
-              <AnimatePresence mode="wait">
-                {isInputVisible ? (
-                  <motion.form
-                    key="input-form"
-                    onSubmit={handleFormSubmit}
-                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                    transition={{ duration: 0.3, ease: 'easeInOut' }}
-                    className="flex items-center w-full bg-card p-2 rounded-full shadow-md"
+              <motion.form
+                onSubmit={handleFormSubmit}
+                onClick={() => {
+                    if (!isInputVisible) setIsInputVisible(true);
+                }}
+                className="relative flex items-center justify-center bg-card shadow-md overflow-hidden cursor-pointer"
+                animate={{
+                  width: isInputVisible ? '100%' : '220px',
+                  height: '56px',
+                  borderRadius: '9999px',
+                }}
+                transition={{ type: 'spring', stiffness: 400, damping: 30, mass: 0.8 }}
+                initial={false}
+              >
+                {/* Button Content - visible when collapsed */}
+                <motion.div
+                  className="absolute flex items-center justify-center"
+                  animate={{ opacity: isInputVisible ? 0 : 1, transition: { duration: 0.2 } }}
+                  style={{ pointerEvents: isInputVisible ? 'none' : 'auto' }}
+                >
+                  <Plus className="mr-2 w-4 h-4" />
+                  <span className="text-base font-medium">Share your thought</span>
+                </motion.div>
+
+                {/* Input Content - visible when expanded */}
+                <motion.div
+                  className="flex items-center w-full px-2"
+                  animate={{ opacity: isInputVisible ? 1 : 0, transition: { delay: isInputVisible ? 0.15 : 0, duration: 0.2 } }}
+                  style={{ pointerEvents: isInputVisible ? 'auto' : 'none' }}
+                  onClick={(e) => e.stopPropagation()} // Prevent form click from closing when clicking inside input area
+                >
+                  <Textarea
+                    ref={textareaRef}
+                    name="thought"
+                    placeholder="Share a thought..."
+                    className="flex-grow bg-transparent border-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none h-10 p-2"
+                    rows={1}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            (e.currentTarget.form as HTMLFormElement).requestSubmit();
+                        }
+                    }}
+                  />
+                  <Button type="submit" size="icon" className="rounded-full flex-shrink-0 w-10 h-10 ml-2">
+                    <Send className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="rounded-full flex-shrink-0 w-10 h-10"
+                    onClick={() => setIsInputVisible(false)}
                   >
-                    <Textarea
-                      name="thought"
-                      placeholder="Share a thought..."
-                      className="flex-grow bg-transparent border-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none h-10 p-2"
-                      rows={1}
-                      onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                              e.preventDefault();
-                              (e.currentTarget.form as HTMLFormElement).requestSubmit();
-                          }
-                      }}
-                      autoFocus
-                    />
-                    <Button type="submit" size="icon" className="rounded-full flex-shrink-0 w-10 h-10 ml-2">
-                      <Send className="w-4 h-4" />
-                    </Button>
-                    <Button type="button" size="icon" variant="ghost" className="rounded-full flex-shrink-0 w-10 h-10" onClick={() => setIsInputVisible(false)}>
-                      <X className="w-5 h-5" />
-                    </Button>
-                  </motion.form>
-                ) : (
-                  <motion.div
-                    key="add-button"
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3, ease: 'easeInOut' }}
-                    className="flex justify-center"
-                  >
-                    <Button
-                        variant="outline"
-                        onClick={() => setIsInputVisible(true)}
-                        aria-label="Share your thought"
-                        className="text-base px-6 py-3 rounded-full shadow-sm"
-                    >
-                        <Plus className="mr-2 w-4 h-4" />
-                        Share your thought
-                    </Button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    <X className="w-5 h-5" />
+                  </Button>
+                </motion.div>
+              </motion.form>
             </footer>
         </div>
     );
