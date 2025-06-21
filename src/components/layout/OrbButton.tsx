@@ -23,6 +23,8 @@ const OrbButton: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
   const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const [barGeometry, setBarGeometry] = useState({ width: 0, left: 0 });
+
   // Simplified state for the thumb and preview
   const thumbX = useMotionValue(0);
   const [previewAdjective, setPreviewAdjective] = useState('');
@@ -31,19 +33,25 @@ const OrbButton: React.FC = () => {
 
   useEffect(() => {
     setIsClient(true);
+    
+    const calculateGeometry = () => {
+      const vw = window.innerWidth;
+      const width = Math.min(vw * 0.8, 500);
+      const left = (vw - width) / 2;
+      setBarGeometry({ width, left });
+    };
+
+    calculateGeometry();
+    window.addEventListener('resize', calculateGeometry);
+    return () => window.removeEventListener('resize', calculateGeometry);
   }, []);
 
-  const updateMoodFromPosition = (pageX: number) => {
-    if (!barRef.current) return;
-    const bar = barRef.current;
-    const barRect = bar.getBoundingClientRect();
-    const barWidth = bar.offsetWidth;
+  const updateMoodFromPosition = useCallback((pageX: number) => {
+    if (barGeometry.width <= 0) return;
 
-    if (barWidth <= 0) return;
-
-    const relativeX = pageX - barRect.left;
-    const clampedX = Math.max(0, Math.min(relativeX, barWidth));
-    const percentage = clampedX / barWidth;
+    const relativeX = pageX - barGeometry.left;
+    const clampedX = Math.max(0, Math.min(relativeX, barGeometry.width));
+    const percentage = clampedX / barGeometry.width;
     const selectedHue = Math.round(percentage * 360);
 
     const closestMood = findClosestMood(selectedHue);
@@ -55,27 +63,23 @@ const OrbButton: React.FC = () => {
     });
     setPreviewAdjective(closestMood.adjective);
     thumbX.set(clampedX - THUMB_WIDTH / 2);
-  };
+  }, [barGeometry, setPreviewMood, thumbX]);
 
-  const handleInteractionStart = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleInteractionStart = useCallback((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     setIsInteractingWithBar(true);
     updateMoodFromPosition(info.point.x);
-  };
+  }, [updateMoodFromPosition]);
 
-  const handleInteractionMove = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleInteractionMove = useCallback((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     updateMoodFromPosition(info.point.x);
-  };
+  }, [updateMoodFromPosition]);
 
-  const handleInteractionEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (!barRef.current) return;
+  const handleInteractionEnd = useCallback((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (barGeometry.width <= 0) return;
 
-    const bar = barRef.current;
-    const barRect = bar.getBoundingClientRect();
-    const barWidth = bar.offsetWidth;
-
-    const relativeX = info.point.x - barRect.left;
-    const clampedX = Math.max(0, Math.min(relativeX, barWidth));
-    const percentage = clampedX / barWidth;
+    const relativeX = info.point.x - barGeometry.left;
+    const clampedX = Math.max(0, Math.min(relativeX, barGeometry.width));
+    const percentage = clampedX / barGeometry.width;
     const selectedHue = Math.round(percentage * 360);
     
     const closestMood = findClosestMood(selectedHue);
@@ -92,7 +96,7 @@ const OrbButton: React.FC = () => {
     setPreviewMood(null);
     setPreviewAdjective('');
     setIsInteractingWithBar(false);
-  };
+  }, [barGeometry, setPreviewMood]);
 
   const handleOrbTap = () => {
     clearLongPressTimeout();
@@ -143,14 +147,16 @@ const OrbButton: React.FC = () => {
   useEffect(() => {
     if (isCharging && chargeData) {
       const chargeTimeout = setTimeout(() => {
-        if (barRef.current) {
-            const orbRect = barRef.current.getBoundingClientRect();
-            const ripplePosition = {
-                x: orbRect.left + orbRect.width / 2,
-                y: orbRect.top + orbRect.height / 2,
-            };
-            recordContribution(chargeData.mood, ripplePosition);
-        }
+        // Use barRef for final position if available, fallback to center
+        const position = barRef.current
+          ? barRef.current.getBoundingClientRect()
+          : { left: window.innerWidth / 2 - 40, top: window.innerHeight - 160, width: 80, height: 80 };
+
+        const ripplePosition = {
+          x: position.left + position.width / 2,
+          y: position.top + position.height / 2,
+        };
+        recordContribution(chargeData.mood, ripplePosition);
         
         setIsCharging(false);
         setChargeData(null);
