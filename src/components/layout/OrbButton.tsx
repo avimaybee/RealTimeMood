@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus } from 'lucide-react';
@@ -16,44 +17,39 @@ const OrbButton: React.FC = () => {
   const [radialBloomActive, setRadialBloomActive] = useState(false);
   const [tapPoint, setTapPoint] = useState({ x: 0, y: 0 });
   const [isTapped, setIsTapped] = useState(false);
-  const [glowHue, setGlowHue] = useState(appState.currentMood.hue); // Initialize with current mood hue
+  const [glowHue, setGlowHue] = useState(appState.currentMood.hue);
+  const [personalMood, setPersonalMood] = useState<Mood | null>(null);
   const interactionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const holdTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
-  const personalMood = PREDEFINED_MOODS[Math.floor(Math.random() * PREDEFINED_MOODS.length)];
-
-  // Update glowHue to smoothly transition towards the current collective mood's hue
   useEffect(() => {
     const targetHue = appState.currentMood.hue;
-    let animationFrameId: number;
 
     const animateHue = () => {
       setGlowHue(prevHue => {
-        // Calculate the shortest distance between hues (e.g., 350 to 10 is +20, not -340)
         const diff = (targetHue - prevHue + 360) % 360;
-        const step = diff > 180 ? (diff - 360) * 0.05 : diff * 0.05; // Adjust 0.05 for speed (slower)
+        const step = diff > 180 ? (diff - 360) * 0.05 : diff * 0.05;
+        const newHue = (prevHue + step + 360) % 360;
 
-        let newHue = (prevHue + step + 360) % 360;
-
-        // If very close to target, snap to it and stop animation
-        if (Math.abs(prevHue - targetHue) < 0.5 || Math.abs(prevHue - targetHue) > 359.5) {
-          cancelAnimationFrame(animationFrameId);
+        if (Math.abs(newHue - targetHue) < 0.5 || Math.abs(newHue - targetHue) > 359.5) {
           return targetHue;
         }
         
-        animationFrameId = requestAnimationFrame(animateHue);
+        animationFrameRef.current = requestAnimationFrame(animateHue);
         return newHue;
       });
     };
 
-    // Cancel any ongoing animation before starting a new one
-    if (typeof animationFrameId === 'number') { // Check if animationFrameId was assigned
-      cancelAnimationFrame(animationFrameId);
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
     }
-    animationFrameId = requestAnimationFrame(animateHue);
+    animationFrameRef.current = requestAnimationFrame(animateHue);
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
     };
   }, [appState.currentMood.hue]);
 
@@ -90,10 +86,12 @@ const OrbButton: React.FC = () => {
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         navigator.vibrate(50); 
       }
+      const newMood = PREDEFINED_MOODS[Math.floor(Math.random() * PREDEFINED_MOODS.length)];
+      setPersonalMood(newMood);
       setIsTapped(true);
       setTimeout(() => setIsTapped(false), 500);
       setShowColorWell(true);
-      recordContribution(moodToHslString(personalMood));
+      recordContribution(moodToHslString(newMood));
       setTimeout(() => setShowColorWell(false), 1000);
     }
 
@@ -177,7 +175,7 @@ const OrbButton: React.FC = () => {
         </MotionShadcnButton>
       </div>
 
-      {showColorWell && (
+      {showColorWell && personalMood && (
         <div
           className="fixed pointer-events-none z-50"
           style={{ left: tapPoint.x, top: tapPoint.y, transform: 'translate(-50%, -50%)' }}
