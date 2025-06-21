@@ -84,8 +84,12 @@ const OrbButton: React.FC = () => {
   };
 
   const handleMoodSelectionFromBloom = (mood: Mood) => {
-    setPreviewMood(null); // Clear the preview on selection
     setBloomPoint(null); // Dismiss the bloom and buttons
+    
+    // Heavy "thump" haptic on successful submission.
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(100); 
+    }
     
     // Use the orb's center for the ripple effect, not the bloom point
     if (motionDivRef.current) {
