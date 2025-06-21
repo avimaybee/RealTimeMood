@@ -51,7 +51,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
       }}
     >
       <div className="flex-shrink-0 w-full flex items-center justify-between h-[36px]">
-        <div className="text-xs md:text-sm text-shadow-pop opacity-90">
+        <div className="text-xs md:text-sm opacity-90">
           {appState.contributionCount.toLocaleString()} moods shared
         </div>
         
@@ -59,7 +59,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
           variant="ghost" 
           size="icon" 
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-          className="w-8 h-8 rounded-full hover:bg-transparent text-shadow-pop interactive-glow"
+          className="w-8 h-8 rounded-full hover:bg-transparent interactive-glow"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
           <AnimatePresence initial={false} mode="wait">
@@ -87,7 +87,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
             exit="exit"
           >
             <div className="w-full flex flex-col items-center">
-                <h3 className="text-lg font-semibold text-foreground text-shadow-pop">Menu</h3>
+                <h3 className="text-lg font-semibold text-foreground">Menu</h3>
                 <Separator className="w-1/2 my-2" />
                 <Button asChild variant="ghost" className="text-base w-full">
                   <Link href="/history">

@@ -133,7 +133,7 @@ const MoodSelectionButtons: React.FC<MoodSelectionButtonsProps> = ({ point, onSe
           <Button
             onClick={() => handleSelect(mood)}
             className={cn(
-                "rounded-full h-auto px-4 py-2 text-sm shadow-soft frosted-glass text-shadow-pop"
+                "rounded-full h-auto px-4 py-2 text-sm shadow-soft frosted-glass"
             )}
             style={{ 
                 borderColor: `hsla(${mood.hue}, ${mood.saturation}%, ${mood.lightness}%, 0.5)`
