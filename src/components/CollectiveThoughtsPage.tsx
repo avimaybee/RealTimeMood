@@ -1,7 +1,6 @@
-
 "use client";
 import Link from 'next/link';
-import { ArrowLeft, Plus, MessageSquareQuote, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Plus, MessageSquareQuote, ChevronLeft, ChevronRight, Send, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -9,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useDynamicColors } from '@/hooks/useDynamicColors';
 import type { Mood } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 
 // Static mood for this page for a clean, stable background
 const thoughtsPageMood: Mood = {
@@ -34,13 +34,27 @@ const CollectiveThoughtsPage = () => {
     useDynamicColors(thoughtsPageMood);
     const { toast } = useToast();
     const [index, setIndex] = useState(0);
+    const [isInputVisible, setIsInputVisible] = useState(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    const handleAddThoughtClick = () => {
-        toast({
-            title: "Feature Coming Soon",
-            description: "The ability to share your thoughts will be added in a future update.",
-        });
+    const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        const thought = formData.get('thought');
+
+        if (thought && typeof thought === 'string' && thought.trim().length > 0) {
+            toast({
+                title: "Thought Submitted",
+                description: `"${thought}" has been sent for review.`,
+            });
+            setIsInputVisible(false);
+        } else {
+             toast({
+                title: "Empty Thought",
+                description: "Please share a thought before submitting.",
+                variant: "destructive"
+            });
+        }
     };
 
     const advanceQuote = useCallback((direction: 'next' | 'prev') => {
@@ -59,7 +73,7 @@ const CollectiveThoughtsPage = () => {
         }
         intervalRef.current = setInterval(() => {
             advanceQuote('next');
-        }, 10000); // Auto-cycle every 10 seconds
+        }, 10000);
     }, [advanceQuote]);
     
     useEffect(() => {
@@ -137,16 +151,59 @@ const CollectiveThoughtsPage = () => {
                 </Card>
             </main>
             
-            <footer className="w-full flex justify-center py-8">
-              <Button
-                  variant="outline"
-                  onClick={handleAddThoughtClick}
-                  aria-label="Share your thought"
-                  className="text-base px-6 py-3 rounded-full shadow-sm"
-              >
-                  <Plus className="mr-2 w-4 h-4" />
-                  Share your thought
-              </Button>
+            <footer className="w-full max-w-2xl mx-auto flex justify-center items-center py-8 h-24">
+              <AnimatePresence mode="wait">
+                {isInputVisible ? (
+                  <motion.form
+                    key="input-form"
+                    onSubmit={handleFormSubmit}
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="flex items-center w-full bg-card p-2 rounded-full shadow-md"
+                  >
+                    <Textarea
+                      name="thought"
+                      placeholder="Share a thought..."
+                      className="flex-grow bg-transparent border-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none h-10 p-2"
+                      rows={1}
+                      onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault();
+                              (e.currentTarget.form as HTMLFormElement).requestSubmit();
+                          }
+                      }}
+                      autoFocus
+                    />
+                    <Button type="submit" size="icon" className="rounded-full flex-shrink-0 w-10 h-10 ml-2">
+                      <Send className="w-4 h-4" />
+                    </Button>
+                    <Button type="button" size="icon" variant="ghost" className="rounded-full flex-shrink-0 w-10 h-10" onClick={() => setIsInputVisible(false)}>
+                      <X className="w-5 h-5" />
+                    </Button>
+                  </motion.form>
+                ) : (
+                  <motion.div
+                    key="add-button"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="flex justify-center"
+                  >
+                    <Button
+                        variant="outline"
+                        onClick={() => setIsInputVisible(true)}
+                        aria-label="Share your thought"
+                        className="text-base px-6 py-3 rounded-full shadow-sm"
+                    >
+                        <Plus className="mr-2 w-4 h-4" />
+                        Share your thought
+                    </Button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </footer>
         </div>
     );
