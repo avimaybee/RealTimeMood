@@ -1,6 +1,6 @@
 
 "use client";
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { Plus } from 'lucide-react';
@@ -148,9 +148,10 @@ const OrbButton: React.FC = () => {
     setIsCharging(true);
   };
   
-  const handleDismissBloom = () => {
+  const handleDismissBloom = useCallback(() => {
     setBloomPoint(null);
-  };
+    setPreviewMood(null); // Clear preview when dismissed
+  }, [setPreviewMood]);
 
   useEffect(() => {
     if (isCharging && chargeData) {
@@ -217,7 +218,7 @@ const OrbButton: React.FC = () => {
   return (
     <>
       <motion.div
-        className={cn(orbContainerBaseClasses, "left-1/2")}
+        className={cn(orbContainerBaseClasses, "left-1/2 justify-center")}
         style={{ x: "-50%" }}
         animate={{ y: isCollectiveShifting ? 8 : 0 }}
         transition={{ type: 'spring', stiffness: 100, damping: 10 }}
@@ -270,7 +271,7 @@ const OrbButton: React.FC = () => {
       </motion.div>
 
       {isClient && createPortal(
-        <AnimatePresence onExitComplete={() => setPreviewMood(null)}>
+        <AnimatePresence>
           {bloomPoint && (
             <motion.div key="bloom-container">
               <div data-radial-bloom-active-page-marker />
