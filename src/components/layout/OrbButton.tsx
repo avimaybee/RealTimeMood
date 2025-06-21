@@ -10,6 +10,7 @@ import type { Mood } from '@/types';
 import { cn } from '@/lib/utils';
 import { motion, type PanInfo } from 'framer-motion';
 import RadialBloomEffect from '@/components/ui-fx/RadialBloomEffect';
+import MoodSelectionButtons from '@/components/features/MoodSelectionButtons';
 
 
 const OrbButton: React.FC = () => {
@@ -28,7 +29,8 @@ const OrbButton: React.FC = () => {
 
   useEffect(() => {
     const handlePointerUp = () => {
-      setBloomPoint(null);
+      // Intentionally empty. We want the bloom to persist after long-press
+      // until a selection is made.
     };
 
     if (bloomPoint) {
@@ -94,6 +96,20 @@ const OrbButton: React.FC = () => {
   const clearLongPressTimeout = () => {
     if (longPressTimeoutRef.current) {
       clearTimeout(longPressTimeoutRef.current);
+    }
+  };
+
+  const handleMoodSelectionFromBloom = (mood: Mood) => {
+    setBloomPoint(null); // Dismiss the bloom and buttons
+    
+    // Use the orb's center for the ripple effect, not the bloom point
+    if (motionDivRef.current) {
+      const orbRect = motionDivRef.current.getBoundingClientRect();
+      const ripplePosition = {
+        x: orbRect.left + orbRect.width / 2,
+        y: orbRect.top + orbRect.height / 2,
+      };
+      recordContribution(mood, ripplePosition);
     }
   };
 
@@ -182,7 +198,7 @@ const OrbButton: React.FC = () => {
           onPointerLeave={clearLongPressTimeout}
           className={cn(
               "relative flex items-center justify-center cursor-pointer",
-              isCharging && "cursor-default"
+              (isCharging || bloomPoint) && "cursor-default pointer-events-none"
           )}
         >
           <motion.div 
@@ -201,6 +217,7 @@ const OrbButton: React.FC = () => {
         <>
           <div data-radial-bloom-active-page-marker />
           <RadialBloomEffect point={bloomPoint} />
+          <MoodSelectionButtons point={bloomPoint} onSelect={handleMoodSelectionFromBloom} />
         </>,
         document.body
       )}
@@ -209,4 +226,3 @@ const OrbButton: React.FC = () => {
 };
 
 export default OrbButton;
-

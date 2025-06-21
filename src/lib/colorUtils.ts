@@ -91,7 +91,9 @@ export const PREDEFINED_MOODS: Mood[] = [
   { hue: 130, saturation: 70, lightness: 60, name: "Peaceful Green", adjective: "Peaceful" },  // Green
   { hue: 300, saturation: 80, lightness: 65, name: "Creative Purple", adjective: "Creative" }, // Purple
   { hue: 0, saturation: 90, lightness: 60, name: "Passionate Red", adjective: "Passionate" }, // Red
-  { hue: 260, saturation: 50, lightness: 55, name: "Anxious Indigo", adjective: "Anxious" }, // New mood for erratic behavior
+  { hue: 260, saturation: 50, lightness: 55, name: "Anxious Indigo", adjective: "Anxious" },
+  { hue: 240, saturation: 60, lightness: 70, name: "Focused Indigo", adjective: "Focused" },
+  { hue: 180, saturation: 75, lightness: 60, name: "Hopeful Cyan", adjective: "Hopeful" },
 ];
 
 const shortestAngleDiff = (a: number, b: number): number => {
