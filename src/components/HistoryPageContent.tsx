@@ -9,6 +9,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useDynamicColors } from '@/hooks/useDynamicColors';
 import type { Mood } from '@/types';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
+import TrendSummaryDisplay from '@/components/features/TrendSummaryDisplay';
 
 // Define a static, near-white mood for the history page's background
 const historyPageMood: Mood = {
@@ -93,6 +94,7 @@ const HistoryPageContent = () => {
               <CardDescription>
                 This chart shows the trend of the collective dominant mood's hue over time.
               </CardDescription>
+              <TrendSummaryDisplay historyData={mockHistoryData} />
             </CardHeader>
             <CardContent>
               <ChartContainer config={{}} className="h-[400px] w-full">
