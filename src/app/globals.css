@@ -90,7 +90,7 @@
     height: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Prevent scrollbars for full screen design */
+    /* overflow: hidden has been removed to allow scrolling on history page */
   }
   * {
     @apply border-border;

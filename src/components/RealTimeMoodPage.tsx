@@ -34,7 +34,7 @@ const PageContent: React.FC = () => {
   return (
     <div 
       className={cn(
-        "min-h-screen w-full flex flex-col items-center",
+        "h-screen min-h-screen w-full flex flex-col items-center overflow-hidden",
         isRadialBloomActive ? 'radial-bloom-active-page' : ''
       )}
     >
