@@ -25,6 +25,7 @@ const OrbButton: React.FC = () => {
 
   const hueX = useMotionValue(0);
   const THUMB_WIDTH = 40; // Corresponds to w-10 on the thumb
+  const [previewAdjective, setPreviewAdjective] = useState('');
 
   useEffect(() => {
     setIsClient(true);
@@ -46,6 +47,7 @@ const OrbButton: React.FC = () => {
         saturation: 85,
         lightness: 60,
     });
+    setPreviewAdjective(closestMood.adjective);
   });
 
   const handleDragEnd = () => {
@@ -68,6 +70,7 @@ const OrbButton: React.FC = () => {
     setChargeData({ mood: newMood });
     setIsCharging(true); // Begin the charge sequence
     setPreviewMood(null);
+    setPreviewAdjective('');
   };
 
   const handleTap = (event: MouseEvent | TouchEvent | ReactPointerEvent, info: PanInfo) => {
@@ -80,7 +83,14 @@ const OrbButton: React.FC = () => {
       // Center the thumb initially
       const barWidth = window.innerWidth * 0.8;
       const draggableWidth = barWidth > 500 ? 500 - THUMB_WIDTH : barWidth - THUMB_WIDTH;
-      hueX.set(draggableWidth / 2);
+      const initialX = draggableWidth / 2;
+      hueX.set(initialX);
+
+      const percentage = Math.max(0, Math.min(1, initialX / draggableWidth));
+      const selectedHue = Math.round(percentage * 360);
+      const closestMood = findClosestMood(selectedHue);
+      setPreviewAdjective(closestMood.adjective);
+
 
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         navigator.vibrate(50);
@@ -218,7 +228,21 @@ const OrbButton: React.FC = () => {
               dragElastic={0.1}
               dragMomentum={false}
               onDragEnd={handleDragEnd}
-            />
+            >
+              <AnimatePresence>
+                {previewAdjective && (
+                  <motion.div
+                    className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-background/80 backdrop-blur-sm rounded-md text-sm text-foreground whitespace-nowrap shadow-md pointer-events-none"
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 5 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    {previewAdjective}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           )}
 
           <motion.div variants={iconVariants} animate={animationState}>
