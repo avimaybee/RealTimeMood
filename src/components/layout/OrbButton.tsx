@@ -1,7 +1,7 @@
 
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
-import type { PointerEvent } from 'react';
+import type { PointerEvent as ReactPointerEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { Plus } from 'lucide-react';
 import { useMood } from '@/contexts/MoodContext';
@@ -20,6 +20,7 @@ const OrbButton: React.FC = () => {
   const motionDivRef = useRef<HTMLDivElement>(null);
   const [bloomPoint, setBloomPoint] = useState<{ x: number; y: number } | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -40,7 +41,8 @@ const OrbButton: React.FC = () => {
   }, [bloomPoint]);
 
 
-  const handleTap = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleTap = (event: MouseEvent | TouchEvent | ReactPointerEvent, info: PanInfo) => {
+    clearLongPressTimeout();
     if (isCharging || bloomPoint) return;
 
     if (interactionMode === 'orb') {
@@ -75,9 +77,24 @@ const OrbButton: React.FC = () => {
     }
   };
 
-  const handleLongPress = (e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleLongPress = (point: {clientX: number, clientY: number}) => {
     if (interactionMode === 'bar' || isCharging) return;
-    setBloomPoint(info.point);
+    setBloomPoint({ x: point.clientX, y: point.clientY });
+  };
+  
+  const handlePointerDown = (event: ReactPointerEvent) => {
+    if (interactionMode === 'bar' || isCharging) return;
+    
+    const { clientX, clientY } = event;
+    longPressTimeoutRef.current = setTimeout(() => {
+      handleLongPress({ clientX, clientY });
+    }, 250); // 250ms threshold
+  };
+
+  const clearLongPressTimeout = () => {
+    if (longPressTimeoutRef.current) {
+      clearTimeout(longPressTimeoutRef.current);
+    }
   };
 
   useEffect(() => {
@@ -119,7 +136,6 @@ const OrbButton: React.FC = () => {
       background: 'rgba(255, 255, 255, 0.1)',
       boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
       backdropFilter: 'blur(12px)',
-      transition: morphTransition,
     },
     bar: {
       width: '80vw',
@@ -129,7 +145,6 @@ const OrbButton: React.FC = () => {
       background: gradientBackground,
       boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
       backdropFilter: 'blur(0px)',
-      transition: morphTransition,
     },
     charging: {
         width: '80px',
@@ -138,10 +153,6 @@ const OrbButton: React.FC = () => {
         background: 'rgba(255, 255, 255, 0.1)', // Preserve background
         backdropFilter: 'blur(12px)',
         boxShadow: chargeData ? `0 0 25px 8px ${moodToHslString(chargeData.mood)}, inset 0 0 10px 2px rgba(255,255,255,0.5)` : '0 12px 32px rgba(0,0,0,0.3)',
-        transition: {
-            ...morphTransition,
-            boxShadow: { duration: 0.1, type: "tween" }, // Fast glow
-        },
     }
   };
 
@@ -164,8 +175,11 @@ const OrbButton: React.FC = () => {
           variants={orbVariants}
           initial="orb"
           animate={isCharging ? "charging" : (isBar ? "bar" : "orb")}
+          transition={morphTransition}
           onTap={handleTap}
-          onLongPress={handleLongPress}
+          onPointerDown={handlePointerDown}
+          onPointerUp={clearLongPressTimeout}
+          onPointerLeave={clearLongPressTimeout}
           className={cn(
               "relative flex items-center justify-center cursor-pointer",
               isCharging && "cursor-default"
