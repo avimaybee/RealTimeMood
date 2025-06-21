@@ -10,6 +10,9 @@ import { useDynamicColors } from '@/hooks/useDynamicColors';
 import type { Mood } from '@/types';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
 import TrendSummaryDisplay from '@/components/features/TrendSummaryDisplay';
+import React, { useState, useMemo } from 'react';
+import { cn } from '@/lib/utils';
+
 
 // Define a static, near-white mood for the history page's background
 const historyPageMood: Mood = {
@@ -21,31 +24,44 @@ const historyPageMood: Mood = {
 };
 
 
-// Generate more realistic mock data
-const generateMockData = () => {
+// Generate more realistic mock data based on a time range
+const generateMockData = (days: number) => {
   const data = [];
   let lastHue = 180; // Start with a calm-ish hue
-  const today = new Date();
-  for (let i = 30; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(today.getDate() - i);
-    
-    // Create a slow, wave-like drift in hue
-    const drift = (Math.sin(i / 5) * 40);
-    // Add some random noise
-    const noise = (Math.random() - 0.5) * 20;
-    
-    lastHue = (lastHue + drift + noise + 360) % 360;
-    
-    data.push({
-      date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      hue: Math.round(lastHue),
-    });
+  const now = new Date();
+
+  if (days === 1) { // 24-hour view
+    for (let i = 23; i >= 0; i--) {
+      const date = new Date(now);
+      date.setHours(now.getHours() - i);
+      
+      const drift = (Math.sin(i / 3) * 50);
+      const noise = (Math.random() - 0.5) * 30;
+      lastHue = (lastHue + drift + noise + 360) % 360;
+
+      data.push({
+        date: date.toLocaleTimeString('en-US', { hour: 'numeric' }),
+        hue: Math.round(lastHue),
+      });
+    }
+  } else { // Day-based view
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - i);
+      
+      const drift = (Math.sin(i / 5) * 40);
+      const noise = (Math.random() - 0.5) * 20;
+      lastHue = (lastHue + drift + noise + 360) % 360;
+      
+      data.push({
+        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        hue: Math.round(lastHue),
+      });
+    }
   }
   return data;
 };
 
-const mockHistoryData = generateMockData();
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -53,7 +69,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     const moodColor = `hsl(${hue}, 80%, 60%)`;
     return (
       <div className="p-2 rounded-lg shadow-soft frosted-glass">
-        <p className="label">{`Date: ${label}`}</p>
+        <p className="label">{`Time: ${label}`}</p>
         <p className="intro" style={{ color: moodColor, textShadow: `0 0 5px ${moodColor}` }}>
           {`Dominant Mood Hue: ${hue}°`}
         </p>
@@ -64,9 +80,21 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const HistoryPageContent = () => {
-  // Set the background to a clean, near-white tone for this page.
-  // This hook will smoothly transition the color from the previous page.
   useDynamicColors(historyPageMood);
+  const [timeRange, setTimeRange] = useState<number>(30); // 30 days, 7 days, 1 day (for 24h)
+
+  const mockHistoryData = useMemo(() => generateMockData(timeRange), [timeRange]);
+
+  const timeRanges = [
+    { label: '30 Days', value: 30 },
+    { label: '7 Days', value: 7 },
+    { label: '24 Hours', value: 1 },
+  ];
+
+  const getTitle = () => {
+    const selectedRange = timeRanges.find(r => r.value === timeRange);
+    return `Dominant Mood Over Last ${selectedRange?.label || '30 Days'}`;
+  }
 
   return (
     <>
@@ -90,7 +118,25 @@ const HistoryPageContent = () => {
         <main className="w-full flex-grow flex items-center justify-center">
           <Card className="w-full max-w-5xl frosted-glass shadow-soft rounded-2xl">
             <CardHeader>
-              <CardTitle>Dominant Mood Over Last 30 Days</CardTitle>
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                <CardTitle>{getTitle()}</CardTitle>
+                <div className="flex gap-2 bg-muted/50 p-1 rounded-full">
+                  {timeRanges.map(range => (
+                    <Button
+                      key={range.value}
+                      variant={timeRange === range.value ? 'default' : 'ghost'}
+                      onClick={() => setTimeRange(range.value)}
+                      className={cn(
+                        "rounded-full transition-all duration-300 text-xs sm:text-sm px-3 sm:px-4",
+                         timeRange !== range.value && "hover:bg-transparent"
+                      )}
+                      size="sm"
+                    >
+                      {range.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
               <CardDescription>
                 This chart shows the trend of the collective dominant mood's hue over time.
               </CardDescription>
@@ -114,6 +160,7 @@ const HistoryPageContent = () => {
                       stroke="hsl(var(--foreground) / 0.8)" 
                       tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
                       tickLine={{ stroke: 'hsl(var(--foreground) / 0.5)' }}
+                      interval={Math.floor(mockHistoryData.length / 10)} // Adjust tick density
                     />
                     <YAxis 
                       domain={[0, 360]} 
@@ -128,7 +175,7 @@ const HistoryPageContent = () => {
                         {mockHistoryData.map((entry, index) => (
                           <stop
                             key={index}
-                            offset={`${(index / (mockHistoryData.length - 1)) * 100}%`}
+                            offset={`${(index / (mockHistoryData.length > 1 ? mockHistoryData.length - 1 : 1)) * 100}%`}
                             stopColor={`hsl(${entry.hue}, 80%, 60%)`}
                           />
                         ))}
