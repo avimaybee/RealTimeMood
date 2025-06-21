@@ -4,6 +4,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 const ShareSnapshotButton: React.FC = () => {
   const { toast } = useToast();
@@ -32,7 +33,9 @@ const ShareSnapshotButton: React.FC = () => {
       size="icon"
       onClick={handleShare}
       aria-label="Share Mood Snapshot"
-      className="rounded-full w-12 h-12 shadow-soft"
+      className={cn(
+        "rounded-full w-12 h-12 shadow-soft interactive-glow"
+      )}
       style={{
         borderColor: 'hsl(var(--primary-hsl))',
         color: 'hsl(var(--primary-hsl))'
