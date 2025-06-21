@@ -4,11 +4,20 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
+import { ChartContainer } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useDynamicColors } from '@/hooks/useDynamicColors';
-import { useMood } from '@/contexts/MoodContext';
-import DynamicBackground from '@/components/ui-fx/DynamicBackground';
+import type { Mood } from '@/types';
+
+// Define a static, near-white mood for the history page's background
+const historyPageMood: Mood = {
+  hue: 220,       // A cool, neutral blueish hue
+  saturation: 15, // Very low saturation for a near-white feel
+  lightness: 96,  // Very light
+  name: "HistoryView",
+  adjective: "Reflective",
+};
+
 
 // Generate more realistic mock data
 const generateMockData = () => {
@@ -53,12 +62,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const HistoryPageContent = () => {
-  const { appState } = useMood();
-  useDynamicColors(appState.currentMood); // Keep background consistent with app state
+  // Set the background to a clean, near-white tone for this page.
+  // This hook will smoothly transition the color from the previous page.
+  useDynamicColors(historyPageMood);
 
   return (
     <>
-      <DynamicBackground />
       <div className="vignette-overlay" />
       <div className="noise-overlay" />
       <div className="min-h-screen w-full flex flex-col items-center p-4 md:p-6">
