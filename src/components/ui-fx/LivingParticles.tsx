@@ -10,9 +10,6 @@ interface Particle {
   vx: number;
   vy: number;
   size: number;
-  hue: number;
-  saturation: number;
-  lightness: number;
   opacity: number;
   life: number;
   maxLife: number;
@@ -43,20 +40,19 @@ const LivingParticles: React.FC = () => {
 
 
   const resetParticle = (p: Partial<Particle>, width: number, height: number, emanateFromCenter: boolean): Particle => {
-    // Use the latest state for resetting particles
-    const { hue, saturation, lightness } = latestStateRef.current.appState.currentMood;
     const maxLife = 200 + Math.random() * 200;
     const angle = Math.random() * Math.PI * 2;
     const baseSpeed = 0.5 + Math.random() * 0.5;
 
     let x, y;
     if (emanateFromCenter) {
-      const radius = Math.random() * 50;
+      const radius = Math.random() * Math.min(width, height) * 0.2; // Spawn in a wider central area
       x = width / 2 + Math.cos(angle) * radius;
       y = height / 2 + Math.sin(angle) * radius;
     } else {
+      // For resets, spawn across a wide central band
       x = Math.random() * width;
-      y = height / 2 + (Math.random() - 0.5) * height * 0.5; // Spawn more centrally
+      y = height / 2 + (Math.random() - 0.5) * height * 0.8;
     }
 
     return {
@@ -67,9 +63,6 @@ const LivingParticles: React.FC = () => {
       vx: Math.cos(angle) * baseSpeed,
       vy: Math.sin(angle) * baseSpeed,
       size: 1 + Math.random() * 2,
-      hue,
-      saturation,
-      lightness,
       opacity: 0.4 + Math.random() * 0.5,
       life: 0,
       maxLife,
@@ -116,7 +109,7 @@ const LivingParticles: React.FC = () => {
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 400 && dist > 0) { // Ripple has a 400px radius of effect
             const angle = Math.atan2(dy, dx);
-            const force = (1 - dist / 400) * 4; // Force is stronger closer to the origin
+            const force = (1 - dist / 400) * 8; // Increased force for more "shockwave" feel
             p.pushX += Math.cos(angle) * force;
             p.pushY += Math.sin(angle) * force;
           }
@@ -130,7 +123,7 @@ const LivingParticles: React.FC = () => {
           const dx = p.x - centerX;
           const dy = p.y - centerY;
           const angle = Math.atan2(dy, dx);
-          const force = 8 + Math.random() * 4; // Stronger, more chaotic force
+          const force = 8 + Math.random() * 4; // Strong, more chaotic force
           p.pushX += Math.cos(angle) * force;
           p.pushY += Math.sin(angle) * force;
         });
@@ -138,12 +131,6 @@ const LivingParticles: React.FC = () => {
       lastShiftStateRef.current = latestIsCollectiveShifting;
 
       particlesRef.current.forEach(p => {
-        // Seamlessly transition color
-        const hueDiff = (currentMood.hue - p.hue + 360) % 360;
-        p.hue += (hueDiff > 180 ? hueDiff - 360 : hueDiff) * 0.05;
-        p.saturation += (currentMood.saturation - p.saturation) * 0.05;
-        p.lightness += (currentMood.lightness - p.lightness) * 0.05;
-
         // Apply mood-based behavior
         const speed = p.baseSpeed * (latestIsCollectiveShifting ? 2.5 : 1);
         const angle = Math.atan2(p.vy, p.vx);
@@ -161,13 +148,14 @@ const LivingParticles: React.FC = () => {
         p.vx = Math.cos(newAngle) * speed;
         p.vy = Math.sin(newAngle) * speed;
 
-        // Gentle pull towards center if they get too far
+        // Gentle pull towards center if they get too far, much weaker to allow dispersal
         const dxCenter = p.x - centerX;
         const dyCenter = p.y - centerY;
         const distFromCenter = Math.sqrt(dxCenter * dxCenter + dyCenter * dyCenter);
         if (distFromCenter > Math.min(width, height) * 0.6) {
-             p.vx -= (dxCenter / distFromCenter) * 0.02;
-             p.vy -= (dyCenter / distFromCenter) * 0.02;
+             const pullForce = 0.005;
+             p.vx -= (dxCenter / distFromCenter) * pullForce;
+             p.vy -= (dyCenter / distFromCenter) * pullForce;
         }
 
         // Apply and decay push forces
@@ -182,7 +170,7 @@ const LivingParticles: React.FC = () => {
 
         // Reset particle if it's dead or off-screen
         if (p.life > p.maxLife || p.x < -10 || p.x > width + 10 || p.y < -10 || p.y > height + 10) {
-          Object.assign(p, resetParticle(p, width, height, true));
+          Object.assign(p, resetParticle(p, width, height, false));
         }
 
         // Update the particle's style on the DOM
@@ -192,7 +180,7 @@ const LivingParticles: React.FC = () => {
           node.style.transform = `translate3d(${p.x}px, ${p.y}px, 0px) scale(${isPushed ? 1.2 : 1})`;
           node.style.width = `${p.size}px`;
           node.style.height = `${p.size}px`;
-          node.style.backgroundColor = `hsla(${p.hue}, ${p.saturation}%, ${p.lightness}%, ${p.opacity})`;
+          node.style.backgroundColor = `rgba(255, 255, 255, ${p.opacity})`; // Pure white particles
           node.style.filter = `brightness(${isPushed ? 1.5 : 1})`;
           node.style.transition = 'transform 0.1s ease-out, filter 0.1s ease-out'; // For scale/brightness flash
         }
