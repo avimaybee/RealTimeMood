@@ -3,14 +3,17 @@
 import React, { useEffect, useState } from 'react';
 import { useMood } from '@/contexts/MoodContext';
 import { moodToHslString } from '@/lib/colorUtils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const MilestoneFireworks: React.FC = () => {
   const { appState, appState: { contributionCount } } = useMood();
   const [showFireworks, setShowFireworks] = useState(false);
+  const [milestoneNumber, setMilestoneNumber] = useState(0);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    if (contributionCount > 0 && contributionCount % 100 === 0) { 
+    if (contributionCount > 0 && contributionCount % 100 === 0) {
+      setMilestoneNumber(contributionCount);
       setShowFireworks(true);
       timer = setTimeout(() => setShowFireworks(false), 5000); // Show for 5 seconds
     }
@@ -19,73 +22,61 @@ const MilestoneFireworks: React.FC = () => {
     };
   }, [contributionCount]);
 
-  if (!showFireworks) return null;
-
   const particleCount = 50; // Number of particles per firework burst
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden" aria-hidden="true">
-      {Array.from({ length: 5 }).map((_, burstIndex) => ( // 5 bursts
-        Array.from({ length: particleCount }).map((_, particleIndex) => {
-          const angle = (particleIndex / particleCount) * 360 + (burstIndex * 72); // Base angle for particle, offset for each burst
-          const distance = Math.random() * 120 + 60; // Max travel distance (radius of burst)
-          const duration = Math.random() * 1.5 + 1.2; // Animation duration 1.2s to 2.7s
-          const delay = burstIndex * 0.25 + Math.random() * 0.3; // Stagger bursts and particles within bursts
-          const size = Math.random() * 3 + 1.5; // Particle size 1.5px to 4.5px
+    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden flex items-center justify-center" aria-hidden="true">
+      <AnimatePresence>
+        {showFireworks && (
+          <motion.h1
+            key="celebration-message"
+            initial={{ opacity: 0, scale: 0.7, y: 40 }}
+            animate={{ opacity: 1, scale: 1, y: 0, transition: { delay: 0.2, duration: 0.5, ease: 'easeOut' } }}
+            exit={{ opacity: 0, scale: 0.7, y: -40, transition: { duration: 0.5, ease: 'easeIn' } }}
+            className="text-4xl md:text-6xl font-bold text-white text-shadow-pop"
+            style={{
+              filter: `drop-shadow(0 0 20px ${moodToHslString(appState.currentMood)}) drop-shadow(0 0 10px white)`
+            }}
+          >
+            {milestoneNumber.toLocaleString()} Moods Shared!
+          </motion.h1>
+        )}
+      </AnimatePresence>
 
-          // CSS custom properties for unique animation per particle
+      {showFireworks && Array.from({ length: 5 }).map((_, burstIndex) => (
+        Array.from({ length: particleCount }).map((_, particleIndex) => {
+          const angle = (particleIndex / particleCount) * 360 + (burstIndex * 72);
+          const distance = Math.random() * 120 + 80;
+          const duration = Math.random() * 1.5 + 1.2;
+          const delay = burstIndex * 0.25 + Math.random() * 0.3;
+          const size = Math.random() * 3 + 1.5;
+
           const initialRotate = angle;
-          const midTranslateX = distance * (Math.random() * 0.3 + 0.4); // Mid-point translation (40-70% of distance)
-          const midRotate = angle + (Math.random() - 0.5) * 30; // Slight rotation variance at mid-point
-          const finalTranslateX = distance * (Math.random() * 0.2 + 0.8); // Final translation (80-100% of distance)
-          const finalRotate = angle + (Math.random() - 0.5) * 60; // More rotation variance at the end
+          const midTranslateX = distance * (Math.random() * 0.3 + 0.4);
+          const midRotate = angle + (Math.random() - 0.5) * 30;
+          const finalTranslateX = distance * (Math.random() * 0.2 + 0.8);
+          const finalRotate = angle + (Math.random() - 0.5) * 60;
 
           return (
             <div
               key={`burst-${burstIndex}-particle-${particleIndex}`}
-              className="absolute rounded-full"
+              className="absolute top-1/2 left-1/2 rounded-full animate-firework-particle-anim opacity-0"
               style={{
                 backgroundColor: moodToHslString(appState.currentMood),
                 width: `${size}px`,
                 height: `${size}px`,
-                left: '50%', // Center for transform origin
-                top: '50%',  // Center for transform origin
-                opacity: 0,  // Animation will control opacity
-                
-                // Use longhand animation properties to avoid conflicts
-                animationName: 'firework-particle-anim',
                 animationDuration: `${duration}s`,
-                animationTimingFunction: 'cubic-bezier(0.25, 0.1, 0.25, 1.0)', // Simulates ease-out
                 animationDelay: `${delay}s`,
-                animationFillMode: 'forwards',
-                
-                // Pass dynamic values to keyframes via CSS custom properties
                 '--particle-initial-rotate': `${initialRotate}deg`,
                 '--particle-mid-rotate': `${midRotate}deg`,
                 '--particle-mid-translate-x': `${midTranslateX}px`,
                 '--particle-final-rotate': `${finalRotate}deg`,
                 '--particle-final-translate-x': `${finalTranslateX}px`,
-              } as React.CSSProperties} // Type assertion for CSS custom properties
+              } as React.CSSProperties}
             />
           );
         })
       ))}
-       <style jsx>{`
-        @keyframes firework-particle-anim {
-          0% {
-            opacity: 0.8; /* Start visible */
-            transform: translate(-50%, -50%) rotate(var(--particle-initial-rotate)) translateX(0px) scale(0.2);
-          }
-          50% {
-            opacity: 1; /* Full opacity mid-flight */
-            transform: translate(-50%, -50%) rotate(var(--particle-mid-rotate)) translateX(var(--particle-mid-translate-x)) scale(1);
-          }
-          100% {
-            opacity: 0; /* Fade out at the end */
-            transform: translate(-50%, -50%) rotate(var(--particle-final-rotate)) translateX(var(--particle-final-translate-x)) scale(0.3) translateY(40px); /* Drift downwards */
-          }
-        }
-      `}</style>
     </div>
   );
 };
