@@ -3,12 +3,23 @@
 import Link from 'next/link';
 import { ArrowLeft, Plus, MessageSquareQuote, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import DynamicBackground from '@/components/ui-fx/DynamicBackground';
-import LivingParticles from '@/components/ui-fx/LivingParticles';
 import { useToast } from '@/hooks/use-toast';
-import { useMood } from '@/contexts/MoodContext';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useDynamicColors } from '@/hooks/useDynamicColors';
+import type { Mood } from '@/types';
+import LivingParticles from '@/components/ui-fx/LivingParticles';
+import { Card, CardContent } from '@/components/ui/card';
+
+// Static mood for this page for a clean, stable background
+const thoughtsPageMood: Mood = {
+  hue: 220,
+  saturation: 15,
+  lightness: 96,
+  name: "ThoughtsView",
+  adjective: "Contemplative",
+};
+
 
 // Mock quotes for demonstration
 const mockQuotes = [
@@ -21,7 +32,7 @@ const mockQuotes = [
 
 
 const CollectiveThoughtsPage = () => {
-    useMood(); // Initialize context to ensure background hooks work
+    useDynamicColors(thoughtsPageMood);
     const { toast } = useToast();
     const [index, setIndex] = useState(0);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -33,7 +44,6 @@ const CollectiveThoughtsPage = () => {
         });
     };
 
-    // Using useCallback to prevent re-creation on every render
     const advanceQuote = useCallback((direction: 'next' | 'prev') => {
         setIndex((prevIndex) => {
             if (direction === 'next') {
@@ -53,7 +63,6 @@ const CollectiveThoughtsPage = () => {
         }, 10000); // Auto-cycle every 10 seconds
     }, [advanceQuote]);
     
-    // Start and manage the interval
     useEffect(() => {
         resetInterval();
         return () => {
@@ -73,83 +82,78 @@ const CollectiveThoughtsPage = () => {
 
     return (
         <>
-            <div className="fixed inset-0 brightness-80 blur-sm -z-10">
-                <DynamicBackground />
-                <div className="vignette-overlay" />
-                <div className="noise-overlay" />
-                <LivingParticles />
-            </div>
+            <div className="vignette-overlay" />
+            <div className="noise-overlay" />
+            <LivingParticles />
 
-            <div className="relative min-h-screen w-full flex flex-col items-center p-4 md:p-6 z-0">
+            <div className="min-h-screen w-full flex flex-col items-center p-4 md:p-6">
                 <header className="w-full max-w-5xl mx-auto flex items-center justify-between z-10 mb-6">
-                    <Button asChild variant="outline" className="frosted-glass shadow-soft interactive-glow" style={{width: '150px'}}>
+                    <Button asChild variant="outline" className="frosted-glass shadow-soft interactive-glow">
                         <Link href="/">
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back to Live
                         </Link>
                     </Button>
-                    <div className="p-1 frosted-glass rounded-full shadow-soft flex items-center justify-center group h-11 md:h-12 px-4 md:px-6">
-                         <MessageSquareQuote className="h-6 w-6 text-foreground opacity-80 group-hover:opacity-100 transition-opacity" />
-                         <span className="ml-3 text-lg md:text-xl font-medium text-foreground opacity-90 text-shadow-pop transition-opacity group-hover:opacity-100">
-                            Collective Thoughts
-                         </span>
-                    </div>
-                    <div style={{width: '150px'}}></div> {/* Spacer */}
+                    <h1 className="text-2xl md:text-3xl font-bold text-shadow-pop flex items-center gap-3">
+                         <MessageSquareQuote className="h-7 w-7 opacity-80" />
+                         Collective Thoughts
+                    </h1>
+                    <div className="w-36"></div> {/* Spacer */}
                 </header>
 
-                <main className="w-full flex-grow flex items-center justify-center text-center text-foreground px-4">
-                    <div className="relative w-full max-w-2xl flex items-center justify-center">
-                        {/* Manual Navigation: Left */}
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={handlePrevClick}
-                            aria-label="Previous thought"
-                            className="absolute left-0 -translate-x-full md:-translate-x-1/2 rounded-full w-12 h-12 frosted-glass shadow-soft interactive-glow"
-                        >
-                            <ChevronLeft className="w-6 h-6" />
-                        </Button>
+                <main className="w-full flex-grow flex items-center justify-center">
+                    <Card className="w-full max-w-4xl frosted-glass shadow-soft rounded-2xl relative overflow-hidden">
+                        <CardContent className="p-8 md:p-12 min-h-[300px] flex items-center justify-center relative">
+                            
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={handlePrevClick}
+                                aria-label="Previous thought"
+                                className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 md:w-12 md:h-12 bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 transition-colors z-10"
+                            >
+                                <ChevronLeft className="w-6 h-6" />
+                            </Button>
 
-                        {/* Quote Display */}
-                        <div className="frosted-glass shadow-soft rounded-2xl w-full min-h-[250px] flex items-center justify-center p-8 overflow-hidden">
-                           <AnimatePresence mode="wait">
-                                <motion.p
-                                    key={mockQuotes[index].id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    transition={{ duration: 0.5, ease: "easeInOut" }}
-                                    className="text-3xl md:text-4xl font-light text-shadow-pop text-center font-headline"
-                                >
-                                    "{mockQuotes[index].text}"
-                                </motion.p>
-                           </AnimatePresence>
-                        </div>
-                        
-                        {/* Manual Navigation: Right */}
-                         <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={handleNextClick}
-                            aria-label="Next thought"
-                            className="absolute right-0 translate-x-full md:translate-x-1/2 rounded-full w-12 h-12 frosted-glass shadow-soft interactive-glow"
-                        >
-                            <ChevronRight className="w-6 h-6" />
-                        </Button>
-                    </div>
+                            <div className="w-full text-center">
+                               <AnimatePresence mode="wait">
+                                    <motion.p
+                                        key={mockQuotes[index].id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -20 }}
+                                        transition={{ duration: 0.5, ease: "easeInOut" }}
+                                        className="text-2xl md:text-3xl font-light text-shadow-pop text-center"
+                                    >
+                                        "{mockQuotes[index].text}"
+                                    </motion.p>
+                               </AnimatePresence>
+                            </div>
+                            
+                             <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={handleNextClick}
+                                aria-label="Next thought"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 md:w-12 md:h-12 bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 transition-colors z-10"
+                            >
+                                <ChevronRight className="w-6 h-6" />
+                            </Button>
+                        </CardContent>
+                    </Card>
                 </main>
-
-                <div className="fixed bottom-10 z-40">
-                     <Button
-                        variant="default"
-                        size="icon"
-                        onClick={handleAddThoughtClick}
-                        aria-label="Share your thought"
-                        className="rounded-full w-20 h-20 shadow-soft interactive-glow"
-                     >
-                         <Plus className="w-10 h-10" />
-                     </Button>
-                </div>
+                
+                <footer className="w-full flex justify-center py-8">
+                  <Button
+                      variant="outline"
+                      onClick={handleAddThoughtClick}
+                      aria-label="Share your thought"
+                      className="frosted-glass shadow-soft interactive-glow text-base px-6 py-5 rounded-full"
+                  >
+                      <Plus className="mr-2 w-4 h-4" />
+                      Share your thought
+                  </Button>
+                </footer>
             </div>
         </>
     );
