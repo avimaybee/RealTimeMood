@@ -34,7 +34,7 @@ const MilestoneFireworks: React.FC = () => {
       let timer: NodeJS.Timeout;
       setMilestoneNumber(crossedMilestone);
       setShowFireworks(true);
-      timer = setTimeout(() => setShowFireworks(false), 5000); // Show for 5 seconds
+      timer = setTimeout(() => setShowFireworks(false), 4000); // Show for 4 seconds
       
       // Cleanup the timer
       return () => {
