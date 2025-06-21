@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { Mood } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { useDynamicColors } from '@/hooks/useDynamicColors';
 
 // Static mood for this page for a clean, stable background
 const thoughtsPageMood: Mood = {
@@ -31,6 +32,7 @@ const mockQuotes = [
 
 
 const CollectiveThoughtsPage = () => {
+    useDynamicColors(thoughtsPageMood);
     const { toast } = useToast();
     const [index, setIndex] = useState(0);
     const [isInputVisible, setIsInputVisible] = useState(false);
