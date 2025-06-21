@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { summarizeTrends, type SummarizeTrendsInput } from '@/ai/flows/summarize-mood-trends';
+import { summarizeTrends } from '@/ai/flows/summarize-mood-trends';
+import type { SummarizeTrendsInput, SummarizeTrendsOutput } from '@/ai/flows/summarize-mood-trends';
 import { useTypewriter } from '@/hooks/useTypewriter';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -9,21 +10,20 @@ interface TrendSummaryDisplayProps {
 }
 
 const TrendSummaryDisplay: React.FC<TrendSummaryDisplayProps> = ({ historyData }) => {
-  const [summary, setSummary] = useState('');
-  const [dominantHue, setDominantHue] = useState<number | null>(null);
+  const [result, setResult] = useState<SummarizeTrendsOutput | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const displayedSummary = useTypewriter(summary, 30);
+  const displayedSummary = useTypewriter(result?.summary ?? '', 25);
 
   useEffect(() => {
     const getSummary = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        const result = await summarizeTrends({ historyData });
-        setSummary(result.summary);
-        setDominantHue(result.dominantHue);
+        setResult(null); // Clear previous result
+        const aiResult = await summarizeTrends({ historyData });
+        setResult(aiResult);
       } catch (e) {
         console.error("Failed to get trend summary:", e);
         setError("Could not generate mood analysis at this time.");
@@ -32,36 +32,45 @@ const TrendSummaryDisplay: React.FC<TrendSummaryDisplayProps> = ({ historyData }
       }
     };
     
-    if (historyData.length > 0) {
+    if (historyData && historyData.length > 0) {
       getSummary();
+    } else {
+      setIsLoading(false);
     }
   }, [historyData]);
 
   if (isLoading) {
     return (
-      <div className="space-y-2 mt-4 text-sm text-muted-foreground">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-5/6" />
-        <p className="text-center animate-pulse">Analyzing trends...</p>
+      <div className="mt-4 pt-4 border-t border-border/50">
+        <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-11/12" />
+            <Skeleton className="h-4 w-4/6" />
+        </div>
       </div>
     );
   }
   
   if (error) {
-    return <p className="mt-4 text-sm text-destructive">{error}</p>;
+     return (
+        <div className="mt-4 pt-4 border-t border-border/50">
+            <p className="text-sm text-destructive">{error}</p>
+        </div>
+     );
   }
 
-  const glowStyle = dominantHue !== null ? {
-    textShadow: `
-      0 0 8px hsla(${dominantHue}, 80%, 60%, 0.8), 
-      0 0 16px hsla(${dominantHue}, 80%, 60%, 0.5)
-    `,
-    color: 'hsl(var(--foreground))'
+  if (!result) return null;
+
+  // A more subtle glow effect that matches the screenshot
+  const glowStyle = result.dominantHue !== null ? {
+    textShadow: `0 0 10px hsla(${result.dominantHue}, 80%, 65%, 0.6)`,
   } : {};
 
   return (
     <div className="mt-4 pt-4 border-t border-border/50">
-      <p style={glowStyle} className="text-sm text-foreground/90">{displayedSummary}</p>
+      <p style={glowStyle} className="text-base text-foreground transition-all duration-500">
+        {displayedSummary}
+      </p>
     </div>
   );
 };
