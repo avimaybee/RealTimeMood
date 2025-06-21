@@ -146,7 +146,7 @@ const OrbButton: React.FC = () => {
   
   const isBar = interactionMode === 'bar';
   const orbContainerBaseClasses = "fixed bottom-24 md:bottom-32 z-40 flex items-center justify-center";
-  const morphTransition = { type: 'spring', damping: 20, stiffness: 300 };
+  const morphTransition = { type: 'tween', duration: 0.5, ease: [0.76, 0, 0.24, 1] };
   const gradientBackground = 'linear-gradient(to right, hsl(0 100% 60%), hsl(30 100% 60%), hsl(60 100% 60%), hsl(90 100% 60%), hsl(120 100% 60%), hsl(150 100% 60%), hsl(180 100% 60%), hsl(210 100% 60%), hsl(240 100% 60%), hsl(270 100% 60%), hsl(300 100% 60%), hsl(330 100% 60%), hsl(360 100% 60%))';
   
   const orbVariants = {
