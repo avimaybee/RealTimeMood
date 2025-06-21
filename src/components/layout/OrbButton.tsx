@@ -233,7 +233,7 @@ const OrbButton: React.FC = () => {
           onPointerUp={clearLongPressTimeout}
           onPointerLeave={clearLongPressTimeout}
           className={cn(
-              "relative flex items-center",
+              "relative flex items-center justify-center",
               (isCharging || bloomPoint) && "pointer-events-none",
               !isBar && "cursor-pointer"
           )}
