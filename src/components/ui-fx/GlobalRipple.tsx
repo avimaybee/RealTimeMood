@@ -29,13 +29,13 @@ const GlobalRipple: React.FC = () => {
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center pointer-events-none z-10"
+      className="fixed inset-0 pointer-events-none z-10"
       aria-hidden="true"
     >
       {rippleLayers.map((layer, index) => (
           <div
             key={index}
-            className="absolute aspect-square rounded-full animate-global-ripple-effect"
+            className="absolute top-1/2 left-1/2 aspect-square rounded-full animate-global-ripple-effect"
             style={{
               width: '10px', 
               height: '10px',
