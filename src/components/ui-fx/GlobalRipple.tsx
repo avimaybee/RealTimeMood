@@ -9,36 +9,48 @@ const GlobalRipple: React.FC = () => {
   const [rippleColor, setRippleColor] = useState<string | null>(null);
 
   useEffect(() => {
+    // Trigger ripple only on new contributions
     if (appState.lastContributionTime && appState.lastContributorMoodColor) {
       setIsRippling(true);
       setRippleColor(appState.lastContributorMoodColor); // This is an HSL string
-      const timer = setTimeout(() => setIsRippling(false), 1200); // Duration of ripple animation (spec: 1200ms)
+      // The effect's total duration including delays is 1200ms (anim) + 300ms (last delay) = 1500ms
+      const timer = setTimeout(() => setIsRippling(false), 1500); 
       return () => clearTimeout(timer);
     }
   }, [appState.lastContributionTime, appState.lastContributorMoodColor]);
 
   if (!isRippling || !rippleColor) return null;
+  
+  const rippleLayers = [
+    { delay: '0ms', primary: true },   // Main solid ring
+    { delay: '150ms', primary: false }, // Fainter ring 1
+    { delay: '300ms', primary: false }, // Fainter ring 2
+  ];
 
-  // Spec: "A thin, glowing ring (border: 1px solid rgba(255,255,255,0.5)) expands smoothly...
-  // The border subtly tints towards the contributor's original mood color as it grows."
-  // For simplicity, we use the contributor's mood color for the glow/tint.
-  // The main border can remain a consistent white/alpha for contrast.
   return (
     <div
       className="fixed inset-0 flex items-center justify-center pointer-events-none z-10"
       aria-hidden="true"
     >
-      <div
-        className="absolute aspect-square rounded-full animate-global-ripple-effect" // Changed animation name
-        style={{
-          width: '10px', 
-          height: '10px',
-          border: `1px solid rgba(255,255,255,0.5)`, // Base border as per spec
-          boxShadow: `0 0 10px 2px ${rippleColor}, 0 0 15px 4px ${rippleColor} inset`, // Glow tinted with contributor's mood
-          animationDuration: '1200ms', // Match spec
-          opacity: 0, 
-        }}
-      />
+      {rippleLayers.map((layer, index) => (
+          <div
+            key={index}
+            className="absolute aspect-square rounded-full animate-global-ripple-effect"
+            style={{
+              width: '10px', 
+              height: '10px',
+              // Spec: "primary solid ring, 2-3 fainter concentric rings"
+              border: layer.primary 
+                ? `1px solid rgba(255, 255, 255, 0.5)`
+                : `1px solid rgba(255, 255, 255, 0.2)`,
+              // Spec: "subtly tints towards the contributor's original mood color"
+              boxShadow: `0 0 8px 1px ${rippleColor}, 0 0 12px 2px ${rippleColor} inset`,
+              animationDelay: layer.delay,
+              // animationDuration, easing, and fill-mode are handled by the tailwind class
+              opacity: 0, // The animation starts with a non-zero opacity
+            }}
+          />
+      ))}
     </div>
   );
 };

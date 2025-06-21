@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import type { Mood } from '@/types';
@@ -65,7 +66,7 @@ const OrbButton: React.FC = () => {
     holdTimeoutRef.current = setTimeout(() => {
       setRadialBloomActive(true);
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate([50, 50, 50]); 
+        navigator.vibrate(20); 
       }
       const marker = document.createElement('div');
       marker.setAttribute('data-radial-bloom-active-page-marker', '');
@@ -87,7 +88,7 @@ const OrbButton: React.FC = () => {
       }
     } else {
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(50); 
+        navigator.vibrate(10); // "light, crisp pop" haptic
       }
       const newMood = PREDEFINED_MOODS[Math.floor(Math.random() * PREDEFINED_MOODS.length)];
       setPersonalMood(newMood);

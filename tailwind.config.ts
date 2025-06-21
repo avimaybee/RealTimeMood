@@ -108,8 +108,9 @@ export default {
           to: { opacity: '1' },
         },
          'global-ripple-effect': { 
-          '0%': { transform: 'scale(0.1) translate(-50%, -50%)', opacity: '0.7' }, 
-          '100%': { transform: 'scale(3) translate(-50%, -50%)', opacity: '0' }, 
+          '0%': { transform: 'scale(0.1)', opacity: '0.5' },
+          '83%': { opacity: '0.5' },
+          '100%': { transform: 'scale(3)', opacity: '0' },
         },
         'particle-calm-motion': {
           '0%': { transform: 'translateY(0) translateX(0) scale(1)', opacity: '0' },
