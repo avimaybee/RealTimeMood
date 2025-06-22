@@ -92,10 +92,10 @@ const AddToHomeScreenPrompt: React.FC = () => {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          className="fixed bottom-28 md:bottom-[9.5rem] left-1/2 -translate-x-1/2 w-[90vw] max-w-md z-50 p-4 rounded-2xl shadow-soft frosted-glass"
-          initial={{ opacity: 0, y: 50 }}
+          className="fixed top-20 md:top-28 left-1/2 -translate-x-1/2 w-[90vw] max-w-md z-50 p-4 rounded-2xl shadow-soft frosted-glass"
+          initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 50 }}
+          exit={{ opacity: 0, y: -50 }}
           transition={{ type: 'spring', damping: 20, stiffness: 150 }}
         >
           <Button variant="ghost" size="icon" className="absolute top-2 right-2 w-7 h-7 rounded-full" onClick={handleDismiss}>
