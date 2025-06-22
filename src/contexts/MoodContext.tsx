@@ -62,6 +62,12 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
   const sessionIdRef = useRef<string | null>(null);
   const lastHeartbeatTimeRef = useRef<number>(0);
 
+  // Ref to hold the latest mood for use in the simulation loop without causing re-runs
+  const currentMoodRef = useRef(currentMood);
+  useEffect(() => {
+    currentMoodRef.current = currentMood;
+  }, [currentMood]);
+
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
@@ -125,17 +131,52 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     };
   }, [isLivePage]);
 
-  // Simulate user count fluctuation for a dynamic feel
+
+  // Enhanced user count and activity simulation
   useEffect(() => {
     if (!isLivePage) return;
 
-    const intervalId = setInterval(() => {
-      const change = (Math.random() - 0.5) * 4; // Fluctuate by -2 to +2
-      setUserCount(prev => Math.max(1, Math.round(prev + change)));
-    }, 3000); // Update every 3 seconds
+    let simulationTimeout: NodeJS.Timeout;
 
-    return () => clearInterval(intervalId);
-  }, [isLivePage]);
+    const runSimulation = () => {
+      // Schedule the next simulation event at a random interval
+      const nextEventIn = 1500 + Math.random() * 3500; // 1.5s to 5s
+      simulationTimeout = setTimeout(runSimulation, nextEventIn);
+
+      const chance = Math.random();
+
+      // 70% chance of a user joining, 30% chance of leaving
+      if (chance < 0.7) {
+        // User joins
+        setUserCount(prev => prev + 1);
+        
+        // Trigger a subtle ripple for the new "connection"
+        const randomX = window.innerWidth * (0.2 + Math.random() * 0.6);
+        const randomY = window.innerHeight * (0.2 + Math.random() * 0.6);
+        
+        // Use the ref to get the latest mood without adding it as a dependency
+        const latestMood = currentMoodRef.current;
+        const rippleColor = `hsl(${latestMood.hue}, ${latestMood.saturation}%, ${Math.min(100, latestMood.lightness + 15)}%)`;
+        
+        setLastContributorMoodColor(rippleColor);
+        setLastContributionPosition({ x: randomX, y: randomY });
+
+        setTimeout(() => {
+            setLastContributorMoodColor(null);
+            setLastContributionPosition(null);
+        }, 2000); // Ripple effect duration
+
+      } else {
+        // User leaves, but ensure count doesn't drop too low
+        setUserCount(prev => Math.max(8, prev - 1)); // Maintain a minimum of 8 users
+      }
+    };
+
+    // Start the simulation loop with a small delay
+    simulationTimeout = setTimeout(runSimulation, 1000);
+
+    return () => clearTimeout(simulationTimeout);
+  }, [isLivePage]); // This effect should only run once for the page lifetime
 
 
   const triggerCollectiveShift = useCallback(() => {
