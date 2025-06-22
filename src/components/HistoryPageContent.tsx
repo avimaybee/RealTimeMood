@@ -10,10 +10,9 @@ import { useDynamicColors } from '@/hooks/useDynamicColors';
 import type { Mood } from '@/types';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
 import TrendSummaryDisplay from '@/components/features/TrendSummaryDisplay';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { Skeleton } from '@/components/ui/skeleton';
 
 
 // Define a static, near-white mood for the history page's background
@@ -84,19 +83,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const HistoryPageContent = () => {
   useDynamicColors(historyPageMood);
   const [timeRange, setTimeRange] = useState<number>(30); // 30 days, 7 days, 1 day (for 24h)
-  const [chartData, setChartData] = useState<ReturnType<typeof generateMockData>>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    setIsLoading(true);
-    // Simulate fetching data async
-    const timer = setTimeout(() => {
-      setChartData(generateMockData(timeRange));
-      setIsLoading(false);
-    }, 1200); // 1.2 second delay
-
-    return () => clearTimeout(timer);
-  }, [timeRange]);
+  // By using useMemo, chartData is generated instantly and only re-calculated when timeRange changes.
+  // This removes the artificial loading delay.
+  const chartData = useMemo(() => generateMockData(timeRange), [timeRange]);
 
   const timeRanges = [
     { label: '30 Days', value: 30 },
@@ -149,7 +139,6 @@ const HistoryPageContent = () => {
                          timeRange !== range.value && "hover:bg-transparent"
                       )}
                       size="sm"
-                      disabled={isLoading}
                     >
                       {range.label}
                     </Button>
@@ -163,11 +152,6 @@ const HistoryPageContent = () => {
             </CardHeader>
             <CardContent>
               <ChartContainer config={{}} className="h-[300px] sm:h-[400px] w-full">
-                {isLoading ? (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Skeleton className="w-full h-full rounded-lg" />
-                  </div>
-                ) : (
                 <ResponsiveContainer>
                   <LineChart
                     data={chartData}
@@ -223,7 +207,6 @@ const HistoryPageContent = () => {
                     />
                   </LineChart>
                 </ResponsiveContainer>
-                )}
               </ChartContainer>
             </CardContent>
           </Card>
