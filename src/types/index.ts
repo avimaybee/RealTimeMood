@@ -54,3 +54,15 @@ export interface UserMood {
     l: number;
   };
 }
+
+/**
+ * Represents the data model for a historical mood snapshot in the 'moodSnapshots' collection.
+ */
+export interface HistoricalMoodSnapshot {
+  timestamp: FieldValue;
+  hue: number;
+  saturation: number;
+  lightness: number;
+  moodAdjective: string;
+  contributionCount: number;
+}
