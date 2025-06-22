@@ -1,3 +1,4 @@
+
 "use client";
 import React from 'react';
 import { Menu, BarChart2, MessageSquareQuote, X, Camera } from 'lucide-react';
@@ -15,7 +16,7 @@ interface AppFooterProps {
 }
 
 const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
-  const { appState, isCollectiveShifting } = useMood();
+  const { contributionCount, isCollectiveShifting } = useMood();
 
   const footerBaseClasses = "fixed bottom-0 mb-4 md:mb-6 p-2 z-50 frosted-glass rounded-2xl shadow-soft flex flex-col items-center overflow-hidden";
   const sizeClasses = "min-w-[200px] md:min-w-[280px] px-4";
@@ -51,7 +52,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
     >
       <div className="flex-shrink-0 w-full flex items-center justify-between h-[36px]">
         <div className="text-xs md:text-sm opacity-90">
-          {appState.contributionCount.toLocaleString()} moods shared
+          {contributionCount.toLocaleString()} moods shared
         </div>
         
         <Button 

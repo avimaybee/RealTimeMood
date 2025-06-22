@@ -1,3 +1,4 @@
+
 "use client";
 import React from 'react';
 import { useMood } from '@/contexts/MoodContext';
@@ -5,7 +6,7 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 const MainPromptDisplay: React.FC = () => {
-  const { appState, isCollectiveShifting } = useMood();
+  const { currentMood, userCount, isCollectiveShifting } = useMood();
 
   return (
     <motion.div 
@@ -24,17 +25,17 @@ const MainPromptDisplay: React.FC = () => {
       <p className={cn(
         "text-lg md:text-xl text-shadow-pop transition-opacity animate-text-breathe"
       )}>
-        The Collective Mood: <span className="font-semibold">{appState.currentMood.adjective}</span>
+        The Collective Mood: <span className="font-semibold">{currentMood.adjective}</span>
       </p>
       <p className="text-sm md:text-base text-shadow-pop opacity-80">
         <motion.span
-          key={Math.round(appState.userCount)}
+          key={Math.round(userCount)}
           initial={{ scale: 0.9 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 10 }}
           className="inline-block"
         >
-          {Math.round(appState.userCount).toLocaleString()}
+          {Math.round(userCount).toLocaleString()}
         </motion.span>
         {' '}minds connected
       </p>

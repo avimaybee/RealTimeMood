@@ -1,7 +1,7 @@
 
 "use client";
 import type { ReactNode } from 'react';
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { AppState, Mood } from '@/types';
 import { PREDEFINED_MOODS, moodToHslString } from '@/lib/colorUtils';
@@ -17,30 +17,41 @@ const initialState: AppState = {
   recentContributions: [PREDEFINED_MOODS[0]],
 };
 
-const MoodContext = createContext<{
-  appState: AppState;
+type MoodContextType = {
+  currentMood: Mood;
+  userCount: number;
+  contributionCount: number;
+  lastContributionTime: number | null;
+  lastContributorMoodColor: string | null;
+  lastContributionPosition: { x: number; y: number } | null;
+  recentContributions: Mood[];
   previewMood: Mood | null;
   setPreviewMood: (mood: Mood | null) => void;
-  setAppState: React.Dispatch<React.SetStateAction<AppState>>;
   updateMood: (newMood: Mood) => void;
   recordContribution: (mood: Mood, position: { x: number; y: number } | null) => void;
   triggerCollectiveShift: () => void;
   isCollectiveShifting: boolean;
-}>({
-  appState: initialState,
-  previewMood: null,
-  setPreviewMood: () => {},
-  setAppState: () => {},
-  updateMood: () => {},
-  recordContribution: () => {},
-  triggerCollectiveShift: () => {},
-  isCollectiveShifting: false,
-});
+};
 
-export const useMood = () => useContext(MoodContext);
+const MoodContext = createContext<MoodContextType | undefined>(undefined);
+
+export const useMood = () => {
+  const context = useContext(MoodContext);
+  if (context === undefined) {
+    throw new Error('useMood must be used within a MoodProvider');
+  }
+  return context;
+};
 
 export const MoodProvider = ({ children }: { children: ReactNode }) => {
-  const [appState, setAppState] = useState<AppState>(initialState);
+  const [currentMood, setCurrentMood] = useState<Mood>(initialState.currentMood);
+  const [userCount, setUserCount] = useState<number>(initialState.userCount);
+  const [contributionCount, setContributionCount] = useState<number>(initialState.contributionCount);
+  const [lastContributionTime, setLastContributionTime] = useState<number | null>(initialState.lastContributionTime);
+  const [lastContributorMoodColor, setLastContributorMoodColor] = useState<string | null>(initialState.lastContributorMoodColor);
+  const [lastContributionPosition, setLastContributionPosition] = useState<{ x: number; y: number } | null>(initialState.lastContributionPosition);
+  const [recentContributions, setRecentContributions] = useState<Mood[]>(initialState.recentContributions || []);
+  
   const [isCollectiveShifting, setIsCollectiveShifting] = useState(false);
   const [previewMood, setPreviewMood] = useState<Mood | null>(null);
   const lastPulsedHueRef = useRef<number>(initialState.currentMood.hue);
@@ -49,7 +60,6 @@ export const MoodProvider = ({ children }: { children: ReactNode }) => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate([100, 30, 100]); // Short, intense rumble
     }
-
     setIsCollectiveShifting(true);
     setTimeout(() => setIsCollectiveShifting(false), 1500); // Duration of shockwave animation
   }, []);
@@ -62,34 +72,23 @@ export const MoodProvider = ({ children }: { children: ReactNode }) => {
       triggerCollectiveShift();
       lastPulsedHueRef.current = newMood.hue;
     }
-
-    setAppState(prev => ({ ...prev, currentMood: newMood }));
+    setCurrentMood(newMood);
   }, [triggerCollectiveShift]);
 
   const recordContribution = useCallback((mood: Mood, position: { x: number, y: number } | null) => {
-    const contributorMoodColor = moodToHslString(mood);
-    
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate(50); 
     }
+    
+    setContributionCount(prev => prev + 1);
+    setLastContributionTime(Date.now());
+    setLastContributorMoodColor(moodToHslString(mood));
+    setLastContributionPosition(position);
+    setRecentContributions(prev => [mood, ...prev].slice(0, 5));
 
-    setAppState(prev => {
-      const newContributions = [mood, ...(prev.recentContributions || [])].slice(0, 5);
-      return {
-        ...prev,
-        contributionCount: prev.contributionCount + 1,
-        lastContributionTime: Date.now(),
-        lastContributorMoodColor: contributorMoodColor,
-        lastContributionPosition: position,
-        recentContributions: newContributions,
-      };
-    });
     setTimeout(() => {
-      setAppState(prev => ({
-          ...prev,
-          lastContributorMoodColor: null,
-          lastContributionPosition: null,
-        }));
+      setLastContributorMoodColor(null);
+      setLastContributionPosition(null);
     }, 2000);
   }, []);
 
@@ -102,14 +101,10 @@ export const MoodProvider = ({ children }: { children: ReactNode }) => {
       if (Math.random() > 0.5) {
           recordContribution(newMood, null);
       }
-
-    }, 5000); // Check for mood changes more frequently
+    }, 5000);
 
     const countInterval = setInterval(() => {
-      setAppState(prev => ({
-        ...prev,
-        userCount: Math.max(0, prev.userCount + Math.floor(Math.random() * 10) - 4.5),
-      }));
+      setUserCount(prev => Math.max(0, prev + Math.floor(Math.random() * 10) - 4.5));
     }, 5000);
     
     return () => {
@@ -118,8 +113,37 @@ export const MoodProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [updateMood, recordContribution]);
 
+  const contextValue = useMemo(() => ({
+    currentMood,
+    userCount,
+    contributionCount,
+    lastContributionTime,
+    lastContributorMoodColor,
+    lastContributionPosition,
+    recentContributions,
+    previewMood,
+    setPreviewMood,
+    updateMood,
+    recordContribution,
+    triggerCollectiveShift,
+    isCollectiveShifting,
+  }), [
+    currentMood,
+    userCount,
+    contributionCount,
+    lastContributionTime,
+    lastContributorMoodColor,
+    lastContributionPosition,
+    recentContributions,
+    previewMood,
+    updateMood,
+    recordContribution,
+    triggerCollectiveShift,
+    isCollectiveShifting,
+  ]);
+
   return (
-    <MoodContext.Provider value={{ appState, setAppState, updateMood, recordContribution, triggerCollectiveShift, isCollectiveShifting, previewMood, setPreviewMood }}>
+    <MoodContext.Provider value={contextValue}>
       {children}
     </MoodContext.Provider>
   );

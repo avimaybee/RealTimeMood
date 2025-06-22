@@ -4,7 +4,7 @@ import React from 'react';
 import { useMood } from '@/contexts/MoodContext';
 
 const CollectiveShiftEffect: React.FC = () => {
-  const { isCollectiveShifting, appState } = useMood();
+  const { isCollectiveShifting, currentMood } = useMood();
 
   if (!isCollectiveShifting) return null;
 
@@ -19,7 +19,7 @@ const CollectiveShiftEffect: React.FC = () => {
           width: '10px',
           height: '10px',
           background: 'transparent',
-          boxShadow: `0 0 30px 10px hsla(${appState.currentMood.hue}, ${appState.currentMood.saturation}%, ${appState.currentMood.lightness}%, 0.5), 0 0 50px 20px hsla(${appState.currentMood.hue}, ${appState.currentMood.saturation}%, ${appState.currentMood.lightness}%, 0.3) inset`,
+          boxShadow: `0 0 30px 10px hsla(${currentMood.hue}, ${currentMood.saturation}%, ${currentMood.lightness}%, 0.5), 0 0 50px 20px hsla(${currentMood.hue}, ${currentMood.saturation}%, ${currentMood.lightness}%, 0.3) inset`,
           opacity: 0,
         }}
       />

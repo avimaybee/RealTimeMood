@@ -4,8 +4,7 @@ import React from 'react';
 import { useMood } from '@/contexts/MoodContext';
 
 const GlobalRipple: React.FC = () => {
-  const { appState } = useMood();
-  const { lastContributorMoodColor, lastContributionPosition } = appState;
+  const { lastContributorMoodColor, lastContributionPosition } = useMood();
 
   if (!lastContributorMoodColor) {
     return null;

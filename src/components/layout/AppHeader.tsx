@@ -23,8 +23,8 @@ const AppHeaderLogo: React.FC<{ animationClass: string }> = ({ animationClass })
 );
 
 const AppHeader: React.FC = () => {
-  const { appState, isCollectiveShifting } = useMood();
-  const { adjective } = appState.currentMood;
+  const { currentMood, isCollectiveShifting } = useMood();
+  const { adjective } = currentMood;
 
   const animationClass = 
     adjective === 'Anxious' ? 'animate-logo-anxious' :

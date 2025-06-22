@@ -5,8 +5,8 @@ import { useMood } from '@/contexts/MoodContext';
 import { useDynamicColors } from '@/hooks/useDynamicColors';
 
 const DynamicBackground: React.FC = () => {
-  const { appState, previewMood } = useMood();
-  const moodToDisplay = previewMood || appState.currentMood;
+  const { currentMood, previewMood } = useMood();
+  const moodToDisplay = previewMood || currentMood;
 
   useDynamicColors(moodToDisplay);
 

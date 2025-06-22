@@ -6,7 +6,7 @@ import { moodToHslString } from '@/lib/colorUtils';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const MilestoneFireworks: React.FC = () => {
-  const { appState, appState: { contributionCount } } = useMood();
+  const { currentMood, contributionCount } = useMood();
   const [showFireworks, setShowFireworks] = useState(false);
   const [milestoneNumber, setMilestoneNumber] = useState(0);
   const prevContributionCountRef = useRef(contributionCount);
@@ -60,7 +60,7 @@ const MilestoneFireworks: React.FC = () => {
             exit={{ opacity: 0, scale: 0.7, y: -40, transition: { duration: 0.5, ease: 'easeIn' } }}
             className="text-4xl md:text-6xl font-bold text-white text-shadow-pop"
             style={{
-              filter: `drop-shadow(0 0 20px ${moodToHslString(appState.currentMood)}) drop-shadow(0 0 10px white)`
+              filter: `drop-shadow(0 0 20px ${moodToHslString(currentMood)}) drop-shadow(0 0 10px white)`
             }}
           >
             {milestoneNumber.toLocaleString()} Moods Shared!
@@ -81,7 +81,7 @@ const MilestoneFireworks: React.FC = () => {
               key={`burst-${burstIndex}-particle-${particleIndex}`}
               className="absolute top-1/2 left-1/2 rounded-full animate-fireworks-burst"
               style={{
-                backgroundColor: moodToHslString(appState.currentMood),
+                backgroundColor: moodToHslString(currentMood),
                 width: `${size}px`,
                 height: `${size}px`,
                 willChange: 'transform, opacity',

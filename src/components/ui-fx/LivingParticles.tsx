@@ -24,7 +24,7 @@ interface Particle {
 const NUM_PARTICLES = 40;
 
 const LivingParticles: React.FC = () => {
-  const { appState, isCollectiveShifting, lastContributionTime, lastContributionPosition, previewMood } = useMood();
+  const { currentMood, isCollectiveShifting, lastContributionTime, lastContributionPosition, previewMood } = useMood();
   const particlesRef = useRef<Particle[]>([]);
   const animationFrameRef = useRef<number>();
   const lastRippleTimeRef = useRef<number | null>(null);
@@ -32,12 +32,12 @@ const LivingParticles: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // This ref gives the animation loop a "live window" into the latest state from the context.
-  const latestStateRef = useRef({ appState, isCollectiveShifting, lastContributionTime, lastContributionPosition, previewMood });
+  const latestStateRef = useRef({ currentMood, isCollectiveShifting, lastContributionTime, lastContributionPosition, previewMood });
 
   // Keep the ref updated with the latest state on every render.
   useEffect(() => {
-    latestStateRef.current = { appState, isCollectiveShifting, lastContributionTime, lastContributionPosition, previewMood };
-  }, [appState, isCollectiveShifting, lastContributionTime, lastContributionPosition, previewMood]);
+    latestStateRef.current = { currentMood, isCollectiveShifting, lastContributionTime, lastContributionPosition, previewMood };
+  }, [currentMood, isCollectiveShifting, lastContributionTime, lastContributionPosition, previewMood]);
 
 
   const resetParticle = (p: Partial<Particle>, width: number, height: number, emanateFromCenter: boolean): Particle => {
@@ -90,7 +90,7 @@ const LivingParticles: React.FC = () => {
 
       // Access the live state inside the animation loop via the ref.
       const {
-        appState: latestAppState,
+        currentMood: latestCurrentMood,
         isCollectiveShifting: latestIsCollectiveShifting,
         lastContributionTime: latestLastContributionTime,
         lastContributionPosition: latestLastContributionPosition,
@@ -102,7 +102,7 @@ const LivingParticles: React.FC = () => {
       const centerX = width / 2;
       const centerY = height / 2;
       
-      const moodForBehavior = latestPreviewMood || latestAppState.currentMood;
+      const moodForBehavior = latestPreviewMood || latestCurrentMood;
 
       const rippleJustFired = latestLastContributionTime !== null && latestLastContributionTime !== lastRippleTimeRef.current;
       if (rippleJustFired) {
