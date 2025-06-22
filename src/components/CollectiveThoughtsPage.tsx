@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { useDynamicColors } from '@/hooks/useDynamicColors';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
+import { MoodProvider } from '@/contexts/MoodContext';
 
 // Static mood for this page for a clean, stable background
 const thoughtsPageMood: Mood = {
@@ -32,7 +33,7 @@ const mockQuotes = [
 ];
 
 
-const CollectiveThoughtsPage = () => {
+const CollectiveThoughtsPageContent = () => {
     useDynamicColors(thoughtsPageMood);
     const { toast } = useToast();
     const [index, setIndex] = useState(0);
@@ -205,7 +206,7 @@ const CollectiveThoughtsPage = () => {
                       height: '56px',
                       borderRadius: isInputVisible ? '1rem' : '9999px',
                     }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 30, mass: 0.8 }}
+                    transition={{ type: 'tween', duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
                     initial={false}
                     style={{ cursor: isSubmitting ? 'not-allowed' : (isInputVisible ? 'default' : 'pointer') }}
                   >
@@ -259,6 +260,15 @@ const CollectiveThoughtsPage = () => {
             </motion.div>
         </>
     );
+}
+
+
+const CollectiveThoughtsPage = () => {
+    return (
+        <MoodProvider>
+            <CollectiveThoughtsPageContent />
+        </MoodProvider>
+    )
 }
 
 export default CollectiveThoughtsPage;
