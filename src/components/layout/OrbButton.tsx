@@ -12,10 +12,12 @@ import { motion, type PanInfo, AnimatePresence } from 'framer-motion';
 import RadialBloomEffect from '@/components/ui-fx/RadialBloomEffect';
 import MoodSelectionButtons from '@/components/features/MoodSelectionButtons';
 import { useToast } from '@/hooks/use-toast';
+import { usePlatform } from '@/contexts/PlatformContext';
 
 const OrbButton: React.FC = () => {
   const { recordContribution, isCollectiveShifting, setPreviewMood } = useMood();
   const { toast } = useToast();
+  const { isIos } = usePlatform();
   const [interactionMode, setInteractionMode] = useState<'orb' | 'bar'>('orb');
   const [isCharging, setIsCharging] = useState(false);
   const [chargeData, setChargeData] = useState<{ mood: Mood } | null>(null);
@@ -265,9 +267,10 @@ const OrbButton: React.FC = () => {
             >
               <Plus 
                 className={cn(
-                  "w-10 h-10 stroke-2",
+                  "w-10 h-10",
                   animationState === 'orb' ? "text-white" : "text-transparent"
-                )} 
+                )}
+                strokeWidth={isIos ? 1.5 : 2}
               />
             </motion.div>
           </motion.div>
