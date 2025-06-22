@@ -10,11 +10,12 @@ import { useDynamicColors } from '@/hooks/useDynamicColors';
 import type { Mood } from '@/types';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
 import TrendSummaryDisplay from '@/components/features/TrendSummaryDisplay';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { findClosestMood } from '@/lib/colorUtils';
 import { usePlatform } from '@/contexts/PlatformContext';
+import { archiveCollectiveMoodIfNeeded } from '@/lib/archiving-service';
 
 
 // Define a static, near-white mood for the history page's background
@@ -128,6 +129,12 @@ const HistoryPageContent = () => {
   useDynamicColors(historyPageMood);
   const { isIos, isAndroid } = usePlatform();
   const [timeRange, setTimeRange] = useState<number>(30); // 30 days, 7 days, 1 day (for 24h)
+
+  useEffect(() => {
+    // This is a "fire and forget" background task. We don't need to await it
+    // or block the UI. Errors are handled within the function itself.
+    archiveCollectiveMoodIfNeeded();
+  }, []); // Run only once when the component mounts
 
   // By using useMemo, chartData is generated instantly and only re-calculated when timeRange changes.
   const chartData = useMemo(() => {

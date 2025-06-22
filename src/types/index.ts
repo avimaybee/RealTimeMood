@@ -1,5 +1,6 @@
 
-import type { FieldValue } from 'firebase/firestore';
+
+import type { FieldValue, Timestamp } from 'firebase/firestore';
 
 export interface Mood {
   hue: number;
@@ -35,7 +36,7 @@ export interface CollectiveMoodState {
   l: number; // HSL lightness component (0-100)
   moodAdjective: string;
   totalContributions: number;
-  lastUpdated: FieldValue; // Firestore serverTimestamp()
+  lastUpdated: FieldValue | Timestamp; // Firestore serverTimestamp()
   isBigBoomActive: boolean;
   lastMoods: SimpleMood[];
 }
@@ -46,7 +47,7 @@ export interface CollectiveMoodState {
  */
 export interface UserMood {
   hue: number;
-  timestamp: FieldValue;
+  timestamp: FieldValue | Timestamp;
   sessionId: string;
   contributorColor: {
     h: number;
@@ -61,7 +62,7 @@ export interface UserMood {
  */
 export interface UserActivity {
   sessionId: string;
-  lastActive: FieldValue;
+  lastActive: FieldValue | Timestamp;
 }
 
 
@@ -69,7 +70,7 @@ export interface UserActivity {
  * Represents the data model for a historical mood snapshot in the 'moodSnapshots' collection.
  */
 export interface HistoricalMoodSnapshot {
-  timestamp: FieldValue;
+  timestamp: FieldValue | Timestamp;
   hue: number;
   saturation: number;
   lightness: number;
@@ -82,7 +83,7 @@ export interface HistoricalMoodSnapshot {
  */
 export interface CommunityQuote {
   text: string;
-  submittedAt: FieldValue;
+  submittedAt: FieldValue | Timestamp;
   status: 'pending' | 'approved' | 'rejected';
   displayCount?: number;
 }
