@@ -105,7 +105,7 @@
 
 @layer utilities {
   .text-shadow-pop {
-    text-shadow: 0 0 15px hsla(0, 0%, 100%, 0.5);
+    text-shadow: 0 0 15px hsla(var(--primary-foreground-hsl), 0.5);
   }
   
   .frosted-glass {
@@ -173,6 +173,16 @@
     transition: opacity 0.4s ease-in-out, filter 0.4s ease-in-out;
     opacity: 0.2;
     filter: blur(8px);
+    pointer-events: none;
+  }
+  
+  /* When Ambient Mode is active, fade out all UI */
+  .ambient-mode-active-page > header,
+  .ambient-mode-active-page > main,
+  .ambient-mode-active-page > footer,
+  .ambient-mode-active-page > [data-orb-button-container] {
+    transition: opacity 1s ease-in-out;
+    opacity: 0;
     pointer-events: none;
   }
 

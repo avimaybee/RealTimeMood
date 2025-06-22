@@ -18,6 +18,7 @@ const PageContent: React.FC = () => {
   const { isCollectiveShifting } = useMood();
   const [isRadialBloomActive, setIsRadialBloomActive] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isAmbientMode, setIsAmbientMode] = React.useState(false);
 
   useEffect(() => {
     // Register Service Worker for PWA capabilities
@@ -46,14 +47,22 @@ const PageContent: React.FC = () => {
     return () => observer.disconnect();
   }, []);
 
+  const handlePageClick = () => {
+    if (isAmbientMode) {
+      setIsAmbientMode(false);
+    }
+  };
+
 
   return (
     <div 
       className={cn(
         "h-screen min-h-screen w-full flex flex-col items-center overflow-hidden",
         isRadialBloomActive ? 'radial-bloom-active-page' : '',
-        isMenuOpen ? 'menu-open-recede-children' : ''
+        isMenuOpen ? 'menu-open-recede-children' : '',
+        isAmbientMode ? 'ambient-mode-active-page' : ''
       )}
+      onClick={handlePageClick}
     >
       <DynamicBackground />
       <div className="vignette-overlay" />
@@ -80,7 +89,11 @@ const PageContent: React.FC = () => {
       
       <OrbButton /> 
       
-      <AppFooter isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+      <AppFooter 
+        isMenuOpen={isMenuOpen} 
+        setIsMenuOpen={setIsMenuOpen}
+        setIsAmbientMode={setIsAmbientMode} 
+      />
       
       <OnboardingOverlay />
 

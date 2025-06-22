@@ -1,7 +1,7 @@
 
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Menu, BarChart2, MessageSquareQuote, X, Camera, Loader2 } from 'lucide-react';
+import { Menu, BarChart2, MessageSquareQuote, X, Camera, Loader2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
@@ -13,9 +13,10 @@ import ShareSnapshotButton from '../features/ShareSnapshotButton';
 interface AppFooterProps {
   isMenuOpen: boolean;
   setIsMenuOpen: (isOpen: boolean) => void;
+  setIsAmbientMode: (isAmbient: boolean) => void;
 }
 
-const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
+const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsAmbientMode }) => {
   const { contributionCount, isCollectiveShifting } = useMood();
   const [loadingLink, setLoadingLink] = useState<string | null>(null);
 
@@ -45,13 +46,18 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
     }
   };
 
+  const handleAmbientClick = () => {
+    setIsAmbientMode(true);
+    setIsMenuOpen(false);
+  };
+
   return (
     <motion.footer 
       className={cn(footerBaseClasses, sizeClasses, "left-1/2")}
       style={{ x: "-50%" }}
       animate={{
         y: isCollectiveShifting ? 8 : 0,
-        height: isMenuOpen ? '220px' : '52px',
+        height: isMenuOpen ? '260px' : '52px',
       }}
       transition={{
         y: { type: "spring", stiffness: 100, damping: 10, delay: 0.1 },
@@ -128,6 +134,14 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
                   </Link>
                 </Button>
                 <ShareSnapshotButton />
+                <Button 
+                  variant="ghost" 
+                  className="text-base w-full"
+                  onClick={handleAmbientClick}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  Ambient Mode
+                </Button>
             </div>
           </motion.div>
         )}
