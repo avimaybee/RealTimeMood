@@ -11,7 +11,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        'sans-ios': ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
+        'sans-ios': ['-apple-system', 'SF Pro Text', 'BlinkMacSystemFont', 'Helvetica Neue', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
         'sans-android': ['Roboto', 'sans-serif'],
         code: ['monospace'],
       },
