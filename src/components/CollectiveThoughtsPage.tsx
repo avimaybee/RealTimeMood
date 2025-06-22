@@ -10,7 +10,6 @@ import type { Mood } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { useDynamicColors } from '@/hooks/useDynamicColors';
-import { Skeleton } from '@/components/ui/skeleton';
 
 // Static mood for this page for a clean, stable background
 const thoughtsPageMood: Mood = {
@@ -37,18 +36,9 @@ const CollectiveThoughtsPage = () => {
     const { toast } = useToast();
     const [index, setIndex] = useState(0);
     const [isInputVisible, setIsInputVisible] = useState(false);
-    const [isLoadingQuotes, setIsLoadingQuotes] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-    useEffect(() => {
-        // Simulate loading quotes from an API
-        const timer = setTimeout(() => {
-            setIsLoadingQuotes(false);
-        }, 1500); // 1.5 second delay
-        return () => clearTimeout(timer);
-    }, []);
 
     useEffect(() => {
         if (isInputVisible) {
@@ -88,7 +78,6 @@ const CollectiveThoughtsPage = () => {
     };
 
     const advanceQuote = useCallback((direction: 'next' | 'prev') => {
-        if (isLoadingQuotes) return;
         setIndex((prevIndex) => {
             if (direction === 'next') {
                 return (prevIndex + 1) % mockQuotes.length;
@@ -96,7 +85,7 @@ const CollectiveThoughtsPage = () => {
                 return (prevIndex - 1 + mockQuotes.length) % mockQuotes.length;
             }
         });
-    }, [isLoadingQuotes]);
+    }, []);
 
     const resetInterval = useCallback(() => {
         if (intervalRef.current) {
@@ -110,13 +99,11 @@ const CollectiveThoughtsPage = () => {
     }, [advanceQuote]);
     
     useEffect(() => {
-        if (!isLoadingQuotes) {
-            resetInterval();
-        }
+        resetInterval();
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
         };
-    }, [isLoadingQuotes, resetInterval]);
+    }, [resetInterval]);
 
     const handlePrevClick = () => {
         // --- Haptic and Audio Feedback for Manual Navigation ---
@@ -169,19 +156,12 @@ const CollectiveThoughtsPage = () => {
                             onClick={handlePrevClick}
                             aria-label="Previous thought"
                             className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 bg-muted/50 hover:bg-muted"
-                            disabled={isLoadingQuotes}
                         >
                             <ChevronLeft className="w-6 h-6" />
                         </Button>
 
                         <div className="w-full text-center">
                            <AnimatePresence mode="wait">
-                            {isLoadingQuotes ? (
-                                <div className="space-y-3 px-12">
-                                    <Skeleton className="h-8 w-full" />
-                                    <Skeleton className="h-8 w-2/3 mx-auto" />
-                                </div>
-                            ) : (
                                 <motion.p
                                     key={mockQuotes[index].id}
                                     initial={{ opacity: 0, y: 15 }}
@@ -192,7 +172,6 @@ const CollectiveThoughtsPage = () => {
                                 >
                                     "{mockQuotes[index].text}"
                                 </motion.p>
-                            )}
                            </AnimatePresence>
                         </div>
                         
@@ -202,7 +181,6 @@ const CollectiveThoughtsPage = () => {
                             onClick={handleNextClick}
                             aria-label="Next thought"
                             className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 bg-muted/50 hover:bg-muted"
-                            disabled={isLoadingQuotes}
                         >
                             <ChevronRight className="w-6 h-6" />
                         </Button>
