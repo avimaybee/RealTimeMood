@@ -194,16 +194,13 @@ const HistoryPageContent = () => {
             <CardHeader>
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                 <CardTitle>{getTitle()}</CardTitle>
-                <div className="flex gap-2 bg-muted/50 p-1 rounded-full">
+                <div className="flex items-center gap-2">
                   {timeRanges.map(range => (
                     <Button
                       key={range.value}
-                      variant={timeRange === range.value ? 'default' : 'ghost'}
+                      variant={timeRange === range.value ? 'default' : 'outline'}
                       onClick={() => setTimeRange(range.value)}
-                      className={cn(
-                        "rounded-full transition-all duration-300 text-xs sm:text-sm px-3 sm:px-4",
-                         timeRange !== range.value && "hover:bg-transparent"
-                      )}
+                      className="rounded-full px-4 text-xs"
                       size="sm"
                     >
                       {range.label}
