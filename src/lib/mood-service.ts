@@ -1,3 +1,4 @@
+
 import { db } from '@/lib/firebase';
 import { doc, runTransaction, serverTimestamp, setDoc } from 'firebase/firestore';
 import type { Mood, CollectiveMoodState, SimpleMood } from '@/types';
@@ -31,6 +32,7 @@ export async function submitMood(mood: Mood, sessionId: string): Promise<void> {
           moodAdjective: initialMood.adjective,
           totalContributions: 0,
           lastMoods: [{ h: mood.hue, s: mood.saturation, l: mood.lightness }],
+          isBigBoomActive: false,
         };
       } else {
         currentData = collectiveMoodDoc.data() as CollectiveMoodState;
@@ -55,6 +57,7 @@ export async function submitMood(mood: Mood, sessionId: string): Promise<void> {
         totalContributions: (currentData.totalContributions || 0) + 1,
         lastMoods: recentMoods,
         lastUpdated: serverTimestamp(),
+        isBigBoomActive: false, // Ensure this field is always present to match security rules
       };
 
       // Write the updated data back
