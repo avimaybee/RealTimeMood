@@ -2,6 +2,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
+import { PlatformProvider } from '@/contexts/PlatformContext';
 
 export const metadata: Metadata = {
   title: 'RealTimeMood',
@@ -23,8 +24,10 @@ export default function RootLayout({
         <meta name="theme-color" content="#1F1F1F" />
       </head>
       <body className="font-body antialiased">
-        {children}
-        <Toaster />
+        <PlatformProvider>
+          {children}
+          <Toaster />
+        </PlatformProvider>
       </body>
     </html>
   );
