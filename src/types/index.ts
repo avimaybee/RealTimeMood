@@ -1,3 +1,6 @@
+
+import type { FieldValue } from 'firebase/firestore';
+
 export interface Mood {
   hue: number;
   saturation: number;
@@ -20,4 +23,20 @@ export interface Quote {
   id: string;
   text: string;
   author: string;
+}
+
+/**
+ * Represents the data model for the collective mood state document in Firestore.
+ * This document is located at: db.collection('appState').doc('collectiveMood')
+ */
+export interface CollectiveMoodState {
+  h: number; // HSL hue component (0-360)
+  s: number; // HSL saturation component (0-100)
+  l: number; // HSL lightness component (0-100)
+  moodAdjective: string;
+  realUserCount: number;
+  echoUserCount: number;
+  totalContributions: number;
+  lastUpdated: FieldValue; // Firestore serverTimestamp()
+  isBigBoomActive: boolean;
 }
