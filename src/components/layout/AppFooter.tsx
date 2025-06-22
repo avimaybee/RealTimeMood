@@ -1,7 +1,7 @@
 
 "use client";
-import React from 'react';
-import { Menu, BarChart2, MessageSquareQuote, X, Camera } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Menu, BarChart2, MessageSquareQuote, X, Camera, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
@@ -17,6 +17,14 @@ interface AppFooterProps {
 
 const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
   const { contributionCount, isCollectiveShifting } = useMood();
+  const [loadingLink, setLoadingLink] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Reset loading state when the menu is closed
+    if (!isMenuOpen) {
+      setLoadingLink(null);
+    }
+  }, [isMenuOpen]);
 
   const footerBaseClasses = "fixed bottom-0 mb-4 md:mb-6 p-2 z-50 frosted-glass rounded-2xl shadow-soft flex flex-col items-center overflow-hidden";
   const sizeClasses = "min-w-[200px] md:min-w-[280px] px-4";
@@ -89,15 +97,33 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen }) => {
             <div className="w-full flex flex-col items-center">
                 <h3 className="text-lg font-semibold text-foreground">Menu</h3>
                 <Separator className="w-1/2 my-2" />
-                <Button asChild variant="ghost" className="text-base w-full">
+                <Button 
+                  asChild 
+                  variant="ghost" 
+                  className="text-base w-full"
+                  onClick={() => setLoadingLink('/history')}
+                >
                   <Link href="/history">
-                    <BarChart2 className="mr-2 h-4 w-4" />
+                    {loadingLink === '/history' ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <BarChart2 className="mr-2 h-4 w-4" />
+                    )}
                     View Mood History
                   </Link>
                 </Button>
-                 <Button asChild variant="ghost" className="text-base w-full">
+                 <Button 
+                  asChild 
+                  variant="ghost" 
+                  className="text-base w-full"
+                  onClick={() => setLoadingLink('/thoughts')}
+                >
                   <Link href="/thoughts">
-                    <MessageSquareQuote className="mr-2 h-4 w-4" />
+                    {loadingLink === '/thoughts' ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <MessageSquareQuote className="mr-2 h-4 w-4" />
+                    )}
                     Collective Thoughts
                   </Link>
                 </Button>
