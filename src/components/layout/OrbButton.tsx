@@ -150,14 +150,14 @@ const OrbButton: React.FC = () => {
       const chargeTimeout = setTimeout(() => {
         try {
           let ripplePosition: { x: number; y: number } | null = null;
-          if (barRef.current && interactionMode === 'bar') {
+          
+          // ALWAYS calculate the ripple position from the orb/bar element's center.
+          if (barRef.current) {
             const rect = barRef.current.getBoundingClientRect();
             ripplePosition = {
               x: rect.left + rect.width / 2,
               y: rect.top + rect.height / 2,
             };
-          } else if (bloomPoint) {
-            ripplePosition = bloomPoint;
           }
           
           recordContribution(chargeData.mood, ripplePosition);
@@ -181,7 +181,7 @@ const OrbButton: React.FC = () => {
 
       return () => clearTimeout(chargeTimeout);
     }
-  }, [isCharging, chargeData, recordContribution, toast, bloomPoint, interactionMode]);
+  }, [isCharging, chargeData, recordContribution, toast]);
   
   const isBar = interactionMode === 'bar';
   const orbContainerBaseClasses = "fixed bottom-24 md:bottom-32 z-40 flex items-center justify-center";
