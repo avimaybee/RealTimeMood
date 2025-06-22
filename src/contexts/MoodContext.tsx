@@ -3,9 +3,11 @@
 import type { ReactNode } from 'react';
 import React, { useRef, useMemo } from 'react';
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import type { AppState, Mood } from '@/types';
-import { PREDEFINED_MOODS, moodToHslString } from '@/lib/colorUtils';
+import type { AppState, Mood, CollectiveMoodState } from '@/types';
+import { PREDEFINED_MOODS, moodToHslString, findClosestMood } from '@/lib/colorUtils';
 import { submitMood, updateUserActivity } from '@/lib/mood-service';
+import { onSnapshot, doc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 const initialTotalUserCount = 1873;
 const initialState: AppState = {
@@ -136,6 +138,40 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     }
     setCurrentMood(newMood);
   }, [triggerCollectiveShift]);
+  
+  // Real-time listener for collective mood state
+  useEffect(() => {
+    if (!isLivePage) return;
+
+    const collectiveMoodRef = doc(db, 'appState/collectiveMood');
+
+    const unsubscribe = onSnapshot(collectiveMoodRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data() as CollectiveMoodState;
+        
+        const newMood: Mood = {
+          hue: data.h,
+          saturation: data.s,
+          lightness: data.l,
+          name: findClosestMood(data.h).name,
+          adjective: data.moodAdjective,
+        };
+
+        // Use the memoized updateMood to handle state changes and shockwave triggers
+        updateMood(newMood);
+        setContributionCount(data.totalContributions);
+        // Note: userCount is intentionally simulated locally and not set from here.
+      } else {
+        console.warn("Collective mood document does not exist in Firestore. The app will use its initial state.");
+      }
+    }, (error) => {
+      console.error("Error listening to collective mood changes:", error);
+    });
+
+    // Cleanup listener on component unmount
+    return () => unsubscribe();
+  }, [isLivePage, updateMood]);
+
 
   const recordContribution = useCallback((mood: Mood, position: { x: number, y: number } | null) => {
     // Optimistic UI updates for responsiveness
