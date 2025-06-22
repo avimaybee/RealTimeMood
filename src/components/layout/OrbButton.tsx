@@ -78,6 +78,7 @@ const OrbButton: React.FC = () => {
     if (isCharging) return;
     setInteractionMode('orb');
     setPreviewMood(null);
+    setChargeData(null); // Explicitly clear chargeData on dismiss
   }, [isCharging, setPreviewMood]);
 
 
@@ -157,7 +158,7 @@ const OrbButton: React.FC = () => {
         } finally {
           setIsCharging(false);
           setChargeData(null);
-          setInteractionMode('orb');
+          setInteractionMode('orb'); // Reset to orb after submission
         }
       }, 500);
 
@@ -257,7 +258,7 @@ const OrbButton: React.FC = () => {
           <AnimatePresence>
             {isBar && (
               <motion.p
-                className="absolute -top-8 w-full text-center text-sm text-white/90 text-shadow-pop pointer-events-none"
+                className="absolute -top-8 w-full text-center text-xs sm:text-sm text-white/90 text-shadow-pop pointer-events-none"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0, transition: { delay: 0.4, duration: 0.4 } }}
                 exit={{ opacity: 0, transition: { duration: 0.2 } }}
