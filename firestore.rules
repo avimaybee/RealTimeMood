@@ -1,0 +1,22 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // WARNING: These rules are open and are intended for prototyping apps
+    // with public data, like this one. For any app with user data or
+    // sensitive information, you must use more secure rules.
+    //
+    // For this RealTimeMood app, all data is public and anonymous, so
+    // these rules are appropriate.
+
+    // Allow public read/write to the application state and user activity.
+    match /appState/{docId} {
+      allow read, write: if true;
+    }
+
+    match /userActivity/{userId} {
+      allow read, write: if true;
+    }
+  }
+}
