@@ -1,3 +1,4 @@
+
 import type { FieldValue } from 'firebase/firestore';
 
 export interface Mood {
@@ -33,8 +34,6 @@ export interface CollectiveMoodState {
   s: number; // HSL saturation component (0-100)
   l: number; // HSL lightness component (0-100)
   moodAdjective: string;
-  realUserCount: number;
-  echoUserCount: number;
   totalContributions: number;
   lastUpdated: FieldValue; // Firestore serverTimestamp()
   isBigBoomActive: boolean;
