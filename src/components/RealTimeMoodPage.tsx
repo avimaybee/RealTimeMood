@@ -103,7 +103,7 @@ const PageContent: React.FC = () => {
 
 const RealTimeMoodPage: React.FC = () => {
   return (
-    <MoodProvider>
+    <MoodProvider isLivePage={true}>
       <PageContent />
     </MoodProvider>
   );

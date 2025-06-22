@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Menu, BarChart2, MessageSquareQuote, X, Camera, Loader2, Eye, Info } from 'lucide-react';
+import { Menu, BarChart2, MessageSquareQuote, X, Camera, Eye, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
@@ -17,14 +17,6 @@ interface AppFooterProps {
 
 const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsAmbientMode }) => {
   const { contributionCount, isCollectiveShifting } = useMood();
-  const [loadingLink, setLoadingLink] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Reset loading state when the menu is closed
-    if (!isMenuOpen) {
-      setLoadingLink(null);
-    }
-  }, [isMenuOpen]);
 
   const footerBaseClasses = "fixed bottom-0 mb-4 md:mb-6 p-2 z-50 frosted-glass rounded-2xl shadow-soft flex flex-col items-center overflow-hidden";
   const sizeClasses = "min-w-[200px] md:min-w-[280px] px-4";
@@ -106,14 +98,9 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                   asChild 
                   variant="ghost" 
                   className="text-base w-full justify-start"
-                  onClick={() => setLoadingLink('/history')}
                 >
                   <Link href="/history">
-                    {loadingLink === '/history' ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <BarChart2 className="mr-2 h-4 w-4" />
-                    )}
+                    <BarChart2 className="mr-2 h-4 w-4" />
                     View Mood History
                   </Link>
                 </Button>
@@ -121,14 +108,9 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                   asChild 
                   variant="ghost" 
                   className="text-base w-full justify-start"
-                  onClick={() => setLoadingLink('/thoughts')}
                 >
                   <Link href="/thoughts">
-                    {loadingLink === '/thoughts' ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <MessageSquareQuote className="mr-2 h-4 w-4" />
-                    )}
+                    <MessageSquareQuote className="mr-2 h-4 w-4" />
                     Collective Thoughts
                   </Link>
                 </Button>
@@ -136,14 +118,9 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                   asChild 
                   variant="ghost" 
                   className="text-base w-full justify-start"
-                  onClick={() => setLoadingLink('/about')}
                 >
                   <Link href="/about">
-                    {loadingLink === '/about' ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Info className="mr-2 h-4 w-4" />
-                    )}
+                    <Info className="mr-2 h-4 w-4" />
                     About
                   </Link>
                 </Button>

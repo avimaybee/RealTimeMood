@@ -43,7 +43,7 @@ export const useMood = () => {
   return context;
 };
 
-export const MoodProvider = ({ children }: { children: ReactNode }) => {
+export const MoodProvider = ({ children, isLivePage = false }: { children: ReactNode; isLivePage?: boolean; }) => {
   const [currentMood, setCurrentMood] = useState<Mood>(initialState.currentMood);
   const [userCount, setUserCount] = useState<number>(initialState.userCount);
   const [contributionCount, setContributionCount] = useState<number>(initialState.contributionCount);
@@ -93,6 +93,9 @@ export const MoodProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    // Only run the live updates if this prop is true
+    if (!isLivePage) return;
+
     const moodInterval = setInterval(() => {
       const randomIndex = Math.floor(Math.random() * PREDEFINED_MOODS.length);
       const newMood = PREDEFINED_MOODS[randomIndex];
@@ -111,7 +114,7 @@ export const MoodProvider = ({ children }: { children: ReactNode }) => {
       clearInterval(moodInterval);
       clearInterval(countInterval);
     };
-  }, [updateMood, recordContribution]);
+  }, [updateMood, recordContribution, isLivePage]);
 
   const contextValue = useMemo(() => ({
     currentMood,
