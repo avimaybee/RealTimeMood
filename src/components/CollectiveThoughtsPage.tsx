@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useDynamicColors } from '@/hooks/useDynamicColors';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
 import { MoodProvider } from '@/contexts/MoodContext';
+import { usePlatform } from '@/contexts/PlatformContext';
 
 // Static mood for this page for a clean, stable background
 const thoughtsPageMood: Mood = {
@@ -35,6 +36,7 @@ const mockQuotes = [
 
 const CollectiveThoughtsPageContent = () => {
     useDynamicColors(thoughtsPageMood);
+    const { isIos, isAndroid } = usePlatform();
     const { toast } = useToast();
     const [index, setIndex] = useState(0);
     const [isInputVisible, setIsInputVisible] = useState(false);
@@ -132,8 +134,8 @@ const CollectiveThoughtsPageContent = () => {
                 <header className="w-full max-w-5xl mx-auto flex items-center justify-between z-10 mb-8">
                     <Button asChild variant="outline" className="frosted-glass shadow-soft interactive-glow rounded-full w-10 h-10 p-0 md:w-auto md:px-4">
                         <Link href="/">
-                            <ArrowLeft className="h-4 w-4" />
-                            <span className="hidden md:inline md:ml-2">Back to Live</span>
+                            <ArrowLeft className="h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />
+                            {!isAndroid && <span className="hidden md:inline md:ml-2">Back to Live</span>}
                         </Link>
                     </Button>
                     <h1 className="text-xl md:text-2xl font-semibold flex items-center gap-3 frosted-glass shadow-soft px-6 py-3 rounded-full">

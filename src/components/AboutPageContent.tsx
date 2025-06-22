@@ -7,6 +7,7 @@ import { useDynamicColors } from '@/hooks/useDynamicColors';
 import type { Mood } from '@/types';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
 import { motion } from 'framer-motion';
+import { usePlatform } from '@/contexts/PlatformContext';
 
 const aboutPageMood: Mood = {
   hue: 220,
@@ -18,6 +19,7 @@ const aboutPageMood: Mood = {
 
 const AboutPageContent = () => {
   useDynamicColors(aboutPageMood);
+  const { isIos, isAndroid } = usePlatform();
 
   return (
     <>
@@ -33,8 +35,8 @@ const AboutPageContent = () => {
         <header className="w-full max-w-5xl mx-auto flex items-center justify-between z-10 mb-6">
           <Button asChild variant="outline" className="frosted-glass shadow-soft interactive-glow rounded-full w-10 h-10 p-0 md:w-auto md:px-4 md:flex-shrink-0">
             <Link href="/">
-              <ArrowLeft className="h-4 w-4" />
-              <span className="hidden md:inline md:ml-2">Back to Live</span>
+              <ArrowLeft className="h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />
+              {!isAndroid && <span className="hidden md:inline md:ml-2">Back to Live</span>}
             </Link>
           </Button>
           <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">

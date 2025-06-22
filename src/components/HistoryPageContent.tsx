@@ -14,6 +14,7 @@ import React, { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { findClosestMood } from '@/lib/colorUtils';
+import { usePlatform } from '@/contexts/PlatformContext';
 
 
 // Define a static, near-white mood for the history page's background
@@ -125,6 +126,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 const HistoryPageContent = () => {
   useDynamicColors(historyPageMood);
+  const { isIos, isAndroid } = usePlatform();
   const [timeRange, setTimeRange] = useState<number>(30); // 30 days, 7 days, 1 day (for 24h)
 
   // By using useMemo, chartData is generated instantly and only re-calculated when timeRange changes.
@@ -179,8 +181,8 @@ const HistoryPageContent = () => {
         <header className="w-full max-w-5xl mx-auto flex items-center justify-between z-10 mb-6">
             <Button asChild variant="outline" className="frosted-glass shadow-soft interactive-glow rounded-full w-10 h-10 p-0 md:w-auto md:px-4 md:flex-shrink-0">
               <Link href="/">
-                <ArrowLeft className="h-4 w-4" />
-                <span className="hidden md:inline md:ml-2">Back to Live</span>
+                <ArrowLeft className="h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />
+                {!isAndroid && <span className="hidden md:inline md:ml-2">Back to Live</span>}
               </Link>
             </Button>
             <h1 className="text-2xl md:text-3xl font-bold">
