@@ -151,15 +151,16 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
         if (prev >= 11) {
           newCount = prev - 1;
         } 
-        // If we are at the lower bound (1), always increase.
-        else if (prev <= 1) {
-          newCount = prev + 1;
-        } 
         // Otherwise, 50/50 chance to increase or decrease.
         else {
           newCount = chance < 0.5 ? prev + 1 : prev - 1;
         }
 
+        // Clamp the value to a minimum of 1
+        if (newCount < 1) {
+            newCount = 1;
+        }
+        
         // Trigger ripple effect if a user "joined"
         if (newCount > prev) {
           const randomX = window.innerWidth * (0.2 + Math.random() * 0.6);
