@@ -10,11 +10,11 @@ import { onSnapshot, doc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 
-const initialTotalUserCount = 1873;
+const initialTotalUserCount = 187;
 const initialState: AppState = {
   currentMood: PREDEFINED_MOODS[0],
   userCount: initialTotalUserCount,
-  contributionCount: 12587,
+  contributionCount: 1258,
   lastContributionTime: null,
   lastContributorMoodColor: null,
   lastContributionPosition: null,
