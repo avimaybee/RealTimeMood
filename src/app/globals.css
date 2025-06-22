@@ -176,6 +176,15 @@
     pointer-events: none;
   }
 
+  /* New class to prevent scrolling and text selection during drag interactions */
+  .no-scroll-select {
+    overflow: hidden !important;
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
+    user-select: none; /* Standard */
+  }
+
 
   @keyframes logo-calm {
     0%, 100% { filter: drop-shadow(0 0 3px hsl(var(--primary-hsl))); transform: scale(1); }

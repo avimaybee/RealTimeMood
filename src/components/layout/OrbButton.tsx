@@ -41,6 +41,19 @@ const OrbButton: React.FC = () => {
     };
   }, [interactionMode, isCharging]);
 
+  // Suppress browser default behaviors (scrolling, text selection) when bloom is active
+  useEffect(() => {
+    const className = 'no-scroll-select';
+    if (bloomPoint) {
+      document.body.classList.add(className);
+    } else {
+      document.body.classList.remove(className);
+    }
+    return () => {
+      document.body.classList.remove(className);
+    };
+  }, [bloomPoint]);
+
 
   const handleOrbTap = () => {
     clearLongPressTimeout();
