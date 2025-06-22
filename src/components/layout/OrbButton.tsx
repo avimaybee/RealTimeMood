@@ -28,6 +28,20 @@ const OrbButton: React.FC = () => {
     setIsClient(true);
   }, []);
 
+  // Add/remove class to body for UI dimming when bar is active
+  useEffect(() => {
+    const className = 'bar-mode-active-page';
+    if (interactionMode === 'bar') {
+      document.body.classList.add(className);
+    } else {
+      document.body.classList.remove(className);
+    }
+    return () => {
+      document.body.classList.remove(className);
+    };
+  }, [interactionMode]);
+
+
   const handleOrbTap = () => {
     clearLongPressTimeout();
     if (isCharging || bloomPoint) return;
@@ -39,7 +53,7 @@ const OrbButton: React.FC = () => {
   };
 
   const handleBarTap = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (!barRef.current) return;
+    if (!barRef.current || isCharging) return;
     const rect = barRef.current.getBoundingClientRect();
 
     let relativeX = info.point.x - rect.left;
@@ -56,11 +70,17 @@ const OrbButton: React.FC = () => {
       lightness: 60,
     };
 
-    setInteractionMode('orb');
     setChargeData({ mood: newMood });
     setIsCharging(true);
     setPreviewMood(null);
   };
+  
+  const handleDismissBar = useCallback(() => {
+    if (isCharging) return;
+    setInteractionMode('orb');
+    setPreviewMood(null);
+  }, [isCharging, setPreviewMood]);
+
 
   const handleLongPress = (point: {clientX: number, clientY: number}) => {
     if (interactionMode === 'bar' || isCharging) return;
@@ -100,34 +120,34 @@ const OrbButton: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && interactionMode === 'bar') {
-        setInteractionMode('orb');
-        setPreviewMood(null);
+        handleDismissBar();
       }
     };
     
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [interactionMode, setPreviewMood]);
+  }, [interactionMode, handleDismissBar]);
 
   useEffect(() => {
     if (isCharging && chargeData) {
       const chargeTimeout = setTimeout(() => {
         try {
-          if (barRef.current) {
-            const orbRect = barRef.current.getBoundingClientRect();
-            const ripplePosition = {
-              x: orbRect.left + orbRect.width / 2,
-              y: orbRect.top + orbRect.height / 2,
+          let ripplePosition: { x: number; y: number } | null = null;
+          if (barRef.current && interactionMode === 'bar') {
+            const rect = barRef.current.getBoundingClientRect();
+            ripplePosition = {
+              x: rect.left + rect.width / 2,
+              y: rect.top + rect.height / 2,
             };
-            recordContribution(chargeData.mood, ripplePosition);
-            toast({
-              title: "Mood Submitted",
-              description: `Your feeling of "${chargeData.mood.adjective}" has been added to the collective.`,
-            });
+          } else if (bloomPoint) {
+            ripplePosition = bloomPoint;
           }
-          setIsCharging(false);
-          setChargeData(null);
-          setInteractionMode('orb');
+          
+          recordContribution(chargeData.mood, ripplePosition);
+          toast({
+            title: "Mood Submitted",
+            description: `Your feeling of "${chargeData.mood.adjective}" has been added to the collective.`,
+          });
         } catch (error) {
           console.error('Error during charging sequence:', error);
           toast({
@@ -135,14 +155,16 @@ const OrbButton: React.FC = () => {
             description: "Could not submit mood.",
             variant: "destructive",
           });
+        } finally {
           setIsCharging(false);
           setChargeData(null);
+          setInteractionMode('orb');
         }
       }, 500);
 
       return () => clearTimeout(chargeTimeout);
     }
-  }, [isCharging, chargeData, recordContribution, toast]);
+  }, [isCharging, chargeData, recordContribution, toast, bloomPoint, interactionMode]);
   
   const isBar = interactionMode === 'bar';
   const orbContainerBaseClasses = "fixed bottom-24 md:bottom-32 z-40 flex items-center justify-center";
@@ -235,6 +257,16 @@ const OrbButton: React.FC = () => {
 
       {isClient && createPortal(
         <AnimatePresence>
+          {interactionMode === 'bar' && !isCharging && (
+            <motion.div
+              className="fixed inset-0 z-30 bg-black/30 backdrop-blur-sm"
+              onClick={handleDismissBar}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+            />
+          )}
           {bloomPoint && (
             <motion.div key="bloom-container">
               <div data-radial-bloom-active-page-marker />
