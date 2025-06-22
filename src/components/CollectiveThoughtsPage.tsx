@@ -6,13 +6,15 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { Mood } from '@/types';
+import type { Mood, CommunityQuote } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { useDynamicColors } from '@/hooks/useDynamicColors';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
-import { MoodProvider } from '@/contexts/MoodContext';
 import { usePlatform } from '@/contexts/PlatformContext';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Static mood for this page for a clean, stable background
 const thoughtsPageMood: Mood = {
@@ -23,26 +25,65 @@ const thoughtsPageMood: Mood = {
   adjective: "Contemplative",
 };
 
-
-// Mock quotes for demonstration
-const mockQuotes = [
-  { id: 1, text: "There's a spark of creativity in the air today." },
-  { id: 2, text: "Feeling a wave of calm wash over the world." },
-  { id: 3, text: "A moment of shared peace. It's beautiful." },
-  { id: 4, text: "Hope feels a little closer this evening." },
-  { id: 5, text: "A collective sigh of relief, perhaps?" },
+// Default quote if none are found in the database
+const defaultQuotes = [
+    { id: 'default', text: "Be the first to share a thought.", status: 'approved' as const, submittedAt: new Date() },
 ];
 
-
-const CollectiveThoughtsPageContent = () => {
+const CollectiveThoughtsPage = () => {
     useDynamicColors(thoughtsPageMood);
     const { isIos, isAndroid } = usePlatform();
     const { toast } = useToast();
+    const [quotes, setQuotes] = useState<(CommunityQuote & { id: string })[]>([]);
+    const [isLoadingQuotes, setIsLoadingQuotes] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
     const [index, setIndex] = useState(0);
     const [isInputVisible, setIsInputVisible] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+
+    const fetchQuotes = useCallback(async () => {
+        setIsLoadingQuotes(true);
+        setError(null);
+        try {
+            const quotesCollection = collection(db, 'communityQuotes');
+            const q = query(
+                quotesCollection,
+                where('status', '==', 'approved'),
+                orderBy('submittedAt', 'desc'),
+                limit(50) // Fetch a pool of 50 recent quotes
+            );
+            const querySnapshot = await getDocs(q);
+            const fetchedQuotes = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+            } as CommunityQuote & { id: string }));
+
+            if (fetchedQuotes.length > 0) {
+                setQuotes(fetchedQuotes);
+            } else {
+                setQuotes(defaultQuotes);
+            }
+        } catch (err) {
+            console.error("Error fetching quotes: ", err);
+            setError("Could not load thoughts at this time.");
+            setQuotes([{
+                id: 'error',
+                text: "Could not load thoughts. Please try again later.",
+                status: 'approved',
+                submittedAt: new Date()
+            }]);
+        } finally {
+            setIsLoadingQuotes(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchQuotes();
+    }, [fetchQuotes]);
 
     useEffect(() => {
         if (isInputVisible) {
@@ -54,39 +95,58 @@ const CollectiveThoughtsPageContent = () => {
         event.preventDefault();
         setIsSubmitting(true);
         const formData = new FormData(event.currentTarget);
-        const thought = formData.get('thought');
+        const thoughtText = (formData.get('thought') as string)?.trim();
 
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        if (!thoughtText || thoughtText.length === 0) {
+            toast({
+                title: "Empty Thought",
+                description: "Please share a thought before submitting.",
+                variant: "destructive"
+            });
+            setIsSubmitting(false);
+            return;
+        }
 
-        if (thought && typeof thought === 'string' && thought.trim().length > 0) {
+        try {
+            const quotesCollection = collection(db, 'communityQuotes');
+            await addDoc(quotesCollection, {
+                text: thoughtText,
+                submittedAt: serverTimestamp(),
+                status: 'approved', // No moderation, so auto-approved
+            });
+
             if (typeof navigator !== 'undefined' && navigator.vibrate) {
                 navigator.vibrate(100); 
             }
             toast({
                 title: "Thought Submitted",
-                description: `"${thought}" has been sent for review.`,
+                description: "Your thought has been shared with the collective.",
             });
             setIsInputVisible(false);
-        } else {
-             toast({
-                title: "Empty Thought",
-                description: "Please share a thought before submitting.",
+            // Re-fetch quotes to include the new one
+            fetchQuotes();
+        } catch (err) {
+            console.error("Error submitting thought: ", err);
+            toast({
+                title: "Submission Failed",
+                description: "Could not share your thought. Please try again.",
                 variant: "destructive"
             });
+        } finally {
+            setIsSubmitting(false);
         }
-        setIsSubmitting(false);
     };
 
     const advanceQuote = useCallback((direction: 'next' | 'prev') => {
+        if (quotes.length === 0) return;
         setIndex((prevIndex) => {
             if (direction === 'next') {
-                return (prevIndex + 1) % mockQuotes.length;
+                return (prevIndex + 1) % quotes.length;
             } else {
-                return (prevIndex - 1 + mockQuotes.length) % mockQuotes.length;
+                return (prevIndex - 1 + quotes.length) % quotes.length;
             }
         });
-    }, []);
+    }, [quotes.length]);
 
     const resetInterval = useCallback(() => {
         if (intervalRef.current) {
@@ -98,11 +158,13 @@ const CollectiveThoughtsPageContent = () => {
     }, [advanceQuote]);
     
     useEffect(() => {
-        resetInterval();
+        if (quotes.length > 1) {
+            resetInterval();
+        }
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
         };
-    }, [resetInterval]);
+    }, [quotes.length, resetInterval]);
 
     const handlePrevClick = () => {
         if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -119,6 +181,8 @@ const CollectiveThoughtsPageContent = () => {
         advanceQuote('next');
         resetInterval();
     };
+    
+    const currentQuote = quotes.length > 0 ? quotes[index] : null;
 
     return (
         <>
@@ -149,40 +213,53 @@ const CollectiveThoughtsPageContent = () => {
                     <Card className="w-full max-w-4xl frosted-glass shadow-soft rounded-2xl relative">
                         <CardContent className="p-8 md:p-12 min-h-[250px] flex items-center justify-center relative">
                             
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={handlePrevClick}
-                                aria-label="Previous thought"
-                                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 bg-background/20 hover:bg-background/40"
-                            >
-                                <ChevronLeft className="w-6 h-6" />
-                            </Button>
+                            {quotes.length > 1 && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={handlePrevClick}
+                                    aria-label="Previous thought"
+                                    className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 bg-background/20 hover:bg-background/40"
+                                >
+                                    <ChevronLeft className="w-6 h-6" />
+                                </Button>
+                            )}
 
                             <div className="w-full text-center px-8 sm:px-12">
-                               <AnimatePresence mode="wait">
-                                    <motion.p
-                                        key={mockQuotes[index].id}
-                                        initial={{ opacity: 0, y: 15 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -15 }}
-                                        transition={{ duration: 0.5, ease: "easeInOut" }}
-                                        className="text-2xl md:text-3xl font-normal text-center text-shadow-pop"
-                                    >
-                                        "{mockQuotes[index].text}"
-                                    </motion.p>
-                               </AnimatePresence>
+                               {isLoadingQuotes ? (
+                                   <div className="space-y-3">
+                                       <Skeleton className="h-8 w-full" />
+                                       <Skeleton className="h-8 w-3/4 mx-auto" />
+                                   </div>
+                               ) : (
+                                   <AnimatePresence mode="wait">
+                                        {currentQuote && (
+                                            <motion.p
+                                                key={currentQuote.id}
+                                                initial={{ opacity: 0, y: 15 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -15 }}
+                                                transition={{ duration: 0.5, ease: "easeInOut" }}
+                                                className="text-2xl md:text-3xl font-normal text-center text-shadow-pop"
+                                            >
+                                                "{currentQuote.text}"
+                                            </motion.p>
+                                        )}
+                                   </AnimatePresence>
+                               )}
                             </div>
                             
-                             <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={handleNextClick}
-                                aria-label="Next thought"
-                                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 bg-background/20 hover:bg-background/40"
-                            >
-                                <ChevronRight className="w-6 h-6" />
-                            </Button>
+                            {quotes.length > 1 && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={handleNextClick}
+                                    aria-label="Next thought"
+                                    className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 bg-background/20 hover:bg-background/40"
+                                >
+                                    <ChevronRight className="w-6 h-6" />
+                                </Button>
+                            )}
                         </CardContent>
                     </Card>
                 </main>
@@ -255,15 +332,4 @@ const CollectiveThoughtsPageContent = () => {
     );
 }
 
-
-const CollectiveThoughtsPage = () => {
-    return (
-        <MoodProvider>
-            <CollectiveThoughtsPageContent />
-        </MoodProvider>
-    )
-}
-
 export default CollectiveThoughtsPage;
-
-    
