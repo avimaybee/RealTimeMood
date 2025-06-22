@@ -12,7 +12,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyA19PhoRcoQq8QaNl-qiqwEextRP31AOzU",
   authDomain: "realtimemood.firebaseapp.com",
   projectId: "realtimemood",
-  storageBucket: "realtimemood.appspot.com",
+  storageBucket: "realtimemood.firebasestorage.app",
   messagingSenderId: "420032056630",
   appId: "1:420032056630:web:00142dbb47b01b9eec7797",
   measurementId: "G-0G8FXXYM2H"
