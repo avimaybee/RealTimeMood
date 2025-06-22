@@ -6,19 +6,8 @@ To get started, take a look at src/app/page.tsx.
 
 ## Firebase Configuration
 
-To run this application, you need to configure your Firebase project credentials.
+Your Firebase project credentials have been configured directly in the source code to resolve a persistent issue with the development environment.
 
-1.  **Open the `.env` file** in the root of your project.
-2.  **Add your Firebase project's configuration** to this file. You can find these values in your Firebase project settings under "General" -> "Your apps" -> "SDK setup and configuration".
+You can find the configuration in the `src/lib/firebase.ts` file.
 
-```
-NEXT_PUBLIC_FIREBASE_API_KEY="YOUR_API_KEY"
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="YOUR_AUTH_DOMAIN"
-NEXT_PUBLIC_FIREBASE_PROJECT_ID="YOUR_PROJECT_ID"
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="YOUR_STORAGE_BUCKET"
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="YOUR_MESSAGING_SENDER_ID"
-NEXT_PUBLIC_FIREBASE_APP_ID="YOUR_APP_ID"
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID="YOUR_MEASUREMENT_ID"
-```
-
-**Important:** Replace `"YOUR_..."` with your actual Firebase project credentials. The app will not be able to connect to Firebase services until you do.
+**Note for Production:** While this setup works for development, it is a security best practice to **not** commit credentials directly into your source code repository. For a production deployment, you should move these keys into your hosting provider's secret manager or environment variable system (e.g., using a `.env.local` file that is not checked into version control).
