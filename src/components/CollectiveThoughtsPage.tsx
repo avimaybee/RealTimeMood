@@ -58,12 +58,9 @@ const CollectiveThoughtsPageContent = () => {
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         if (thought && typeof thought === 'string' && thought.trim().length > 0) {
-            // --- Haptic and Audio Feedback on Success ---
             if (typeof navigator !== 'undefined' && navigator.vibrate) {
-                navigator.vibrate(100); // Confirming haptic buzz
+                navigator.vibrate(100); 
             }
-            // TODO: Play a distinct, soft "ding" sound for success
-
             toast({
                 title: "Thought Submitted",
                 description: `"${thought}" has been sent for review.`,
@@ -94,8 +91,6 @@ const CollectiveThoughtsPageContent = () => {
             clearInterval(intervalRef.current);
         }
         intervalRef.current = setInterval(() => {
-            // --- Audio Feedback for Auto-Cycle ---
-            // TODO: Play a very subtle "whisper" or "chime" sound
             advanceQuote('next');
         }, 10000);
     }, [advanceQuote]);
@@ -108,21 +103,17 @@ const CollectiveThoughtsPageContent = () => {
     }, [resetInterval]);
 
     const handlePrevClick = () => {
-        // --- Haptic and Audio Feedback for Manual Navigation ---
         if (typeof navigator !== 'undefined' && navigator.vibrate) {
-            navigator.vibrate(10); // Light haptic tap
+            navigator.vibrate(10); 
         }
-        // TODO: Play a soft click sound
         advanceQuote('prev');
         resetInterval();
     };
 
     const handleNextClick = () => {
-        // --- Haptic and Audio Feedback for Manual Navigation ---
         if (typeof navigator !== 'undefined' && navigator.vibrate) {
-            navigator.vibrate(10); // Light haptic tap
+            navigator.vibrate(10); 
         }
-        // TODO: Play a soft click sound
         advanceQuote('next');
         resetInterval();
     };
@@ -272,3 +263,5 @@ const CollectiveThoughtsPage = () => {
 }
 
 export default CollectiveThoughtsPage;
+
+    
