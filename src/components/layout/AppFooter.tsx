@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Menu, BarChart2, MessageSquareQuote, X, Camera, Loader2, Eye } from 'lucide-react';
+import { Menu, BarChart2, MessageSquareQuote, X, Camera, Loader2, Eye, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
@@ -56,7 +56,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
       style={{ x: "-50%" }}
       animate={{
         y: isCollectiveShifting ? 8 : 0,
-        height: isMenuOpen ? '260px' : '52px',
+        height: isMenuOpen ? '300px' : '52px',
       }}
       transition={{
         y: { type: "spring", stiffness: 100, damping: 10, delay: 0.1 },
@@ -130,6 +130,21 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                       <MessageSquareQuote className="mr-2 h-4 w-4" />
                     )}
                     Collective Thoughts
+                  </Link>
+                </Button>
+                <Button 
+                  asChild 
+                  variant="ghost" 
+                  className="text-base w-full justify-start"
+                  onClick={() => setLoadingLink('/about')}
+                >
+                  <Link href="/about">
+                    {loadingLink === '/about' ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Info className="mr-2 h-4 w-4" />
+                    )}
+                    About
                   </Link>
                 </Button>
                 <ShareSnapshotButton />
