@@ -14,7 +14,7 @@ const CollectiveShiftEffect: React.FC = () => {
       aria-hidden="true"
     >
       <div 
-        className="absolute aspect-square rounded-full animate-shockwave"
+        className="absolute aspect-square rounded-full animate-global-ripple-effect"
         style={{
           width: '10px',
           height: '10px',

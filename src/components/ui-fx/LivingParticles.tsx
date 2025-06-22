@@ -21,7 +21,7 @@ interface Particle {
   isNew?: boolean;
 }
 
-const NUM_PARTICLES = 120;
+const NUM_PARTICLES = 80;
 
 const LivingParticles: React.FC = () => {
   const { appState, isCollectiveShifting, lastContributionTime, lastContributionPosition, previewMood } = useMood();
@@ -188,8 +188,6 @@ const LivingParticles: React.FC = () => {
           }
           const isPushed = Math.abs(p.pushX) > 0.5 || Math.abs(p.pushY) > 0.5;
           node.style.transform = `translate3d(${p.x}px, ${p.y}px, 0px) scale(${isPushed ? 1.2 : 1})`;
-          node.style.filter = `brightness(${isPushed ? 1.5 : 1})`;
-          node.style.transition = 'transform 0.1s ease-out, filter 0.1s ease-out'; // For scale/brightness flash
         }
       });
     };
