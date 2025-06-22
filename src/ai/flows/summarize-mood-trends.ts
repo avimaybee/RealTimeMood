@@ -42,7 +42,7 @@ const prompt = ai.definePrompt({
     2.  **Describe the emotional journey:** Instead of just stating facts, describe the flow of feelings. For example: "The period began with a wave of creative energy, which then settled into a phase of quiet calm and focus."
     3.  **Maintain a human tone:** Be reflective, insightful, a little poetic. Avoid robotic or overly analytical language.
     4.  **Determine the dominant mood:** Based on the overall data, calculate the single dominant hue for the entire period.
-    5.  **CRITICAL:** Your response must be grammatically correct. Pay close attention to spelling. Specifically, you must use the word "The" and not the typo "Te".
+    5.  **Your response must be grammatically correct.**
 
     **Mood Reference (Hue -> Emotion):**
     - ~0: Passionate
