@@ -163,7 +163,7 @@
     pointer-events: none;
   }
 
-  /* When the footer menu is active, recede the page content */
+  /* When the footer menu is active, recede the page content (Android/Default) */
   .menu-open-recede-children > header,
   .menu-open-recede-children > main,
   .menu-open-recede-children > [data-orb-button-container] {
@@ -171,6 +171,17 @@
     opacity: 0.2;
     filter: blur(8px);
     transform: scale(0.95);
+    pointer-events: none;
+  }
+
+  /* More pronounced effect for iOS */
+  .ios-menu-open-recede-children > header,
+  .ios-menu-open-recede-children > main,
+  .ios-menu-open-recede-children > [data-orb-button-container] {
+    transition: opacity 0.5s ease-in-out, filter 0.5s ease-in-out, transform 0.5s ease-in-out;
+    opacity: 0.1;
+    filter: blur(16px);
+    transform: scale(0.92);
     pointer-events: none;
   }
 

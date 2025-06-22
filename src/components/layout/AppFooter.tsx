@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useEffect } from 'react';
 import { Menu, BarChart2, MessageSquareQuote, X, Camera, Eye, Info, Loader2 } from 'lucide-react';
@@ -9,6 +10,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Separator } from '../ui/separator';
 import ShareSnapshotButton from '../features/ShareSnapshotButton';
+import { usePlatform } from '@/contexts/PlatformContext';
 
 interface AppFooterProps {
   isMenuOpen: boolean;
@@ -20,6 +22,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
   const { contributionCount, isCollectiveShifting } = useMood();
   const [loadingPath, setLoadingPath] = useState<string | null>(null);
   const pathname = usePathname();
+  const { isIos, isAndroid } = usePlatform();
 
   // Effect to reset the loader when the page navigation is complete
   useEffect(() => {
@@ -37,7 +40,11 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
     }
   };
 
-  const footerBaseClasses = "fixed bottom-0 mb-4 md:mb-6 p-2 z-50 frosted-glass rounded-2xl shadow-soft flex flex-col items-center overflow-hidden";
+  const menuHeightTransition = isIos
+    ? { type: "spring", stiffness: 400, damping: 35 }
+    : { type: "tween", duration: 0.4, ease: [0.4, 0, 0.2, 1] };
+    
+  const footerBaseClasses = "fixed bottom-0 mb-4 md:mb-6 p-2 z-50 frosted-glass rounded-2xl flex flex-col items-center overflow-hidden";
   const sizeClasses = "min-w-[200px] md:min-w-[280px] px-4";
 
   const menuContentVariants = {
@@ -63,7 +70,12 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
 
   return (
     <motion.footer 
-      className={cn(footerBaseClasses, sizeClasses, "left-1/2")}
+      className={cn(
+        footerBaseClasses,
+        sizeClasses,
+        isAndroid ? 'shadow-lifted' : 'shadow-soft',
+        "left-1/2"
+      )}
       style={{ x: "-50%" }}
       animate={{
         y: isCollectiveShifting ? 8 : 0,
@@ -71,7 +83,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
       }}
       transition={{
         y: { type: "spring", stiffness: 100, damping: 10, delay: 0.1 },
-        height: { type: "tween", duration: 0.5, ease: [0.4, 0, 0.2, 1] },
+        height: menuHeightTransition,
       }}
     >
       <div className="flex-shrink-0 w-full flex items-center justify-between h-[36px]">
@@ -110,9 +122,9 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
             animate="visible"
             exit="exit"
           >
-            <div className="w-full flex flex-col items-center">
-                <h3 className="text-lg font-semibold text-foreground">Menu</h3>
-                <Separator className="w-1/2 my-2" />
+            <div className="w-full flex flex-col items-start">
+                <h3 className="text-lg font-semibold text-foreground w-full text-center">Menu</h3>
+                <Separator className="w-1/2 my-2 self-center" />
                 <Button 
                   asChild 
                   variant="ghost" 

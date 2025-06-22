@@ -14,12 +14,14 @@ import MainPromptDisplay from '@/components/layout/MainPromptDisplay';
 import { cn } from '@/lib/utils';
 import OnboardingOverlay from '@/components/features/OnboardingOverlay';
 import AddToHomeScreenPrompt from '@/components/features/AddToHomeScreenPrompt';
+import { usePlatform } from '@/contexts/PlatformContext';
 
 const PageContent: React.FC = () => {
   const { isCollectiveShifting } = useMood();
   const [isRadialBloomActive, setIsRadialBloomActive] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isAmbientMode, setIsAmbientMode] = React.useState(false);
+  const { isIos } = usePlatform();
 
   useEffect(() => {
     // Register Service Worker for PWA capabilities
@@ -60,7 +62,7 @@ const PageContent: React.FC = () => {
       className={cn(
         "h-screen min-h-screen w-full flex flex-col items-center overflow-hidden",
         isRadialBloomActive ? 'radial-bloom-active-page' : '',
-        isMenuOpen ? 'menu-open-recede-children' : '',
+        isMenuOpen ? (isIos ? 'ios-menu-open-recede-children' : 'menu-open-recede-children') : '',
         isAmbientMode ? 'ambient-mode-active-page' : ''
       )}
       onClick={handlePageClick}
