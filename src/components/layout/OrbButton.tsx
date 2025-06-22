@@ -31,7 +31,7 @@ const OrbButton: React.FC = () => {
   // Add/remove class to body for UI dimming when bar is active
   useEffect(() => {
     const className = 'bar-mode-active-page';
-    if (interactionMode === 'bar') {
+    if (interactionMode === 'bar' && !isCharging) {
       document.body.classList.add(className);
     } else {
       document.body.classList.remove(className);
@@ -39,7 +39,7 @@ const OrbButton: React.FC = () => {
     return () => {
       document.body.classList.remove(className);
     };
-  }, [interactionMode]);
+  }, [interactionMode, isCharging]);
 
 
   const handleOrbTap = () => {
@@ -256,12 +256,12 @@ const OrbButton: React.FC = () => {
           </motion.div>
 
           <AnimatePresence>
-            {isBar && (
+            {isBar && !isCharging && (
               <motion.p
                 className="absolute -top-8 w-full text-center text-xs sm:text-sm text-white/90 text-shadow-pop pointer-events-none"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0, transition: { delay: 0.4, duration: 0.4 } }}
-                exit={{ opacity: 0, transition: { duration: 0.2 } }}
+                exit={{ opacity: 0, y: 5, transition: { duration: 0.2 } }}
               >
                 Tap anywhere on the gradient to submit your mood
               </motion.p>
