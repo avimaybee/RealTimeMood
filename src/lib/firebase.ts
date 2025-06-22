@@ -1,4 +1,3 @@
-
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
@@ -19,10 +18,9 @@ const firebaseConfig = {
 // Initialize Firebase
 let app;
 if (!getApps().length) {
-  // Ensure that firebaseConfig values are not undefined
-  if (Object.values(firebaseConfig).some(v => v === undefined)) {
-    console.error("Firebase config is not fully set in environment variables.");
-    // Return a dummy object or throw an error, depending on desired behavior for incomplete config
+  // Add a check for placeholder values to provide a better error message.
+  if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes('YOUR_API_KEY')) {
+    console.error("Firebase config not found or contains placeholder values. Please update your .env file with your project's credentials. You can find them in your Firebase project settings.");
   }
   app = initializeApp(firebaseConfig);
 } else {
