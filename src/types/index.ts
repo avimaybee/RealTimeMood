@@ -57,6 +57,16 @@ export interface UserMood {
 }
 
 /**
+ * Represents a user's activity document in the 'userActivity' collection.
+ * This is used for a "heartbeat" to track active sessions.
+ */
+export interface UserActivity {
+  sessionId: string;
+  lastActive: FieldValue;
+}
+
+
+/**
  * Represents the data model for a historical mood snapshot in the 'moodSnapshots' collection.
  */
 export interface HistoricalMoodSnapshot {

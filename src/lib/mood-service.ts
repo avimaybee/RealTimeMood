@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { doc, runTransaction, serverTimestamp } from 'firebase/firestore';
+import { doc, runTransaction, serverTimestamp, setDoc } from 'firebase/firestore';
 import type { Mood, CollectiveMoodState, SimpleMood } from '@/types';
 import { averageHsl, findClosestMood, PREDEFINED_MOODS } from './colorUtils';
 
@@ -68,5 +68,24 @@ export async function submitMood(mood: Mood, sessionId: string): Promise<void> {
     console.error("Mood submission transaction failed: ", error);
     // Rethrow the error so the calling function can handle it, e.g., show a toast
     throw new Error("Failed to submit mood. Please try again.");
+  }
+}
+
+/**
+ * Updates a user's activity heartbeat in Firestore.
+ * This is used to track "active" users.
+ * @param sessionId - The anonymous identifier for the user's session.
+ */
+export async function updateUserActivity(sessionId: string): Promise<void> {
+  const userActivityRef = doc(db, 'userActivity', sessionId);
+  try {
+    // Using set with merge is efficient for create/update operations
+    await setDoc(userActivityRef, {
+      sessionId: sessionId,
+      lastActive: serverTimestamp(),
+    }, { merge: true });
+  } catch (error) {
+    console.error("User activity heartbeat failed: ", error);
+    // This is a background task, so we don't rethrow. We don't want to interrupt the user.
   }
 }

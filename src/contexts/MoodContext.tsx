@@ -5,7 +5,7 @@ import React, { useRef, useMemo } from 'react';
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { AppState, Mood } from '@/types';
 import { PREDEFINED_MOODS, moodToHslString } from '@/lib/colorUtils';
-import { submitMood } from '@/lib/mood-service';
+import { submitMood, updateUserActivity } from '@/lib/mood-service';
 
 const initialTotalUserCount = 1873;
 const initialState: AppState = {
@@ -65,6 +65,57 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
         sessionIdRef.current = Date.now().toString(36) + Math.random().toString(36).substring(2);
     }
   }, []);
+
+  // Heartbeat effect for user activity tracking
+  useEffect(() => {
+    if (!isLivePage || !sessionIdRef.current) return;
+
+    const sessionId = sessionIdRef.current;
+    let intervalId: NodeJS.Timeout | null = null;
+
+    const heartbeat = () => {
+      updateUserActivity(sessionId);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        heartbeat(); // Immediately send a heartbeat on focus
+        if (!intervalId) {
+          intervalId = setInterval(heartbeat, 30000); // Resume 30-second interval
+        }
+      } else {
+        if (intervalId) {
+          clearInterval(intervalId);
+          intervalId = null;
+        }
+      }
+    };
+
+    // Initial heartbeat
+    heartbeat();
+    intervalId = setInterval(heartbeat, 30000); // 30 seconds
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isLivePage]);
+
+  // Simulate user count fluctuation for a dynamic feel
+  useEffect(() => {
+    if (!isLivePage) return;
+
+    const intervalId = setInterval(() => {
+      const change = (Math.random() - 0.5) * 4; // Fluctuate by -2 to +2
+      setUserCount(prev => Math.max(1, Math.round(prev + change)));
+    }, 3000); // Update every 3 seconds
+
+    return () => clearInterval(intervalId);
+  }, [isLivePage]);
 
 
   const triggerCollectiveShift = useCallback(() => {
