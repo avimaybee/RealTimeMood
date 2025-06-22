@@ -10,11 +10,11 @@ import { onSnapshot, doc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 
-const initialTotalUserCount = 12;
+const initialTotalUserCount = 8;
 const initialState: AppState = {
   currentMood: PREDEFINED_MOODS[0],
   userCount: initialTotalUserCount,
-  contributionCount: 84,
+  contributionCount: 13,
   lastContributionTime: null,
   lastContributorMoodColor: null,
   lastContributionPosition: null,
@@ -140,36 +140,45 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
 
     const runSimulation = () => {
       // Schedule the next simulation event at a random interval
-      const nextEventIn = 1500 + Math.random() * 3500; // 1.5s to 5s
+      const nextEventIn = 2000 + Math.random() * 4000; // 2s to 6s
       simulationTimeout = setTimeout(runSimulation, nextEventIn);
 
-      const chance = Math.random();
+      setUserCount(prev => {
+        let newCount;
+        const chance = Math.random();
 
-      // ~60% chance of a user joining, ~40% chance of leaving. This creates a fluctuating count.
-      if (chance < 0.6) {
-        // User joins
-        setUserCount(prev => prev + 1);
-        
-        // Trigger a subtle ripple for the new "connection"
-        const randomX = window.innerWidth * (0.2 + Math.random() * 0.6);
-        const randomY = window.innerHeight * (0.2 + Math.random() * 0.6);
-        
-        // Use the ref to get the latest mood without adding it as a dependency
-        const latestMood = currentMoodRef.current;
-        const rippleColor = `hsl(${latestMood.hue}, ${latestMood.saturation}%, ${Math.min(100, latestMood.lightness + 15)}%)`;
-        
-        setLastContributorMoodColor(rippleColor);
-        setLastContributionPosition({ x: randomX, y: randomY });
+        // If we are at the upper bound (11), always decrease.
+        if (prev >= 11) {
+          newCount = prev - 1;
+        } 
+        // If we are at the lower bound (1), always increase.
+        else if (prev <= 1) {
+          newCount = prev + 1;
+        } 
+        // Otherwise, 50/50 chance to increase or decrease.
+        else {
+          newCount = chance < 0.5 ? prev + 1 : prev - 1;
+        }
 
-        setTimeout(() => {
-            setLastContributorMoodColor(null);
-            setLastContributionPosition(null);
-        }, 2000); // Ripple effect duration
+        // Trigger ripple effect if a user "joined"
+        if (newCount > prev) {
+          const randomX = window.innerWidth * (0.2 + Math.random() * 0.6);
+          const randomY = window.innerHeight * (0.2 + Math.random() * 0.6);
+          
+          const latestMood = currentMoodRef.current;
+          const rippleColor = `hsl(${latestMood.hue}, ${latestMood.saturation}%, ${Math.min(100, latestMood.lightness + 15)}%)`;
+          
+          setLastContributorMoodColor(rippleColor);
+          setLastContributionPosition({ x: randomX, y: randomY });
 
-      } else {
-        // User leaves, but ensure count doesn't drop too low
-        setUserCount(prev => Math.max(initialTotalUserCount - 4, prev - 1)); // Maintain a minimum count
-      }
+          setTimeout(() => {
+              setLastContributorMoodColor(null);
+              setLastContributionPosition(null);
+          }, 2000); // Ripple effect duration
+        }
+        
+        return newCount;
+      });
     };
 
     // Start the simulation loop with a small delay
