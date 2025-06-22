@@ -165,6 +165,16 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                     )}
                   </Link>
                 </Button>
+                <ShareSnapshotButton />
+                <Button 
+                  variant="ghost" 
+                  className="text-base w-full justify-start"
+                  onClick={handleAmbientClick}
+                  disabled={!!loadingPath}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  Ambient Mode
+                </Button>
                 <Button 
                   asChild 
                   variant="ghost" 
@@ -184,16 +194,6 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                       </>
                     )}
                   </Link>
-                </Button>
-                <ShareSnapshotButton />
-                <Button 
-                  variant="ghost" 
-                  className="text-base w-full justify-start"
-                  onClick={handleAmbientClick}
-                  disabled={!!loadingPath}
-                >
-                  <Eye className="mr-2 h-4 w-4" />
-                  Ambient Mode
                 </Button>
             </div>
           </motion.div>
