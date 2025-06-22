@@ -95,17 +95,21 @@ const OrbButton: React.FC = () => {
   }, [isCharging, setPreviewMood]);
 
 
-  const handleLongPress = (point: {clientX: number, clientY: number}) => {
-    if (interactionMode === 'bar' || isCharging) return;
-    setBloomPoint({ x: point.clientX, y: point.clientY });
+  const handleLongPress = () => {
+    if (interactionMode === 'bar' || isCharging || !barRef.current) return;
+    
+    const rect = barRef.current.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    
+    setBloomPoint({ x, y });
   };
   
   const handlePointerDown = (event: ReactPointerEvent) => {
     if (interactionMode !== 'orb' || isCharging || bloomPoint) return;
     
-    const { clientX, clientY } = event;
     longPressTimeoutRef.current = setTimeout(() => {
-      handleLongPress({ clientX, clientY });
+      handleLongPress();
     }, 250);
   };
 
