@@ -15,7 +15,7 @@ const RadialBloomEffect: React.FC<RadialBloomEffectProps> = ({ point }) => {
     <motion.div
       className="fixed inset-0 z-30 pointer-events-none"
       style={{
-        backdropFilter: 'blur(12px)',
+        backdropFilter: 'blur(8px)',
         '--mask-size': '0px',
         maskImage: `radial-gradient(circle at ${point.x}px ${point.y}px, black 0%, black var(--mask-size), transparent var(--mask-size))`,
         WebkitMaskImage: `radial-gradient(circle at ${point.x}px ${point.y}px, black 0%, black var(--mask-size), transparent var(--mask-size))`,

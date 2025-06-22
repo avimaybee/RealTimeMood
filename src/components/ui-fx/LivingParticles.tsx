@@ -21,7 +21,7 @@ interface Particle {
   isNew?: boolean;
 }
 
-const NUM_PARTICLES = 80;
+const NUM_PARTICLES = 40;
 
 const LivingParticles: React.FC = () => {
   const { appState, isCollectiveShifting, lastContributionTime, lastContributionPosition, previewMood } = useMood();

@@ -17,12 +17,12 @@ const MainPromptDisplay: React.FC = () => {
       transition={{ type: 'spring', stiffness: 100, damping: 10 }}
     >
       <h1 className={cn(
-          "text-3xl md:text-4xl font-light text-shadow-pop transition-opacity"
+          "text-3xl md:text-4xl font-light text-shadow-pop transition-opacity animate-text-breathe"
         )}>
         How are you feeling right now?
       </h1>
       <p className={cn(
-        "text-lg md:text-xl text-shadow-pop transition-opacity"
+        "text-lg md:text-xl text-shadow-pop transition-opacity animate-text-breathe"
       )}>
         The Collective Mood: <span className="font-semibold">{appState.currentMood.adjective}</span>
       </p>
