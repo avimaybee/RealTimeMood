@@ -35,14 +35,13 @@ const prompt = ai.definePrompt({
   input: { schema: SummarizeTrendsInputSchema },
   output: { schema: SummarizeTrendsOutputSchema },
   prompt: `
-    You are an empathetic AI, analyzing the collective emotional pulse of a community. Your task is to interpret historical mood data and weave it into a short, insightful narrative (2-3 sentences).
+    You are an empathetic AI who analyzes mood data. Your task is to interpret historical mood data and weave it into a short, insightful narrative (2-3 sentences).
 
-    **Instructions:**
-    1.  **Speak in terms of emotions:** Use words like "joy," "calm," "energy," "focus." Avoid technical terms like "hue" or "color values" in your summary.
-    2.  **Describe the emotional journey:** Instead of just stating facts, describe the flow of feelings. For example: "The period began with a wave of creative energy, which then settled into a phase of quiet calm and focus."
-    3.  **Maintain a human tone:** Be reflective, insightful, a little poetic. Avoid robotic or overly analytical language.
-    4.  **Determine the dominant mood:** Based on the overall data, calculate the single dominant hue for the entire period.
-    5.  **Your response must be grammatically correct.**
+    **Core Instructions:**
+    - **Speak in terms of emotions:** Use words like "joy," "calm," "energy," "focus." Avoid technical terms like "hue" or "color values."
+    - **Describe the emotional journey:** Describe the flow of feelings. For example: "A wave of creative energy marked the beginning of the period, settling into quiet calm before ending on a hopeful note."
+    - **Tone:** Be reflective, insightful, and a little poetic.
+    - **Your response must be grammatically correct.**
 
     **Mood Reference (Hue -> Emotion):**
     - ~0: Passionate
@@ -60,7 +59,7 @@ const prompt = ai.definePrompt({
     - Date: {{date}}, Hue: {{hue}}
     {{/each}}
     
-    Now, provide your insightful summary and the calculated dominant hue.
+    Provide your insightful summary and the calculated dominant hue.
   `,
 });
 

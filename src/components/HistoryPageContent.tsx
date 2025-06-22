@@ -211,7 +211,7 @@ const HistoryPageContent = () => {
                   ))}
                 </div>
               </div>
-              <CardDescription>
+              <CardDescription className="text-foreground/70">
                 This chart shows the trend of the collective emotional tone over time.
               </CardDescription>
               <TrendSummaryDisplay historyData={historyDataForAI} />
