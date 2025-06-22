@@ -5,6 +5,7 @@ import { summarizeTrends } from '@/ai/flows/summarize-mood-trends';
 import type { SummarizeTrendsInput, SummarizeTrendsOutput } from '@/ai/flows/summarize-mood-trends';
 import { useTypewriter } from '@/hooks/useTypewriter';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AlertCircle } from 'lucide-react';
 
 interface TrendSummaryDisplayProps {
   historyData: SummarizeTrendsInput['historyData'];
@@ -54,8 +55,9 @@ const TrendSummaryDisplay: React.FC<TrendSummaryDisplayProps> = ({ historyData }
   
   if (error) {
      return (
-        <div className="mt-4 pt-4 border-t border-border/50">
-            <p className="text-sm text-destructive">{error}</p>
+        <div className="mt-4 pt-4 border-t border-border/50 flex items-center gap-2 text-destructive">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            <p className="text-sm">{error}</p>
         </div>
      );
   }
