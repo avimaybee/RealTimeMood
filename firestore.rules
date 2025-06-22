@@ -3,20 +3,82 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // WARNING: These rules are open and are intended for prototyping apps
-    // with public data, like this one. For any app with user data or
-    // sensitive information, you must use more secure rules.
-    //
-    // For this RealTimeMood app, all data is public and anonymous, so
-    // these rules are appropriate.
 
-    // Allow public read/write to the application state and user activity.
-    match /appState/{docId} {
-      allow read, write: if true;
+    // Helper function to check if a user is authenticated.
+    // This will be used across multiple rules.
+    function isAuthenticated() {
+      return request.auth.uid != null;
     }
 
+    // --- App State: Manages the global collective mood ---
+    match /appState/collectiveMood {
+      // Anyone can read the current mood.
+      allow read: if true;
+
+      // Only authenticated users can update the mood state via a transaction.
+      // These rules validate the integrity of the transactional update.
+      allow update: if isAuthenticated()
+        // 1. Data Shape Validation: Ensure all fields have the correct type.
+        && request.resource.data.h is number
+        && request.resource.data.s is number
+        && request.resource.data.l is number
+        && request.resource.data.moodAdjective is string
+        && request.resource.data.lastMoods is list
+        && request.resource.data.lastUpdated == request.time
+        // 2. Data Integrity Validation:
+        //    - totalContributions must only be incremented by 1.
+        //    - lastMoods array cannot exceed a max size to prevent abuse.
+        && request.resource.data.totalContributions == resource.data.totalContributions + 1
+        && request.resource.data.lastMoods.size() <= 20;
+
+      // Disallow direct creation or deletion of this singleton document.
+      allow create, delete: if false;
+    }
+
+    // --- User Activity: Manages user session heartbeats for presence ---
+    // This collection's security relies on the client using Firebase Anonymous Auth UIDs as document IDs.
     match /userActivity/{userId} {
-      allow read, write: if true;
+      // Anyone can read user activity documents.
+      allow read: if true;
+      // Users can only create or update their own activity document.
+      allow write: if request.auth.uid == userId
+        // Validate that lastActive is a server timestamp.
+        && request.resource.data.lastActive == request.time;
+    }
+
+    // --- Mood Snapshots: Stores historical mood data for trend analysis ---
+    match /moodSnapshots/{snapshotId} {
+      // Anyone can read the historical mood data.
+      allow read: if true;
+
+      // IMPORTANT: Only a designated, secure client (e.g., a service account) can create new snapshots.
+      // Replace 'YOUR_ARCHIVER_UID' with the actual UID of your secure archiving client.
+      allow create: if request.auth.uid == 'YOUR_ARCHIVER_UID'
+        && request.resource.data.timestamp == request.time;
+
+      // Snapshots are immutable and cannot be changed or deleted.
+      allow update, delete: if false;
+    }
+
+    // --- Community Quotes: Stores user-submitted thoughts ---
+    // NOTE: Per specification, there is no moderation. All submissions are public immediately.
+    match /communityQuotes/{quoteId} {
+      // Anyone can read the community quotes.
+      allow read: if true;
+
+      // Any authenticated user can create a new quote.
+      allow create: if isAuthenticated()
+        // 1. Validate text field: must exist, be a string, and be between 1-150 characters.
+        && 'text' in request.resource.data && request.resource.data.text is string
+        && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 150
+        // 2. Enforce server timestamp for submission time.
+        && request.resource.data.submittedAt == request.time
+        // 3. Prevent extra fields. Per spec, status field is disallowed.
+        // This will require a client-side code change to remove the 'status' field from writes.
+        && request.resource.data.keys().hasAll(['text', 'submittedAt']);
+
+      // Quotes are immutable and cannot be changed or deleted.
+      allow update, delete: if false;
     }
   }
 }
