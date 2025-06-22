@@ -1,5 +1,5 @@
 
-import type { Mood } from '@/types';
+import type { Mood, SimpleMood } from '@/types';
 
 /**
  * Calculates the relative luminance of an HSL color.
@@ -112,4 +112,41 @@ export function findClosestMood(hue: number): Mood {
       const currDiff = shortestAngleDiff(hue, curr.hue);
       return currDiff < prevDiff ? curr : prev;
     });
+}
+
+
+/**
+ * Averages an array of HSL color objects, correctly handling the circular nature of hue.
+ * @param moods An array of {h, s, l} objects.
+ * @returns A single {h, s, l} object representing the average color.
+ */
+export function averageHsl(moods: SimpleMood[]): SimpleMood {
+  if (moods.length === 0) {
+    return { h: 210, s: 100, l: 70 }; // Default to 'Calm'
+  }
+  
+  let sumX = 0;
+  let sumY = 0;
+  let sumS = 0;
+  let sumL = 0;
+
+  for (const mood of moods) {
+    const angle = (mood.h * Math.PI) / 180;
+    sumX += Math.cos(angle);
+    sumY += Math.sin(angle);
+    sumS += mood.s;
+    sumL += mood.l;
+  }
+
+  const avgX = sumX / moods.length;
+  const avgY = sumY / moods.length;
+  
+  const avgAngle = Math.atan2(avgY, avgX);
+  const avgHue = (avgAngle * 180) / Math.PI;
+
+  return {
+    h: (avgHue + 360) % 360,
+    s: sumS / moods.length,
+    l: sumL / moods.length,
+  };
 }

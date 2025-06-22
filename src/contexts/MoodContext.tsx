@@ -5,6 +5,7 @@ import React, { useRef, useMemo } from 'react';
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { AppState, Mood } from '@/types';
 import { PREDEFINED_MOODS, moodToHslString } from '@/lib/colorUtils';
+import { submitMood } from '@/lib/mood-service';
 
 const initialTotalUserCount = 1873;
 const initialState: AppState = {
@@ -55,6 +56,16 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
   const [isCollectiveShifting, setIsCollectiveShifting] = useState(false);
   const [previewMood, setPreviewMood] = useState<Mood | null>(null);
   const lastPulsedHueRef = useRef<number>(initialState.currentMood.hue);
+  const sessionIdRef = useRef<string | null>(null);
+
+
+  useEffect(() => {
+    // Generate a unique session ID for this user on component mount if it doesn't exist
+    if (!sessionIdRef.current) {
+        sessionIdRef.current = Date.now().toString(36) + Math.random().toString(36).substring(2);
+    }
+  }, []);
+
 
   const triggerCollectiveShift = useCallback(() => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -76,45 +87,31 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
   }, [triggerCollectiveShift]);
 
   const recordContribution = useCallback((mood: Mood, position: { x: number, y: number } | null) => {
+    // Optimistic UI updates for responsiveness
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate(50); 
     }
-    
     setContributionCount(prev => prev + 1);
     setLastContributionTime(Date.now());
     setLastContributorMoodColor(moodToHslString(mood));
     setLastContributionPosition(position);
-    setRecentContributions(prev => [mood, ...prev].slice(0, 5));
 
+    // Call the backend submission logic
+    if (sessionIdRef.current) {
+      submitMood(mood, sessionIdRef.current).catch(error => {
+        console.error("Submission failed:", error);
+        // Simple rollback for the optimistic update
+        setContributionCount(prev => prev - 1);
+        // TODO: Show a toast notification to the user about the failure
+      });
+    }
+
+    // Clear the ripple effect after its animation
     setTimeout(() => {
       setLastContributorMoodColor(null);
       setLastContributionPosition(null);
     }, 2000);
   }, []);
-
-  useEffect(() => {
-    // Only run the live updates if this prop is true
-    if (!isLivePage) return;
-
-    const moodInterval = setInterval(() => {
-      const randomIndex = Math.floor(Math.random() * PREDEFINED_MOODS.length);
-      const newMood = PREDEFINED_MOODS[randomIndex];
-      updateMood(newMood);
-      
-      if (Math.random() > 0.5) {
-          recordContribution(newMood, null);
-      }
-    }, 5000);
-
-    const countInterval = setInterval(() => {
-      setUserCount(prev => Math.max(0, prev + Math.floor(Math.random() * 10) - 4.5));
-    }, 5000);
-    
-    return () => {
-      clearInterval(moodInterval);
-      clearInterval(countInterval);
-    };
-  }, [updateMood, recordContribution, isLivePage]);
 
   const contextValue = useMemo(() => ({
     currentMood,

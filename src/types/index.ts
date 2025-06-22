@@ -18,6 +18,12 @@ export interface AppState {
   recentContributions?: Mood[];
 }
 
+export interface SimpleMood {
+  h: number;
+  s: number;
+  l: number;
+}
+
 /**
  * Represents the data model for the collective mood state document in Firestore.
  * This document is located at: db.collection('appState').doc('collectiveMood')
@@ -32,6 +38,7 @@ export interface CollectiveMoodState {
   totalContributions: number;
   lastUpdated: FieldValue; // Firestore serverTimestamp()
   isBigBoomActive: boolean;
+  lastMoods: SimpleMood[];
 }
 
 /**
