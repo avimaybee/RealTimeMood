@@ -69,9 +69,8 @@ const OrbButton: React.FC = () => {
       saturation: 85,
       lightness: 60,
     };
-
-    setChargeData({ mood: newMood });
     setIsCharging(true);
+    setChargeData({ mood: newMood });
     setPreviewMood(null);
   };
   
@@ -224,35 +223,50 @@ const OrbButton: React.FC = () => {
         animate={{ y: isCollectiveShifting ? 8 : 0 }}
         transition={{ type: 'spring', stiffness: 100, damping: 10 }}
       >
-        <motion.div
-          ref={barRef}
-          variants={orbVariants}
-          initial={false}
-          animate={animationState}
-          onTap={animationState === 'orb' ? handleOrbTap : handleBarTap}
-          onPointerDown={handlePointerDown}
-          onPointerUp={clearLongPressTimeout}
-          onPointerLeave={clearLongPressTimeout}
-          className={cn(
-            "relative flex items-center justify-center",
-            (isCharging || bloomPoint) && "pointer-events-none",
-            animationState === 'orb' && "cursor-pointer",
-            animationState === 'bar' && "cursor-pointer"
-          )}
-        >
-          <motion.div 
-            variants={iconVariants} 
-            animate={animationState} 
-            className="flex items-center justify-center"
+        <div className="relative flex items-center justify-center">
+          <motion.div
+            ref={barRef}
+            variants={orbVariants}
+            initial={false}
+            animate={animationState}
+            onTap={animationState === 'orb' ? handleOrbTap : handleBarTap}
+            onPointerDown={handlePointerDown}
+            onPointerUp={clearLongPressTimeout}
+            onPointerLeave={clearLongPressTimeout}
+            className={cn(
+              "relative flex items-center justify-center",
+              (isCharging || bloomPoint) && "pointer-events-none",
+              animationState === 'orb' && "cursor-pointer",
+              animationState === 'bar' && "cursor-pointer"
+            )}
           >
-            <Plus 
-              className={cn(
-                "w-10 h-10 stroke-2",
-                animationState === 'orb' ? "text-white" : "text-transparent"
-              )} 
-            />
+            <motion.div 
+              variants={iconVariants} 
+              animate={animationState} 
+              className="flex items-center justify-center"
+            >
+              <Plus 
+                className={cn(
+                  "w-10 h-10 stroke-2",
+                  animationState === 'orb' ? "text-white" : "text-transparent"
+                )} 
+              />
+            </motion.div>
           </motion.div>
-        </motion.div>
+
+          <AnimatePresence>
+            {isBar && (
+              <motion.p
+                className="absolute -top-8 text-sm text-white/90 text-shadow-pop pointer-events-none"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0, transition: { delay: 0.4, duration: 0.4 } }}
+                exit={{ opacity: 0, transition: { duration: 0.2 } }}
+              >
+                Tap anywhere on the gradient to submit your mood
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </div>
       </motion.div>
 
       {isClient && createPortal(
