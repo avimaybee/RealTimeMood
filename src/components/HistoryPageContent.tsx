@@ -152,12 +152,16 @@ const HistoryPageContent = () => {
     return `Emotional Tone Over Last ${selectedRange?.label || '30 Days'}`;
   }
 
-  const yAxisTicks = [10, 60, 100];
+  const yAxisTicks = [10, 40, 60, 85, 100];
   const yAxisTickFormatter = (value: number) => {
-    if (value <= 15) return 'Anxious';
-    if (value > 55 && value < 65) return 'Calm';
-    if (value >= 95) return 'Joyful';
-    return '';
+    switch (value) {
+      case 10: return 'Anxious';
+      case 40: return 'Creative';
+      case 60: return 'Calm';
+      case 85: return 'Energetic';
+      case 100: return 'Joyful';
+      default: return '';
+    }
   };
 
 
