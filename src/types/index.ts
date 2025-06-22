@@ -10,18 +10,12 @@ export interface Mood {
 
 export interface AppState {
   currentMood: Mood;
-  userCount: number; 
+  userCount: number;
   contributionCount: number;
   lastContributionTime: number | null;
   lastContributorMoodColor: string | null; // HSL string for the ripple
   lastContributionPosition: { x: number; y: number } | null;
   recentContributions?: Mood[];
-}
-
-export interface Quote {
-  id: string;
-  text: string;
-  author: string;
 }
 
 /**
@@ -65,4 +59,14 @@ export interface HistoricalMoodSnapshot {
   lightness: number;
   moodAdjective: string;
   contributionCount: number;
+}
+
+/**
+ * Represents the data model for a user-submitted quote in the 'communityQuotes' collection.
+ */
+export interface CommunityQuote {
+  text: string;
+  submittedAt: FieldValue;
+  status: 'pending' | 'approved' | 'rejected';
+  displayCount?: number;
 }
