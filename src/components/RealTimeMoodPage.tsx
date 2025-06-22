@@ -13,6 +13,7 @@ import AppFooter from '@/components/layout/AppFooter';
 import MainPromptDisplay from '@/components/layout/MainPromptDisplay';
 import { cn } from '@/lib/utils';
 import OnboardingOverlay from '@/components/features/OnboardingOverlay';
+import AddToHomeScreenPrompt from '@/components/features/AddToHomeScreenPrompt';
 
 const PageContent: React.FC = () => {
   const { isCollectiveShifting } = useMood();
@@ -96,6 +97,7 @@ const PageContent: React.FC = () => {
       />
       
       <OnboardingOverlay />
+      <AddToHomeScreenPrompt />
 
     </div>
   );
