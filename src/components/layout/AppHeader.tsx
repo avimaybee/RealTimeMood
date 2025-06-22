@@ -18,8 +18,8 @@ const AppHeaderLogo: React.FC<{ animationClass: string; isIos: boolean }> = ({ a
         animationClass
     )}
   >
-    <path d="M4 12L8 8L12 12L16 8L20 12" stroke="currentColor" strokeWidth={isIos ? "1.25" : "1.75"} strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M4 16L8 12L12 16L16 12L20 16" stroke="currentColor" strokeWidth={isIos ? "1.25" : "1.75"} strokeLinecap="round" strokeLinejoin="round" opacity="0.6"/>
+    <path d="M4 12L8 8L12 12L16 8L20 12" stroke="currentColor" strokeWidth={isIos ? 1.25 : 1.75} strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M4 16L8 12L12 16L16 12L20 16" stroke="currentColor" strokeWidth={isIos ? 1.25 : 1.75} strokeLinecap="round" strokeLinejoin="round" opacity="0.6"/>
   </svg>
 );
 
