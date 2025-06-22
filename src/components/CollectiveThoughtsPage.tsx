@@ -63,6 +63,11 @@ const CollectiveThoughtsPage = () => {
             } as CommunityQuote & { id: string }));
 
             if (fetchedQuotes.length > 0) {
+                // Fisher-Yates shuffle algorithm to randomize the quotes
+                for (let i = fetchedQuotes.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [fetchedQuotes[i], fetchedQuotes[j]] = [fetchedQuotes[j], fetchedQuotes[i]];
+                }
                 setQuotes(fetchedQuotes);
             } else {
                 setQuotes(defaultQuotes);
