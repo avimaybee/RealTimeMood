@@ -52,7 +52,6 @@ const CollectiveThoughtsPage = () => {
             const quotesCollection = collection(db, 'communityQuotes');
             const q = query(
                 quotesCollection,
-                where('status', '==', 'approved'),
                 orderBy('submittedAt', 'desc'),
                 limit(50) // Fetch a pool of 50 recent quotes
             );
@@ -117,7 +116,6 @@ const CollectiveThoughtsPage = () => {
             await addDoc(quotesCollection, {
                 text: thoughtText,
                 submittedAt: serverTimestamp(),
-                status: 'approved', // No moderation, so auto-approved
             });
 
             if (typeof navigator !== 'undefined' && navigator.vibrate) {

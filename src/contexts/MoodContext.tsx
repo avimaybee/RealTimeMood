@@ -7,7 +7,8 @@ import type { AppState, Mood, CollectiveMoodState } from '@/types';
 import { PREDEFINED_MOODS, moodToHslString, findClosestMood } from '@/lib/colorUtils';
 import { submitMood, updateUserActivity } from '@/lib/mood-service';
 import { onSnapshot, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
+import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 
 const initialTotalUserCount = 1873;
 const initialState: AppState = {
@@ -62,10 +63,20 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
 
 
   useEffect(() => {
-    // Generate a unique session ID for this user on component mount if it doesn't exist
-    if (!sessionIdRef.current) {
-        sessionIdRef.current = Date.now().toString(36) + Math.random().toString(36).substring(2);
-    }
+    const unsubscribe = onAuthStateChanged(auth, user => {
+        if (user) {
+            // User is signed in anonymously.
+            sessionIdRef.current = user.uid;
+        } else {
+            // User is signed out.
+            signInAnonymously(auth).catch(error => {
+                console.error("Anonymous sign-in failed:", error);
+            });
+        }
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
 
   // Heartbeat effect for user activity tracking
