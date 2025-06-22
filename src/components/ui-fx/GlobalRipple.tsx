@@ -41,7 +41,8 @@ const GlobalRipple: React.FC = () => {
                 : `1px solid rgba(255, 255, 255, 0.3)`,
               boxShadow: `0 0 12px 2px ${lastContributorMoodColor}, 0 0 18px 3px ${lastContributorMoodColor} inset`,
               animationDelay: layer.delay,
-              opacity: 0, 
+              opacity: 0,
+              willChange: 'transform, opacity',
             }}
           />
       ))}

@@ -46,7 +46,8 @@ const MilestoneFireworks: React.FC = () => {
     prevContributionCountRef.current = currentCount;
   }, [contributionCount, milestones]);
 
-  const particleCount = 50; // Number of particles per firework burst
+  const particleCount = 40; // Reduced for performance
+  const burstCount = 4;
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden flex items-center justify-center" aria-hidden="true">
@@ -67,35 +68,27 @@ const MilestoneFireworks: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {showFireworks && Array.from({ length: 5 }).map((_, burstIndex) => (
+      {showFireworks && Array.from({ length: burstCount }).map((_, burstIndex) => (
         Array.from({ length: particleCount }).map((_, particleIndex) => {
-          const angle = (particleIndex / particleCount) * 360 + (burstIndex * 72);
-          const distance = Math.random() * 120 + 80;
-          const duration = Math.random() * 1.5 + 1.2;
-          const delay = burstIndex * 0.25 + Math.random() * 0.3;
-          const size = Math.random() * 3 + 1.5;
-
-          const initialRotate = angle;
-          const midTranslateX = distance * (Math.random() * 0.3 + 0.4);
-          const midRotate = angle + (Math.random() - 0.5) * 30;
-          const finalTranslateX = distance * (Math.random() * 0.2 + 0.8);
-          const finalRotate = angle + (Math.random() - 0.5) * 60;
+          const angle = (particleIndex / particleCount) * 360;
+          const distance = 80 + Math.random() * 70; // 80 to 150px
+          const duration = 1 + Math.random() * 0.8; // 1s to 1.8s
+          const delay = burstIndex * 0.2 + Math.random() * 0.2;
+          const size = 1.5 + Math.random() * 2; // 1.5px to 3.5px
 
           return (
             <div
               key={`burst-${burstIndex}-particle-${particleIndex}`}
-              className="absolute top-1/2 left-1/2 rounded-full animate-firework-particle-anim opacity-0"
+              className="absolute top-1/2 left-1/2 rounded-full animate-fireworks-burst"
               style={{
                 backgroundColor: moodToHslString(appState.currentMood),
                 width: `${size}px`,
                 height: `${size}px`,
+                willChange: 'transform, opacity',
                 animationDuration: `${duration}s`,
                 animationDelay: `${delay}s`,
-                '--particle-initial-rotate': `${initialRotate}deg`,
-                '--particle-mid-rotate': `${midRotate}deg`,
-                '--particle-mid-translate-x': `${midTranslateX}px`,
-                '--particle-final-rotate': `${finalRotate}deg`,
-                '--particle-final-translate-x': `${finalTranslateX}px`,
+                '--particle-angle': `${angle}deg`,
+                '--particle-distance': `${distance}px`,
               } as React.CSSProperties}
             />
           );

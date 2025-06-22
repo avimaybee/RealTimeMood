@@ -140,18 +140,14 @@ export default {
           '20%': { transform: 'translateX(0) skewX(0deg)', opacity: '0.1' },
           '100%': { transform: 'translateX(100%) skewX(15deg)', opacity: '0.3' },
         },
-        'firework-particle-anim': { 
+        'fireworks-burst': {
           '0%': {
-            opacity: '0.8',
-            transform: 'translate(-50%, -50%) rotate(var(--particle-initial-rotate)) translateX(0px) scale(0.2)',
-          },
-          '50%': {
+            transform: 'rotate(var(--particle-angle)) translateX(0) scale(0.5)',
             opacity: '1',
-            transform: 'translate(-50%, -50%) rotate(var(--particle-mid-rotate)) translateX(var(--particle-mid-translate-x)) scale(1)',
           },
           '100%': {
+            transform: 'rotate(var(--particle-angle)) translateX(var(--particle-distance)) scale(0)',
             opacity: '0',
-            transform: 'translate(-50%, -50%) rotate(var(--particle-final-rotate)) translateX(var(--particle-final-translate-x)) scale(0.3) translateY(40px)',
           },
         },
         'count-bounce': {
@@ -193,7 +189,7 @@ export default {
         'particle-joyful': 'particle-joyful-motion var(--animation-duration, 10s) ease-out var(--animation-delay, 0s) infinite',
         'particle-anxious': 'particle-anxious-motion var(--animation-duration, 7s) linear var(--animation-delay, 0s) infinite',
         'collective-shift-wave': 'collective-shift-wave 1.5s ease-out forwards', 
-        'firework-particle-anim': 'firework-particle-anim var(--animation-duration, 2s) var(--animation-timing-function, ease-out) var(--animation-delay, 0s) forwards',
+        'fireworks-burst': 'fireworks-burst var(--animation-duration, 1.4s) ease-out var(--animation-delay, 0s) forwards',
         'count-bounce': 'count-bounce 0.6s ease-out',
         'logo-calm': 'logo-calm 4s ease-in-out infinite',
         'logo-joyful': 'logo-joyful 1.5s ease-in-out infinite',
