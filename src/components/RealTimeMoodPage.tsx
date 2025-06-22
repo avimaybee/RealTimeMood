@@ -12,6 +12,7 @@ import OrbButton from '@/components/layout/OrbButton';
 import AppFooter from '@/components/layout/AppFooter';
 import MainPromptDisplay from '@/components/layout/MainPromptDisplay';
 import { cn } from '@/lib/utils';
+import OnboardingOverlay from '@/components/features/OnboardingOverlay';
 
 const PageContent: React.FC = () => {
   const { isCollectiveShifting } = useMood();
@@ -80,6 +81,8 @@ const PageContent: React.FC = () => {
       <OrbButton /> 
       
       <AppFooter isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+      
+      <OnboardingOverlay />
 
     </div>
   );
