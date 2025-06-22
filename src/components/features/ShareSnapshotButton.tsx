@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -152,7 +151,7 @@ const ShareSnapshotButton: React.FC = () => {
       variant="ghost"
       onClick={takeSnapshot}
       disabled={isLoading}
-      className="text-base w-full"
+      className="text-base w-full justify-start"
     >
       {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
       Share Snapshot

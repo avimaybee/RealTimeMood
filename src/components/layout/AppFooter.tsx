@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState, useEffect } from 'react';
 import { Menu, BarChart2, MessageSquareQuote, X, Camera, Loader2, Eye } from 'lucide-react';
@@ -106,7 +105,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                 <Button 
                   asChild 
                   variant="ghost" 
-                  className="text-base w-full"
+                  className="text-base w-full justify-start"
                   onClick={() => setLoadingLink('/history')}
                 >
                   <Link href="/history">
@@ -121,7 +120,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                  <Button 
                   asChild 
                   variant="ghost" 
-                  className="text-base w-full"
+                  className="text-base w-full justify-start"
                   onClick={() => setLoadingLink('/thoughts')}
                 >
                   <Link href="/thoughts">
@@ -136,7 +135,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                 <ShareSnapshotButton />
                 <Button 
                   variant="ghost" 
-                  className="text-base w-full"
+                  className="text-base w-full justify-start"
                   onClick={handleAmbientClick}
                 >
                   <Eye className="mr-2 h-4 w-4" />
