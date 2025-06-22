@@ -13,6 +13,7 @@ import TrendSummaryDisplay from '@/components/features/TrendSummaryDisplay';
 import React, { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { findClosestMood } from '@/lib/colorUtils';
 
 
 // Define a static, near-white mood for the history page's background
@@ -63,16 +64,58 @@ const generateMockData = (days: number) => {
   return data;
 };
 
+const mapHueToEmotionalScale = (hue: number): number => {
+  const moodScalePoints: [number, number][] = [
+    [0, 15],      // Passionate Red -> Low but not saddest
+    [30, 85],     // Energetic Orange
+    [54, 100],    // Joyful Yellow -> Happiest
+    [130, 75],    // Peaceful Green
+    [180, 80],    // Hopeful Cyan
+    [210, 60],    // Calm Blue
+    [240, 30],    // Focused Indigo -> Can be stressful
+    [260, 10],    // Anxious Indigo -> Saddest
+    [300, 40],    // Creative Purple
+    [360, 15],    // Wrap around to Red
+  ].sort((a, b) => a[0] - b[0]);
+
+  // Find the two points the hue is between
+  let startPoint: [number, number] | undefined;
+  let endPoint: [number, number] | undefined;
+
+  for (let i = 0; i < moodScalePoints.length - 1; i++) {
+    if (hue >= moodScalePoints[i][0] && hue <= moodScalePoints[i + 1][0]) {
+      startPoint = moodScalePoints[i];
+      endPoint = moodScalePoints[i + 1];
+      break;
+    }
+  }
+
+  // Handle edge case where hue is exactly 360 or something went wrong
+  if (!startPoint || !endPoint) {
+    return moodScalePoints[0][1];
+  }
+  
+  // Linear interpolation
+  const [hue1, score1] = startPoint;
+  const [hue2, score2] = endPoint;
+  
+  if (hue1 === hue2) return score1; // Avoid division by zero
+
+  const t = (hue - hue1) / (hue2 - hue1);
+  return score1 + t * (score2 - score1);
+};
+
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
-    const hue = payload[0].value;
+    const { hue } = payload[0].payload;
+    const mood = findClosestMood(hue);
     const moodColor = `hsl(${hue}, 80%, 60%)`;
     return (
       <div className="p-2 rounded-lg shadow-soft frosted-glass">
         <p className="label">{`Time: ${label}`}</p>
         <p className="intro" style={{ color: moodColor }}>
-          {`Dominant Mood Hue: ${hue}°`}
+          {`Mood: ${mood.adjective} (Hue: ${hue}°)`}
         </p>
       </div>
     );
@@ -85,8 +128,18 @@ const HistoryPageContent = () => {
   const [timeRange, setTimeRange] = useState<number>(30); // 30 days, 7 days, 1 day (for 24h)
 
   // By using useMemo, chartData is generated instantly and only re-calculated when timeRange changes.
-  // This removes the artificial loading delay.
-  const chartData = useMemo(() => generateMockData(timeRange), [timeRange]);
+  const chartData = useMemo(() => {
+     const rawData = generateMockData(timeRange);
+     return rawData.map(d => ({
+       ...d,
+       emotionalValue: mapHueToEmotionalScale(d.hue),
+     }));
+  }, [timeRange]);
+
+  const historyDataForAI = useMemo(() => {
+    return chartData.map(({ date, hue }) => ({ date, hue }));
+  }, [chartData]);
+
 
   const timeRanges = [
     { label: '30 Days', value: 30 },
@@ -96,8 +149,17 @@ const HistoryPageContent = () => {
 
   const getTitle = () => {
     const selectedRange = timeRanges.find(r => r.value === timeRange);
-    return `Dominant Mood Over Last ${selectedRange?.label || '30 Days'}`;
+    return `Emotional Tone Over Last ${selectedRange?.label || '30 Days'}`;
   }
+
+  const yAxisTicks = [10, 60, 100];
+  const yAxisTickFormatter = (value: number) => {
+    if (value <= 15) return 'Anxious';
+    if (value > 55 && value < 65) return 'Calm';
+    if (value >= 95) return 'Joyful';
+    return '';
+  };
+
 
   return (
     <>
@@ -146,9 +208,9 @@ const HistoryPageContent = () => {
                 </div>
               </div>
               <CardDescription>
-                This chart shows the trend of the collective dominant mood's hue over time.
+                This chart shows the trend of the collective emotional tone over time.
               </CardDescription>
-              <TrendSummaryDisplay historyData={chartData} />
+              <TrendSummaryDisplay historyData={historyDataForAI} />
             </CardHeader>
             <CardContent>
               <ChartContainer config={{}} className="h-[300px] sm:h-[400px] w-full">
@@ -171,11 +233,13 @@ const HistoryPageContent = () => {
                       interval={Math.floor(chartData.length / 10)} // Adjust tick density
                     />
                     <YAxis 
-                      domain={[0, 360]} 
+                      domain={[0, 100]} 
                       stroke="hsl(var(--foreground) / 0.8)"
+                      ticks={yAxisTicks}
+                      tickFormatter={yAxisTickFormatter}
                       tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
                       tickLine={{ stroke: 'hsl(var(--foreground) / 0.5)' }}
-                      label={{ value: 'Hue', angle: -90, position: 'insideLeft', fill: 'hsl(var(--foreground))', fontSize: 12 }}
+                      label={{ value: 'Emotional Tone', angle: -90, position: 'insideLeft', fill: 'hsl(var(--foreground))', fontSize: 12, dy: -10 }}
                     />
                     <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, strokeDasharray: '3 3' }} />
                     <defs>
@@ -191,7 +255,7 @@ const HistoryPageContent = () => {
                     </defs>
                     <Line
                       type="monotone"
-                      dataKey="hue"
+                      dataKey="emotionalValue"
                       stroke="url(#lineGradient)"
                       strokeWidth={3}
                       dot={false}
