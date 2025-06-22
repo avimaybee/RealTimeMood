@@ -1,21 +1,23 @@
 
 "use client";
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, History, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useDynamicColors } from '@/hooks/useDynamicColors';
-import type { Mood } from '@/types';
+import type { Mood, HistoricalMoodSnapshot } from '@/types';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
 import TrendSummaryDisplay from '@/components/features/TrendSummaryDisplay';
-import React, { useState, useMemo, useEffect } from 'react';
-import { cn } from '@/lib/utils';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { findClosestMood } from '@/lib/colorUtils';
 import { usePlatform } from '@/contexts/PlatformContext';
 import { archiveCollectiveMoodIfNeeded } from '@/lib/archiving-service';
+import { db } from '@/lib/firebase';
+import { collection, query, where, orderBy, getDocs, Timestamp } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 // Define a static, near-white mood for the history page's background
@@ -25,45 +27,6 @@ const historyPageMood: Mood = {
   lightness: 96,  // Very light
   name: "HistoryView",
   adjective: "Reflective",
-};
-
-
-// Generate more realistic mock data based on a time range
-const generateMockData = (days: number) => {
-  const data = [];
-  let lastHue = 180; // Start with a calm-ish hue
-  const now = new Date();
-
-  if (days === 1) { // 24-hour view
-    for (let i = 23; i >= 0; i--) {
-      const date = new Date(now);
-      date.setHours(now.getHours() - i);
-      
-      const drift = (Math.sin(i / 3) * 50);
-      const noise = (Math.random() - 0.5) * 30;
-      lastHue = (lastHue + drift + noise + 360) % 360;
-
-      data.push({
-        date: date.toLocaleTimeString('en-US', { hour: 'numeric' }),
-        hue: Math.round(lastHue),
-      });
-    }
-  } else { // Day-based view
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date(now);
-      date.setDate(now.getDate() - i);
-      
-      const drift = (Math.sin(i / 5) * 40);
-      const noise = (Math.random() - 0.5) * 20;
-      lastHue = (lastHue + drift + noise + 360) % 360;
-      
-      data.push({
-        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        hue: Math.round(lastHue),
-      });
-    }
-  }
-  return data;
 };
 
 const mapHueToEmotionalScale = (hue: number): number => {
@@ -129,21 +92,65 @@ const HistoryPageContent = () => {
   useDynamicColors(historyPageMood);
   const { isIos, isAndroid } = usePlatform();
   const [timeRange, setTimeRange] = useState<number>(30); // 30 days, 7 days, 1 day (for 24h)
+  const [chartData, setChartData] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // This is a "fire and forget" background task. We don't need to await it
     // or block the UI. Errors are handled within the function itself.
     archiveCollectiveMoodIfNeeded();
-  }, []); // Run only once when the component mounts
+  }, []);
 
-  // By using useMemo, chartData is generated instantly and only re-calculated when timeRange changes.
-  const chartData = useMemo(() => {
-     const rawData = generateMockData(timeRange);
-     return rawData.map(d => ({
-       ...d,
-       emotionalValue: mapHueToEmotionalScale(d.hue),
-     }));
-  }, [timeRange]);
+  const fetchHistoricalData = useCallback(async (range: number) => {
+    setIsLoading(true);
+    setError(null);
+    setChartData([]); // Clear previous data
+
+    try {
+      const now = new Date();
+      const startDate = new Date();
+      if (range === 1) { // 24 hours
+        startDate.setDate(now.getDate() - 1);
+      } else { // 7 or 30 days
+        startDate.setDate(now.getDate() - range);
+      }
+      
+      const snapshotsCollection = collection(db, 'moodSnapshots');
+      const q = query(
+        snapshotsCollection, 
+        where('timestamp', '>=', startDate), 
+        orderBy('timestamp', 'asc')
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const fetchedData = querySnapshot.docs.map(doc => {
+        const data = doc.data() as HistoricalMoodSnapshot;
+        const date = (data.timestamp as Timestamp).toDate();
+        const formattedDate = range === 1
+          ? date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+          : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        
+        return {
+          date: formattedDate,
+          hue: data.hue,
+          emotionalValue: mapHueToEmotionalScale(data.hue),
+        };
+      });
+
+      setChartData(fetchedData);
+    } catch (err) {
+      console.error("Error fetching historical data: ", err);
+      setError("Could not load mood history. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchHistoricalData(timeRange);
+  }, [timeRange, fetchHistoricalData]);
+
 
   const historyDataForAI = useMemo(() => {
     return chartData.map(({ date, hue }) => ({ date, hue }));
@@ -172,6 +179,98 @@ const HistoryPageContent = () => {
       default: return '';
     }
   };
+
+  const renderChartContent = () => {
+    if (isLoading) {
+      return (
+        <div className="h-[300px] sm:h-[400px] w-full flex items-center justify-center">
+            <Skeleton className="h-full w-full" />
+        </div>
+      );
+    }
+
+    if (error) {
+        return (
+            <div className="h-[300px] sm:h-[400px] w-full flex flex-col items-center justify-center text-destructive">
+                <AlertCircle className="h-10 w-10 mb-4" />
+                <p className="font-semibold">An Error Occurred</p>
+                <p className="text-sm">{error}</p>
+            </div>
+        );
+    }
+    
+    if (chartData.length === 0) {
+        return (
+            <div className="h-[300px] sm:h-[400px] w-full flex flex-col items-center justify-center text-foreground/70">
+                <History className="h-10 w-10 mb-4" />
+                <p className="font-semibold">Not Enough Data</p>
+                <p className="text-sm">No historical mood data is available for this time range yet.</p>
+            </div>
+        );
+    }
+
+    return (
+        <ChartContainer config={{}} className="h-[300px] sm:h-[400px] w-full">
+            <ResponsiveContainer>
+              <LineChart
+                data={chartData}
+                margin={{
+                  top: 5,
+                  right: 30,
+                  left: 20,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
+                <XAxis 
+                  dataKey="date" 
+                  stroke="hsl(var(--foreground) / 0.8)" 
+                  tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
+                  tickLine={{ stroke: 'hsl(var(--foreground) / 0.5)' }}
+                  interval={Math.floor(chartData.length / 10)} // Adjust tick density
+                />
+                <YAxis 
+                  domain={[0, 100]} 
+                  stroke="hsl(var(--foreground) / 0.8)"
+                  ticks={yAxisTicks}
+                  tickFormatter={yAxisTickFormatter}
+                  tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
+                  tickLine={{ stroke: 'hsl(var(--foreground) / 0.5)' }}
+                  label={{ value: 'Emotional Tone', angle: -90, position: 'insideLeft', fill: 'hsl(var(--foreground))', fontSize: 12, dy: -10 }}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, strokeDasharray: '3 3' }} />
+                <defs>
+                  <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
+                    {chartData.map((entry, index) => (
+                      <stop
+                        key={index}
+                        offset={`${(index / (chartData.length > 1 ? chartData.length - 1 : 1)) * 100}%`}
+                        stopColor={`hsl(${entry.hue}, 80%, 60%)`}
+                      />
+                    ))}
+                  </linearGradient>
+                </defs>
+                <Line
+                  type="monotone"
+                  dataKey="emotionalValue"
+                  stroke="url(#lineGradient)"
+                  strokeWidth={3}
+                  dot={false}
+                  activeDot={{
+                    r: 8,
+                    style: {
+                      fill: 'hsl(var(--primary))',
+                      stroke: 'hsl(var(--background))',
+                      strokeWidth: 2,
+                      filter: 'drop-shadow(0 0 4px hsl(var(--primary)))',
+                    },
+                  }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+        </ChartContainer>
+    );
+  }
 
 
   return (
@@ -223,65 +322,7 @@ const HistoryPageContent = () => {
               <TrendSummaryDisplay historyData={historyDataForAI} />
             </CardHeader>
             <CardContent>
-              <ChartContainer config={{}} className="h-[300px] sm:h-[400px] w-full">
-                <ResponsiveContainer>
-                  <LineChart
-                    data={chartData}
-                    margin={{
-                      top: 5,
-                      right: 30,
-                      left: 20,
-                      bottom: 5,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
-                    <XAxis 
-                      dataKey="date" 
-                      stroke="hsl(var(--foreground) / 0.8)" 
-                      tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
-                      tickLine={{ stroke: 'hsl(var(--foreground) / 0.5)' }}
-                      interval={Math.floor(chartData.length / 10)} // Adjust tick density
-                    />
-                    <YAxis 
-                      domain={[0, 100]} 
-                      stroke="hsl(var(--foreground) / 0.8)"
-                      ticks={yAxisTicks}
-                      tickFormatter={yAxisTickFormatter}
-                      tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
-                      tickLine={{ stroke: 'hsl(var(--foreground) / 0.5)' }}
-                      label={{ value: 'Emotional Tone', angle: -90, position: 'insideLeft', fill: 'hsl(var(--foreground))', fontSize: 12, dy: -10 }}
-                    />
-                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, strokeDasharray: '3 3' }} />
-                    <defs>
-                      <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-                        {chartData.map((entry, index) => (
-                          <stop
-                            key={index}
-                            offset={`${(index / (chartData.length > 1 ? chartData.length - 1 : 1)) * 100}%`}
-                            stopColor={`hsl(${entry.hue}, 80%, 60%)`}
-                          />
-                        ))}
-                      </linearGradient>
-                    </defs>
-                    <Line
-                      type="monotone"
-                      dataKey="emotionalValue"
-                      stroke="url(#lineGradient)"
-                      strokeWidth={3}
-                      dot={false}
-                      activeDot={{
-                        r: 8,
-                        style: {
-                          fill: 'hsl(var(--primary))',
-                          stroke: 'hsl(var(--background))',
-                          strokeWidth: 2,
-                          filter: 'drop-shadow(0 0 4px hsl(var(--primary)))',
-                        },
-                      }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </ChartContainer>
+              {renderChartContent()}
             </CardContent>
           </Card>
         </main>
