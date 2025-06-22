@@ -60,6 +60,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
   const [previewMood, setPreviewMood] = useState<Mood | null>(null);
   const lastPulsedHueRef = useRef<number>(initialState.currentMood.hue);
   const sessionIdRef = useRef<string | null>(null);
+  const lastHeartbeatTimeRef = useRef<number>(0);
 
 
   useEffect(() => {
@@ -85,9 +86,15 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
 
     const sessionId = sessionIdRef.current;
     let intervalId: NodeJS.Timeout | null = null;
+    const HEARTBEAT_COOLDOWN = 15000; // 15 seconds to prevent spamming on focus/unfocus
 
     const heartbeat = () => {
+      const now = Date.now();
+      if (now - lastHeartbeatTimeRef.current < HEARTBEAT_COOLDOWN) {
+        return; // Still in cooldown, prevent spamming
+      }
       updateUserActivity(sessionId);
+      lastHeartbeatTimeRef.current = now;
     };
 
     const handleVisibilityChange = () => {
@@ -200,7 +207,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
         console.error("Submission failed:", error);
         // Simple rollback for the optimistic update
         setContributionCount(prev => prev - 1);
-        // TODO: Show a toast notification to the user about the failure
+        // The OrbButton will show a toast notification to the user about the failure.
       });
     }
 

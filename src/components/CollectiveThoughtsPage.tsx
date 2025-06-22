@@ -43,6 +43,7 @@ const CollectiveThoughtsPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const lastSubmissionTimeRef = useRef<number>(0);
 
 
     const fetchQuotes = useCallback(async () => {
@@ -97,6 +98,19 @@ const CollectiveThoughtsPage = () => {
 
     const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        
+        const now = Date.now();
+        const SUBMISSION_COOLDOWN = 60000; // 1 minute
+
+        if (now - lastSubmissionTimeRef.current < SUBMISSION_COOLDOWN) {
+            toast({
+                title: "Patience, thinker.",
+                description: `You can share another thought in a minute.`,
+                variant: "destructive"
+            });
+            return;
+        }
+
         setIsSubmitting(true);
         const formData = new FormData(event.currentTarget);
         const thoughtText = (formData.get('thought') as string)?.trim();
@@ -117,6 +131,8 @@ const CollectiveThoughtsPage = () => {
                 text: thoughtText,
                 submittedAt: serverTimestamp(),
             });
+            
+            lastSubmissionTimeRef.current = now; // Update timestamp on success
 
             if (typeof navigator !== 'undefined' && navigator.vibrate) {
                 navigator.vibrate(100); 

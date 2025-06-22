@@ -25,6 +25,7 @@ const OrbButton: React.FC = () => {
   const [bloomPoint, setBloomPoint] = useState<{ x: number; y: number } | null>(null);
   const [isClient, setIsClient] = useState(false);
   const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSubmissionTimeRef = useRef<number>(0);
 
   useEffect(() => {
     setIsClient(true);
@@ -149,11 +150,25 @@ const OrbButton: React.FC = () => {
 
   useEffect(() => {
     if (isCharging && chargeData) {
+      const now = Date.now();
+      const SUBMISSION_COOLDOWN = 5000; // 5 seconds
+
+      if (now - lastSubmissionTimeRef.current < SUBMISSION_COOLDOWN) {
+        toast({
+          title: "A moment of reflection...",
+          description: `Please wait a few seconds before sharing again.`,
+          variant: "destructive",
+        });
+        setIsCharging(false);
+        setChargeData(null);
+        setInteractionMode('orb');
+        return;
+      }
+      
       const chargeTimeout = setTimeout(() => {
         try {
           let ripplePosition: { x: number; y: number } | null = null;
           
-          // ALWAYS calculate the ripple position from the orb/bar element's center.
           if (barRef.current) {
             const rect = barRef.current.getBoundingClientRect();
             ripplePosition = {
@@ -163,6 +178,7 @@ const OrbButton: React.FC = () => {
           }
           
           recordContribution(chargeData.mood, ripplePosition);
+          lastSubmissionTimeRef.current = Date.now();
           toast({
             title: "Mood Submitted",
             description: `Your feeling of "${chargeData.mood.adjective}" has been added to the collective.`,
@@ -177,7 +193,7 @@ const OrbButton: React.FC = () => {
         } finally {
           setIsCharging(false);
           setChargeData(null);
-          setInteractionMode('orb'); // Reset to orb after submission
+          setInteractionMode('orb');
         }
       }, 500);
 
