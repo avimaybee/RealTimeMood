@@ -105,7 +105,7 @@
 
 @layer utilities {
   .text-shadow-pop {
-    text-shadow: 0px 4px 12px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 0 15px hsla(0, 0%, 100%, 0.5);
   }
   
   .frosted-glass {
