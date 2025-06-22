@@ -96,10 +96,18 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
     /* CSS Transitions for background-color and color are removed here. 
        Smooth color changes are now handled by JavaScript LERPing 
        of --mood-hue, --mood-saturation, --mood-lightness, and HSL components of --foreground-hsl and --primary-foreground-hsl. */
+  }
+  
+  /* Apply platform-specific fonts */
+  body.ios {
+    @apply font-sans-ios;
+  }
+  body.android {
+    @apply font-sans-android;
   }
 }
 
@@ -211,5 +219,37 @@
     50% { transform: translate(-1px, -1px) scale(1.02); }
     70% { transform: translate(1px, 1px) scale(1); }
     90% { transform: translate(0, 0) scale(0.98); }
+  }
+  
+  /* Platform-specific scrollbar styling */
+  .ios ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  .ios ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .ios ::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background-clip: content-box;
+  }
+  .dark .ios ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .android ::-webkit-scrollbar {
+    width: 8px;
+  }
+  .android ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .android ::-webkit-scrollbar-thumb {
+    background-color: hsla(var(--foreground-hsl), 0.3);
+    border-radius: 10px;
+  }
+  .android ::-webkit-scrollbar-thumb:hover {
+    background-color: hsla(var(--foreground-hsl), 0.5);
   }
 }

@@ -11,8 +11,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
+        'sans-ios': ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
+        'sans-android': ['Roboto', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {

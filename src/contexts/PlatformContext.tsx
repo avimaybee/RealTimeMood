@@ -33,6 +33,13 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       const isAndroid = /android/i.test(userAgent);
 
       setPlatform({ isIos, isAndroid });
+
+      // Apply class to body for global styling hooks
+      if (isIos) {
+        document.body.classList.add('ios');
+      } else if (isAndroid) {
+        document.body.classList.add('android');
+      }
     }
   }, []);
 
