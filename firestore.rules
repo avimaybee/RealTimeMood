@@ -1,81 +1,83 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // --- Utility Functions ---
-    function isSignedIn() {
-      return request.auth != null;
-    }
-    
-    function isOwner(userId) {
-      return request.auth.uid == userId;
+
+    // Default deny all reads/writes. Rules must explicitly grant access.
+    match /{document=**} {
+      allow read, write: if false;
     }
 
-    // --- Collection Rules ---
-
-    // appState/collectiveMood: The core state of the application.
-    // This is updated via a transaction in the mood-service.
-    match /appState/collectiveMood {
-      // Everyone can read the current collective mood.
-      allow read: if true;
-
-      // Only authenticated users can write, and only by incrementing contributions by 1.
-      // This rule works in tandem with the client-side transaction logic.
-      allow write: if isSignedIn()
-                  // Data validation for the transaction
-                  && request.resource.data.h is number
-                  && request.resource.data.s is number
-                  && request.resource.data.l is number
-                  && request.resource.data.moodAdjective is string
-                  && request.resource.data.totalContributions == resource.data.totalContributions + 1
-                  && request.resource.data.lastMoods is list
-                  && request.resource.data.lastMoods.size() <= 20
-                  && request.resource.data.lastUpdated == request.time;
-    }
-
-    // userActivity/{sessionId}: Tracks when a user was last active for heartbeat.
-    match /userActivity/{sessionId} {
-      // Allow read for potential future features (e.g., "X users online").
-      allow read: if true;
-
-      // Only the authenticated user can update their own activity document.
-      // This is a "heartbeat" to show the user is active.
-      allow write: if isSignedIn() 
-                   && isOwner(sessionId)
-                   // Enforce the schema and server timestamp for updates.
-                   && request.resource.data.keys().hasOnly(['sessionId', 'lastActive'])
-                   && request.resource.data.lastActive == request.time;
-    }
-
-    // moodSnapshots/{snapshotId}: Read-only historical data archives.
-    match /moodSnapshots/{snapshotId} {
-      // Everyone can read the mood history.
-      allow read: if true;
+    // --- appState Collection ---
+    // This collection holds the global state of the application.
+    match /appState/{docId} {
+      allow read;
       
-      // No one can write, update, or delete snapshots from the client.
-      // This must be handled by a trusted server/admin environment to prevent tampering.
-      allow write: if false; 
+      // Allow writes ONLY for atomic, transactional updates to 'collectiveMood'
+      // by an authenticated user. This is a critical rule for data integrity.
+      allow write: if request.auth.uid != null
+        && docId == 'collectiveMood'
+        // --- DATA VALIDATION (applies to both create and update) ---
+        && request.resource.data.keys().hasAll(['h', 's', 'l', 'moodAdjective', 'totalContributions', 'lastMoods', 'lastUpdated', 'isBigBoomActive'])
+        && request.resource.data.size() == 8
+        && request.resource.data.h is number && request.resource.data.h >= 0 && request.resource.data.h <= 360
+        && request.resource.data.s is number && request.resource.data.s >= 0 && request.resource.data.s <= 100
+        && request.resource.data.l is number && request.resource.data.l >= 0 && request.resource.data.l <= 100
+        && request.resource.data.moodAdjective is string && request.resource.data.moodAdjective.size() > 0
+        && request.resource.data.totalContributions is number
+        && request.resource.data.lastMoods is list && request.resource.data.lastMoods.size() <= 20
+        && request.resource.data.lastUpdated == request.time
+        && request.resource.data.isBigBoomActive == false
+        
+        // --- DATA INTEGRITY CHECKS (handle create vs update) ---
+        && (
+            // On CREATE: ensure totalContributions starts at 1
+            (resource == null && request.resource.data.totalContributions == 1)
+            ||
+            // On UPDATE: ensure totalContributions increments by exactly 1
+            (resource != null && request.resource.data.totalContributions == resource.data.totalContributions + 1)
+        );
     }
 
-    // communityQuotes/{quoteId}: User-submitted thoughts.
-    match /communityQuotes/{quoteId} {
-      // Everyone can read approved quotes.
-      allow read: if true;
+    // --- userActivity Collection ---
+    // Tracks the last active time for anonymous user sessions for metrics.
+    match /userActivity/{userId} {
+      allow read;
+      // Allow a user to create/update their OWN activity document.
+      allow write: if request.auth.uid != null
+        && request.auth.uid == userId
+        // Data validation
+        && request.resource.data.keys().hasAll(['sessionId', 'lastActive'])
+        && request.resource.data.size() == 2
+        && request.resource.data.sessionId == userId
+        && request.resource.data.lastActive == request.time;
+    }
 
-      // Authenticated users can create new quotes.
-      allow create: if isSignedIn()
-                    // Validate the incoming data schema: only text and a timestamp are allowed.
-                    // This prevents users from adding other fields like 'status'.
-                    && request.resource.data.keys().hasOnly(['text', 'submittedAt'])
-                    // Validate text content.
-                    && request.resource.data.text is string
-                    && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 150
-                    // Ensure the timestamp is from the server.
-                    && request.resource.data.submittedAt == request.time;
-                    
-      // Nobody can update or delete quotes from the client. This is critical for an unmoderated app.
-      allow update, delete: if false;
+    // --- moodSnapshots Collection ---
+    // Stores historical data for the trends chart.
+    match /moodSnapshots/{snapshotId} {
+      // Publicly readable for the history page.
+      allow read;
+      // Writes are heavily restricted. In a real app, this UID would be stored
+      // in a secure config, not here. It represents a trusted server/admin process.
+      // A specific UID for the "archiving client" is not provided, so this is locked down.
+      allow write: if false;
+    }
+
+    // --- communityQuotes Collection ---
+    // Stores user-submitted thoughts. Note: These are unmoderated.
+    match /communityQuotes/{quoteId} {
+      allow read;
+      // Allow create for any authenticated user, with strict validation.
+      // No updates or deletes allowed from the client.
+      allow create: if request.auth.uid != null
+        // Data validation
+        && request.resource.data.keys().hasAll(['text', 'submittedAt'])
+        && request.resource.data.size() == 2
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 150
+        && request.resource.data.submittedAt == request.time;
     }
   }
 }
