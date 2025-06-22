@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -91,7 +92,7 @@ const AddToHomeScreenPrompt: React.FC = () => {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          className="fixed top-20 md:top-28 left-1/2 -translate-x-1/2 w-[90vw] max-w-md z-50 p-4 rounded-2xl shadow-soft frosted-glass"
+          className="fixed top-20 md:top-28 inset-x-0 mx-auto w-[90vw] max-w-md z-50 p-4 rounded-2xl shadow-soft frosted-glass"
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
