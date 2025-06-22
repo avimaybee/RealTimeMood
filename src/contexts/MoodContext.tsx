@@ -10,11 +10,11 @@ import { onSnapshot, doc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 
-const initialTotalUserCount = 187;
+const initialTotalUserCount = 12;
 const initialState: AppState = {
   currentMood: PREDEFINED_MOODS[0],
   userCount: initialTotalUserCount,
-  contributionCount: 1258,
+  contributionCount: 84,
   lastContributionTime: null,
   lastContributorMoodColor: null,
   lastContributionPosition: null,
@@ -145,8 +145,8 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
 
       const chance = Math.random();
 
-      // 70% chance of a user joining, 30% chance of leaving
-      if (chance < 0.7) {
+      // ~60% chance of a user joining, ~40% chance of leaving. This creates a fluctuating count.
+      if (chance < 0.6) {
         // User joins
         setUserCount(prev => prev + 1);
         
@@ -168,7 +168,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
 
       } else {
         // User leaves, but ensure count doesn't drop too low
-        setUserCount(prev => Math.max(8, prev - 1)); // Maintain a minimum of 8 users
+        setUserCount(prev => Math.max(initialTotalUserCount - 4, prev - 1)); // Maintain a minimum count
       }
     };
 
