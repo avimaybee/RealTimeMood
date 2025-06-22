@@ -1,4 +1,3 @@
-
 import type { FieldValue } from 'firebase/firestore';
 
 export interface Mood {
@@ -39,4 +38,19 @@ export interface CollectiveMoodState {
   totalContributions: number;
   lastUpdated: FieldValue; // Firestore serverTimestamp()
   isBigBoomActive: boolean;
+}
+
+/**
+ * Represents the data model for an individual mood contribution in the 'userMoods' collection.
+ * These documents are short-lived and processed by a backend function.
+ */
+export interface UserMood {
+  hue: number;
+  timestamp: FieldValue;
+  sessionId: string;
+  contributorColor: {
+    h: number;
+    s: number;
+    l: number;
+  };
 }
