@@ -21,7 +21,7 @@ const SummarizeTrendsInputSchema = z.object({
 export type SummarizeTrendsInput = z.infer<typeof SummarizeTrendsInputSchema>;
 
 const SummarizeTrendsOutputSchema = z.object({
-  summary: z.string().describe('A concise, insightful summary of the mood trends observed in the data. The tone should be like a data analyst presenting findings. It should be about 2-3 sentences long.'),
+  summary: z.string().describe('A concise, poetic, and insightful summary of the mood trends. The tone should be human and reflective, focusing on the emotional journey. It should be about 2-3 sentences long.'),
   dominantHue: z.number().min(0).max(360).describe('The single numerical hue value (0-360) that best represents the overall dominant mood of the entire period.'),
 });
 export type SummarizeTrendsOutput = z.infer<typeof SummarizeTrendsOutputSchema>;
@@ -35,16 +35,31 @@ const prompt = ai.definePrompt({
   input: { schema: SummarizeTrendsInputSchema },
   output: { schema: SummarizeTrendsOutputSchema },
   prompt: `
-    You are a data analyst and psychologist tasked with analyzing collective mood data.
-    Based on the following daily dominant mood hues over the last 30 days, provide a concise, 2-3 sentence summary of the trend.
-    Identify the overall dominant hue for the period. For example, if many days are around hue 210 (blue), the collective mood was generally calm. If they are around 60 (yellow), it was joyful.
-    
-    Data:
+    You are an empathetic AI, analyzing the collective emotional pulse of a community. Your task is to interpret historical mood data and weave it into a short, insightful narrative (2-3 sentences).
+
+    **Instructions:**
+    1.  **Speak in terms of emotions:** Use words like "joy," "calm," "energy," "focus." Avoid technical terms like "hue" or "color values" in your summary.
+    2.  **Describe the emotional journey:** Instead of just stating facts, describe the flow of feelings. For example: "The period began with a wave of creative energy, which then settled into a phase of quiet calm and focus."
+    3.  **Maintain a human tone:** Be reflective, insightful, and a little poetic. Avoid robotic or overly analytical language.
+    4.  **Determine the dominant mood:** Based on the overall data, calculate the single dominant hue for the entire period.
+
+    **Mood Reference (Hue -> Emotion):**
+    - ~0: Passionate
+    - ~30: Energetic
+    - ~54: Joyful
+    - ~130: Peaceful
+    - ~180: Hopeful
+    - ~210: Calm
+    - ~240: Focused
+    - ~260: Anxious
+    - ~300: Creative
+
+    **Data to Analyze:**
     {{#each historyData}}
     - Date: {{date}}, Hue: {{hue}}
     {{/each}}
     
-    Analyze this data and provide your summary and the calculated dominant hue.
+    Now, provide your insightful summary and the calculated dominant hue.
   `,
 });
 
