@@ -152,7 +152,7 @@ const CollectiveThoughtsPageContent = () => {
                                 size="icon"
                                 onClick={handlePrevClick}
                                 aria-label="Previous thought"
-                                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 bg-background/20 hover:bg-background/40 interactive-glow"
+                                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 bg-background/20 hover:bg-background/40"
                             >
                                 <ChevronLeft className="w-6 h-6" />
                             </Button>
@@ -177,7 +177,7 @@ const CollectiveThoughtsPageContent = () => {
                                 size="icon"
                                 onClick={handleNextClick}
                                 aria-label="Next thought"
-                                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 bg-background/20 hover:bg-background/40 interactive-glow"
+                                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 bg-background/20 hover:bg-background/40"
                             >
                                 <ChevronRight className="w-6 h-6" />
                             </Button>
