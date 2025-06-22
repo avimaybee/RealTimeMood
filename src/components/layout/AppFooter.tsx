@@ -1,11 +1,12 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Menu, BarChart2, MessageSquareQuote, X, Camera, Eye, Info } from 'lucide-react';
+import { Menu, BarChart2, MessageSquareQuote, X, Camera, Eye, Info, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Separator } from '../ui/separator';
 import ShareSnapshotButton from '../features/ShareSnapshotButton';
 
@@ -17,6 +18,24 @@ interface AppFooterProps {
 
 const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsAmbientMode }) => {
   const { contributionCount, isCollectiveShifting } = useMood();
+  const [loadingPath, setLoadingPath] = useState<string | null>(null);
+  const pathname = usePathname();
+
+  // Effect to reset the loader when the page navigation is complete
+  useEffect(() => {
+    if (loadingPath) {
+      setLoadingPath(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+
+  const handleLinkClick = (path: string) => {
+    // Only show loader if we are navigating to a different page
+    if (pathname !== path) {
+      setLoadingPath(path);
+    }
+  };
 
   const footerBaseClasses = "fixed bottom-0 mb-4 md:mb-6 p-2 z-50 frosted-glass rounded-2xl shadow-soft flex flex-col items-center overflow-hidden";
   const sizeClasses = "min-w-[200px] md:min-w-[280px] px-4";
@@ -98,30 +117,60 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                   asChild 
                   variant="ghost" 
                   className="text-base w-full justify-start"
+                  disabled={!!loadingPath}
                 >
-                  <Link href="/history">
-                    <BarChart2 className="mr-2 h-4 w-4" />
-                    View Mood History
+                  <Link href="/history" onClick={() => handleLinkClick('/history')}>
+                    {loadingPath === '/history' ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <BarChart2 className="mr-2 h-4 w-4" />
+                        View Mood History
+                      </>
+                    )}
                   </Link>
                 </Button>
                  <Button 
                   asChild 
                   variant="ghost" 
                   className="text-base w-full justify-start"
+                  disabled={!!loadingPath}
                 >
-                  <Link href="/thoughts">
-                    <MessageSquareQuote className="mr-2 h-4 w-4" />
-                    Collective Thoughts
+                  <Link href="/thoughts" onClick={() => handleLinkClick('/thoughts')}>
+                     {loadingPath === '/thoughts' ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <MessageSquareQuote className="mr-2 h-4 w-4" />
+                        Collective Thoughts
+                      </>
+                    )}
                   </Link>
                 </Button>
                 <Button 
                   asChild 
                   variant="ghost" 
                   className="text-base w-full justify-start"
+                  disabled={!!loadingPath}
                 >
-                  <Link href="/about">
-                    <Info className="mr-2 h-4 w-4" />
-                    About
+                  <Link href="/about" onClick={() => handleLinkClick('/about')}>
+                    {loadingPath === '/about' ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <Info className="mr-2 h-4 w-4" />
+                        About
+                      </>
+                    )}
                   </Link>
                 </Button>
                 <ShareSnapshotButton />
@@ -129,6 +178,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                   variant="ghost" 
                   className="text-base w-full justify-start"
                   onClick={handleAmbientClick}
+                  disabled={!!loadingPath}
                 >
                   <Eye className="mr-2 h-4 w-4" />
                   Ambient Mode
