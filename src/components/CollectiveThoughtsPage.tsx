@@ -13,7 +13,7 @@ import { useDynamicColors } from '@/hooks/useDynamicColors';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
 import { usePlatform } from '@/contexts/PlatformContext';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy, limit, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, Timestamp, limitToLast } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -40,6 +40,15 @@ const CollectiveThoughtsPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const lastSubmissionTimeRef = useRef<number>(0);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [quotes]);
 
     // Real-time listener for thoughts
     useEffect(() => {
@@ -47,8 +56,8 @@ const CollectiveThoughtsPage = () => {
         const quotesCollection = collection(db, 'communityQuotes');
         const q = query(
             quotesCollection,
-            orderBy('submittedAt', 'desc'),
-            limit(50) // Listen to the 50 most recent thoughts
+            orderBy('submittedAt', 'asc'),
+            limitToLast(50) // Listen to the 50 most recent thoughts, in chronological order
         );
 
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -226,6 +235,7 @@ const CollectiveThoughtsPage = () => {
                                             </motion.li>
                                         ))}
                                     </AnimatePresence>
+                                    <div ref={messagesEndRef} />
                                 </motion.ul>
                             </ScrollArea>
                         ) : (
