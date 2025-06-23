@@ -35,6 +35,7 @@ type MoodContextType = {
   recordContribution: (mood: Mood, position: { x: number; y: number } | null) => void;
   triggerCollectiveShift: () => void;
   isCollectiveShifting: boolean;
+  lastUserContribution: Mood | null;
 };
 
 const MoodContext = createContext<MoodContextType | undefined>(undefined);
@@ -58,6 +59,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
   
   const [isCollectiveShifting, setIsCollectiveShifting] = useState(false);
   const [previewMood, setPreviewMood] = useState<Mood | null>(null);
+  const [lastUserContribution, setLastUserContribution] = useState<Mood | null>(null);
   const lastPulsedHueRef = useRef<number>(initialState.currentMood.hue);
   const sessionIdRef = useRef<string | null>(null);
   const lastHeartbeatTimeRef = useRef<number>(0);
@@ -244,6 +246,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
 
   const recordContribution = useCallback((mood: Mood, position: { x: number, y: number } | null) => {
     // Optimistic UI updates for responsiveness
+    setLastUserContribution(mood);
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate(50); 
     }
@@ -283,6 +286,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     recordContribution,
     triggerCollectiveShift,
     isCollectiveShifting,
+    lastUserContribution,
   }), [
     currentMood,
     userCount,
@@ -296,6 +300,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     recordContribution,
     triggerCollectiveShift,
     isCollectiveShifting,
+    lastUserContribution,
   ]);
 
   return (

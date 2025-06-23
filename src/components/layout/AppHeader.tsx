@@ -25,7 +25,7 @@ const AppHeaderLogo: React.FC<{ animationClass: string; isIos: boolean }> = ({ a
 );
 
 const AppHeader: React.FC = () => {
-  const { currentMood, isCollectiveShifting } = useMood();
+  const { currentMood, isCollectiveShifting, lastUserContribution } = useMood();
   const { isIos } = usePlatform();
   const { adjective } = currentMood;
 
@@ -34,7 +34,8 @@ const AppHeader: React.FC = () => {
     (adjective === 'Joyful' || adjective === 'Energetic' || adjective === 'Passionate') ? 'animate-logo-joyful' :
     'animate-logo-calm';
   
-  const moodColor = moodToHslString(currentMood);
+  const moodForGlow = lastUserContribution || currentMood;
+  const moodColor = moodToHslString(moodForGlow);
 
   return (
     <motion.header 
@@ -67,7 +68,7 @@ const AppHeader: React.FC = () => {
             }}
             animate={{ scale: [1, 1.15, 1] }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            key={currentMood.hue} // Re-trigger animation on hue change
+            key={moodForGlow.hue} // Re-trigger animation on hue change
         />
       </div>
     </motion.header>
