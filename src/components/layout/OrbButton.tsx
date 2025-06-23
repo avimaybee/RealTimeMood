@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
@@ -209,13 +210,12 @@ const OrbButton: React.FC = () => {
     orb: {
       width: '80px', height: '80px', borderRadius: '9999px',
       background: 'rgba(255, 255, 255, 0.1)', 
-      boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
       backdropFilter: 'blur(12px)', scale: 1, opacity: 1,
       transition: { ...morphTransition }
     },
     bar: {
       width: '80vw', maxWidth: '500px', height: '48px', borderRadius: '24px',
-      background: gradientBackground, boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
+      background: gradientBackground,
       backdropFilter: 'blur(0px)', scale: 1, opacity: 1,
       transition: { ...morphTransition }
     },

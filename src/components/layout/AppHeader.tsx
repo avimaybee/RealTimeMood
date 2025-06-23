@@ -1,3 +1,4 @@
+
 "use client";
 import React from 'react';
 import { useMood } from '@/contexts/MoodContext';
@@ -37,7 +38,7 @@ const AppHeader: React.FC = () => {
       className={cn(
         "fixed top-0 inset-x-0 h-20 px-4 md:px-6 z-30",
         "flex items-center justify-start",
-        "frosted-glass border-b border-border/10"
+        "frosted-glass shadow-soft"
       )}
       animate={{ y: isCollectiveShifting ? -8 : 0 }}
       transition={{ type: 'spring', stiffness: 100, damping: 10, delay: 0.1 }}

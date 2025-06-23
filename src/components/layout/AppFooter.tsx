@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useEffect } from 'react';
 import { Menu, BarChart2, MessageSquareQuote, X, Camera, Eye, Info, Loader2, Gavel } from 'lucide-react';
@@ -68,7 +69,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
     <motion.footer 
       className={cn(
         "fixed bottom-0 inset-x-0 p-2 z-50",
-        "frosted-glass border-t border-border/10"
+        "frosted-glass shadow-soft"
       )}
       animate={{
         y: isCollectiveShifting ? 8 : 0,
