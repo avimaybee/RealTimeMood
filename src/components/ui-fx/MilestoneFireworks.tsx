@@ -9,6 +9,7 @@ const MilestoneFireworks: React.FC = () => {
   const { currentMood, contributionCount } = useMood();
   const [showFireworks, setShowFireworks] = useState(false);
   const [milestoneNumber, setMilestoneNumber] = useState(0);
+  const [triggeredMilestones, setTriggeredMilestones] = useState(new Set<number>());
   const prevContributionCountRef = useRef(contributionCount);
 
   // Define the milestone thresholds
@@ -20,21 +21,25 @@ const MilestoneFireworks: React.FC = () => {
     const prevCount = prevContributionCountRef.current;
     const currentCount = contributionCount;
 
-    // Find if any milestone has been crossed between the previous and current count
-    const crossedMilestone = milestones.find(m => prevCount < m && currentCount >= m);
+    // Find if any new, untriggered milestone has been crossed
+    const crossedMilestone = milestones.find(m => 
+        prevCount < m && 
+        currentCount >= m && 
+        !triggeredMilestones.has(m)
+    );
 
     if (crossedMilestone) {
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         // Strong, celebratory vibration pattern
         navigator.vibrate([200, 100, 200]); 
       }
-      // TODO: Play triumphant, escalating chime sequence + soft "pop" sound
-      // TODO: Play deep, resonant "gong" or "bell" sound as message appears
-
-      let timer: NodeJS.Timeout;
+      
+      // Add to memory before showing
+      setTriggeredMilestones(prev => new Set(prev).add(crossedMilestone));
       setMilestoneNumber(crossedMilestone);
       setShowFireworks(true);
-      timer = setTimeout(() => setShowFireworks(false), 4000); // Show for 4 seconds
+      
+      const timer = setTimeout(() => setShowFireworks(false), 4000); // Show for 4 seconds
       
       // Cleanup the timer
       return () => {
@@ -44,7 +49,7 @@ const MilestoneFireworks: React.FC = () => {
 
     // Update the ref to the current count for the next check
     prevContributionCountRef.current = currentCount;
-  }, [contributionCount, milestones]);
+  }, [contributionCount, milestones, triggeredMilestones]);
 
   const particleCount = 40; // Reduced for performance
   const burstCount = 4;
