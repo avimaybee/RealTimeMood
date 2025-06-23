@@ -1,20 +1,28 @@
 
 "use client";
 import React, { useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { MoodProvider, useMood } from '@/contexts/MoodContext';
 import DynamicBackground from '@/components/ui-fx/DynamicBackground';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
 import GlobalRipple from '@/components/ui-fx/GlobalRipple';
 import CollectiveShiftEffect from '@/components/ui-fx/CollectiveShiftEffect';
-import MilestoneFireworks from '@/components/ui-fx/MilestoneFireworks';
 import AppHeader from '@/components/layout/AppHeader';
 import OrbButton from '@/components/layout/OrbButton';
 import AppFooter from '@/components/layout/AppFooter';
 import MainPromptDisplay from '@/components/layout/MainPromptDisplay';
 import { cn } from '@/lib/utils';
-import OnboardingOverlay from '@/components/features/OnboardingOverlay';
-import AddToHomeScreenPrompt from '@/components/features/AddToHomeScreenPrompt';
 import { usePlatform } from '@/contexts/PlatformContext';
+
+const MilestoneFireworks = dynamic(() => import('@/components/ui-fx/MilestoneFireworks'), {
+  ssr: false,
+});
+const OnboardingOverlay = dynamic(() => import('@/components/features/OnboardingOverlay'), {
+  ssr: false,
+});
+const AddToHomeScreenPrompt = dynamic(() => import('@/components/features/AddToHomeScreenPrompt'), {
+  ssr: false,
+});
 
 const PageContent: React.FC = () => {
   const { isCollectiveShifting } = useMood();

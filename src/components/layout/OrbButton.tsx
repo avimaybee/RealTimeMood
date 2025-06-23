@@ -3,16 +3,22 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { createPortal } from 'react-dom';
+import dynamic from 'next/dynamic';
 import { Plus } from 'lucide-react';
 import { useMood } from '@/contexts/MoodContext';
 import { findClosestMood, moodToHslString } from '@/lib/colorUtils';
 import type { Mood } from '@/types';
 import { cn } from '@/lib/utils';
 import { motion, type PanInfo, AnimatePresence } from 'framer-motion';
-import RadialBloomEffect from '@/components/ui-fx/RadialBloomEffect';
-import MoodSelectionButtons from '@/components/features/MoodSelectionButtons';
 import { useToast } from '@/hooks/use-toast';
 import { usePlatform } from '@/contexts/PlatformContext';
+
+const RadialBloomEffect = dynamic(() => import('@/components/ui-fx/RadialBloomEffect'), {
+  ssr: false,
+});
+const MoodSelectionButtons = dynamic(() => import('@/components/features/MoodSelectionButtons'), {
+  ssr: false,
+});
 
 const OrbButton: React.FC = () => {
   const { recordContribution, isCollectiveShifting, setPreviewMood, previewMood } = useMood();
