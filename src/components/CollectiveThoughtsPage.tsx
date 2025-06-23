@@ -221,7 +221,7 @@ const CollectiveThoughtsPage = () => {
                 </AnimatePresence>
             </div>
                 
-            <footer className="fixed bottom-4 inset-x-0 mx-auto z-20 w-[calc(100%-2rem)] max-w-lg">
+            <footer className="fixed bottom-4 inset-x-0 mx-auto z-20 w-[calc(100%-2rem)] max-w-lg flex justify-center">
                 <motion.form
                 onSubmit={handleFormSubmit}
                 onClick={() => {
