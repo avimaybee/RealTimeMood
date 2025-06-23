@@ -47,7 +47,17 @@ const CollectiveThoughtsPage = () => {
     };
 
     useEffect(() => {
-        scrollToBottom();
+        // This logic makes sure that we only auto-scroll if the user is already near the bottom.
+        // This prevents interrupting a user who is scrolling up to read older messages.
+        const scrollContainer = messagesEndRef.current?.parentElement?.parentElement; // Adjust based on your final DOM structure
+        if (scrollContainer) {
+            const isScrolledToBottom = scrollContainer.scrollHeight - scrollContainer.clientHeight <= scrollContainer.scrollTop + 100; // 100px tolerance
+            if (isScrolledToBottom) {
+                scrollToBottom();
+            }
+        } else {
+             scrollToBottom(); // Fallback for initial load
+        }
     }, [quotes]);
 
     // Real-time listener for thoughts
@@ -157,9 +167,9 @@ const CollectiveThoughtsPage = () => {
     };
     
     const thoughtBubbleVariants = {
-        initial: { opacity: 0, y: -20, scale: 0.95 },
-        animate: { opacity: 1, y: 0, scale: 1 },
-        exit: { opacity: 0, y: 20, scale: 0.95 },
+        initial: { opacity: 0, y: 20 }, // Start from below and faded out
+        animate: { opacity: 1, y: 0 },    // Animate to final position
+        exit: { opacity: 0, y: -20 },   // Animate out by sliding up
     };
 
     return (
@@ -209,7 +219,7 @@ const CollectiveThoughtsPage = () => {
                         ) : quotes.length > 0 ? (
                             <ScrollArea className="h-full pr-4 -mr-4">
                                 <motion.ul className="space-y-4" layout>
-                                    <AnimatePresence>
+                                    <AnimatePresence initial={false}>
                                         {quotes.map((quote) => (
                                             <motion.li
                                                 key={quote.id}
