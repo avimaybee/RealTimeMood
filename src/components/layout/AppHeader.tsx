@@ -1,3 +1,4 @@
+
 "use client";
 import React from 'react';
 import { useMood } from '@/contexts/MoodContext';
@@ -8,8 +9,8 @@ import { moodToHslString } from '@/lib/colorUtils';
 
 const AppHeaderLogo: React.FC<{ animationClass: string; isIos: boolean }> = ({ animationClass, isIos }) => (
   <svg
-    width="32"
-    height="32"
+    width="28"
+    height="28"
     viewBox="0 0 24 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -38,9 +39,10 @@ const AppHeader: React.FC = () => {
   return (
     <motion.header 
       className={cn(
-        "fixed top-4 inset-x-0 mx-auto h-14 px-4 z-30",
+        "fixed top-4 inset-x-0 mx-auto z-30",
         "w-[calc(100%-2rem)] max-w-lg",
         "flex items-center justify-between",
+        "h-12 px-3",
         "frosted-glass rounded-2xl shadow-soft"
       )}
       animate={{ y: isCollectiveShifting ? -8 : 0 }}
@@ -48,7 +50,7 @@ const AppHeader: React.FC = () => {
     >
       <a href="/" className="flex items-center group">
           <AppHeaderLogo animationClass={animationClass} isIos={isIos} />
-          <span className="ml-3 text-lg md:text-xl font-medium text-foreground opacity-90 text-shadow-pop transition-opacity group-hover:opacity-100">
+          <span className="ml-2 text-base md:text-lg font-medium text-foreground opacity-90 transition-opacity group-hover:opacity-100">
               RealTimeMood
           </span>
       </a>
