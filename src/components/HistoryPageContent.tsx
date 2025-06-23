@@ -97,16 +97,14 @@ const HistoryPageContent = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // This is a "fire and forget" background task. We don't need to await it
-    // or block the UI. Errors are handled within the function itself.
-    archiveCollectiveMoodIfNeeded();
-  }, []);
-
   const fetchHistoricalData = useCallback(async (range: number) => {
     setIsLoading(true);
     setError(null);
     setChartData([]); // Clear previous data
+
+    // First, run the archiving logic. Await it to ensure it completes before fetching.
+    // This solves the race condition where data is fetched before the first snapshot is created.
+    await archiveCollectiveMoodIfNeeded();
 
     try {
       const now = new Date();
