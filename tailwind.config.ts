@@ -10,8 +10,9 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        'sans-ios': ['-apple-system', 'SF Pro Text', 'BlinkMacSystemFont', 'Helvetica Neue', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
-        'sans-android': ['Roboto', 'sans-serif'],
+        sans: ['Manrope', 'sans-serif'],
+        'sans-ios': ['Manrope', '-apple-system', 'SF Pro Text', 'BlinkMacSystemFont', 'Helvetica Neue', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
+        'sans-android': ['Manrope', 'Roboto', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
