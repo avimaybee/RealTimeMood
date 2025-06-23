@@ -205,8 +205,7 @@ const config: Config = {
         'logo-anxious': 'logo-anxious 0.5s linear infinite',
       },
       backdropBlur: {
-        'xl': '16px',
-        '24px': '24px', 
+        'xl': '24px',
         '2xl': '24px', 
       },
       boxShadow: {
