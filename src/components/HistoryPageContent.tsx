@@ -1,7 +1,7 @@
 
 "use client";
 import Link from 'next/link';
-import { ArrowLeft, History, AlertCircle } from 'lucide-react';
+import { ArrowLeft, History, AlertCircle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer } from '@/components/ui/chart';
@@ -297,7 +297,7 @@ const HistoryPageContent = () => {
             <div className="w-10 md:w-auto md:flex-shrink-0 md:w-[148px]"></div> {/* Spacer */}
         </header>
 
-        <main className="w-full flex-grow flex items-center justify-center">
+        <main className="w-full flex-grow flex flex-col items-center justify-center gap-6">
           <Card className="w-full max-w-5xl frosted-glass shadow-soft rounded-2xl">
             <CardHeader>
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
@@ -319,10 +319,21 @@ const HistoryPageContent = () => {
               <CardDescription className="text-foreground/70">
                 This chart shows the trend of the collective emotional tone over time.
               </CardDescription>
-              <TrendSummaryDisplay historyData={historyDataForAI} />
             </CardHeader>
             <CardContent>
               {renderChartContent()}
+            </CardContent>
+          </Card>
+
+          <Card className="w-full max-w-5xl frosted-glass shadow-soft rounded-2xl">
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" strokeWidth={isIos ? 1.5 : 2} />
+                 AI Trend Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <TrendSummaryDisplay historyData={historyDataForAI} />
             </CardContent>
           </Card>
         </main>

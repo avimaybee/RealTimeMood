@@ -43,19 +43,17 @@ const TrendSummaryDisplay: React.FC<TrendSummaryDisplayProps> = ({ historyData }
 
   if (isLoading) {
     return (
-      <div className="mt-4 pt-4 border-t border-border/50">
-        <div className="space-y-2">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-11/12" />
-            <Skeleton className="h-4 w-4/6" />
-        </div>
+      <div className="space-y-2">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-11/12" />
+          <Skeleton className="h-4 w-4/6" />
       </div>
     );
   }
   
   if (error) {
      return (
-        <div className="mt-4 pt-4 border-t border-border/50 flex items-center gap-2 text-destructive">
+        <div className="flex items-center gap-2 text-destructive">
             <AlertCircle className="h-4 w-4 flex-shrink-0" />
             <p className="text-sm">{error}</p>
         </div>
@@ -65,11 +63,9 @@ const TrendSummaryDisplay: React.FC<TrendSummaryDisplayProps> = ({ historyData }
   if (!result) return null;
 
   return (
-    <div className="mt-4 pt-4 border-t border-border/50">
-      <p className="text-base text-foreground transition-all duration-500">
-        {displayedSummary}
-      </p>
-    </div>
+    <p className="text-base text-foreground/90 transition-all duration-500">
+      {displayedSummary}
+    </p>
   );
 };
 
