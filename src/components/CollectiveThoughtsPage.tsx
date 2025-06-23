@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ArrowLeft, Plus, Send, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Mood, CommunityQuote } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,10 +13,11 @@ import { useDynamicColors } from '@/hooks/useDynamicColors';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
 import { usePlatform } from '@/contexts/PlatformContext';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, limit, onSnapshot, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { formatDistanceToNow } from 'date-fns';
 
 // Static mood for this page for a clean, stable background
 const thoughtsPageMood: Mood = {
@@ -26,9 +27,6 @@ const thoughtsPageMood: Mood = {
   name: "ThoughtsView",
   adjective: "Contemplative",
 };
-
-// Default quote if none are found in the database
-const defaultQuote = { id: 'default', text: "Be the first to share a thought.", status: 'approved' as const, submittedAt: new Date() };
 
 const CollectiveThoughtsPage = () => {
     useDynamicColors(thoughtsPageMood);
@@ -77,6 +75,19 @@ const CollectiveThoughtsPage = () => {
             textareaRef.current?.focus();
         }
     }, [isInputVisible]);
+
+    const formatTimestamp = (timestamp: any): string => {
+        if (!timestamp || typeof timestamp.toDate !== 'function') {
+            return '';
+        }
+        try {
+            const date = (timestamp as Timestamp).toDate();
+            return formatDistanceToNow(date, { addSuffix: true });
+        } catch (e) {
+            console.warn("Could not format timestamp:", timestamp, e);
+            return '';
+        }
+    };
 
     const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -201,10 +212,15 @@ const CollectiveThoughtsPage = () => {
                                                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                                             >
                                                 <Card className="frosted-glass shadow-soft rounded-2xl">
-                                                    <CardContent className="p-4 md:p-6">
+                                                    <CardContent className="p-4 md:p-6 space-y-2">
                                                         <p className="text-base md:text-lg text-foreground/90">
                                                             {quote.text}
                                                         </p>
+                                                        {quote.submittedAt && (
+                                                            <p className="text-xs text-right text-foreground/60">
+                                                                {formatTimestamp(quote.submittedAt)}
+                                                            </p>
+                                                        )}
                                                     </CardContent>
                                                 </Card>
                                             </motion.li>
