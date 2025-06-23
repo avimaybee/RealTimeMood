@@ -35,21 +35,20 @@ const AppHeader: React.FC = () => {
   return (
     <motion.header 
       className={cn(
-        "fixed top-0 inset-x-0 h-20 px-4 md:px-6 z-30",
+        "fixed top-4 inset-x-0 mx-auto h-16 px-6 z-30",
+        "w-[calc(100%-2rem)] max-w-lg",
         "flex items-center justify-start",
-        "frosted-glass"
+        "frosted-glass rounded-2xl shadow-soft"
       )}
       animate={{ y: isCollectiveShifting ? -8 : 0 }}
       transition={{ type: 'spring', stiffness: 100, damping: 10, delay: 0.1 }}
     >
-      <div className="w-full max-w-screen-xl mx-auto">
-        <a href="/" className="flex items-center group">
-            <AppHeaderLogo animationClass={animationClass} isIos={isIos} />
-            <span className="ml-3 text-xl md:text-2xl font-medium text-foreground opacity-90 text-shadow-pop transition-opacity group-hover:opacity-100">
-                RealTimeMood
-            </span>
-        </a>
-      </div>
+      <a href="/" className="flex items-center group">
+          <AppHeaderLogo animationClass={animationClass} isIos={isIos} />
+          <span className="ml-3 text-xl md:text-2xl font-medium text-foreground opacity-90 text-shadow-pop transition-opacity group-hover:opacity-100">
+              RealTimeMood
+          </span>
+      </a>
     </motion.header>
   );
 };

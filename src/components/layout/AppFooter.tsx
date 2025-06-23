@@ -67,8 +67,9 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
   return (
     <motion.footer 
       className={cn(
-        "fixed bottom-0 inset-x-0 p-2 z-50",
-        "frosted-glass"
+        "fixed bottom-4 inset-x-0 mx-auto z-50",
+        "w-[calc(100%-2rem)] max-w-lg",
+        "frosted-glass rounded-2xl shadow-soft"
       )}
       animate={{
         y: isCollectiveShifting ? 8 : 0,
@@ -79,12 +80,12 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
     >
         <motion.div
             className={cn(
-                "flex flex-col items-center overflow-hidden w-full max-w-screen-xl mx-auto"
+                "flex flex-col items-center overflow-hidden w-full"
             )}
             animate={{ height: isMenuOpen ? '350px' : '36px' }}
             transition={menuHeightTransition}
         >
-            <div className="flex-shrink-0 w-full flex items-center justify-between h-[36px] px-2">
+            <div className="flex-shrink-0 w-full flex items-center justify-between h-[36px] px-4">
                 <div className="text-xs md:text-sm opacity-90">
                 {contributionCount.toLocaleString()} moods shared
                 </div>
@@ -114,7 +115,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
             <AnimatePresence>
                 {isMenuOpen && (
                 <motion.div
-                    className="flex-grow w-full flex flex-col items-center justify-start pt-2 pb-2"
+                    className="flex-grow w-full flex flex-col items-center justify-start pt-2 pb-2 px-2"
                     variants={menuContentVariants}
                     initial="hidden"
                     animate="visible"
