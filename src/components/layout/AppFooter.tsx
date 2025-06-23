@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState, useEffect } from 'react';
 import { Menu, BarChart2, MessageSquareQuote, X, Camera, Eye, Info, Loader2, Gavel } from 'lucide-react';
@@ -22,7 +21,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
   const { contributionCount, isCollectiveShifting } = useMood();
   const [loadingPath, setLoadingPath] = useState<string | null>(null);
   const pathname = usePathname();
-  const { isIos, isAndroid } = usePlatform();
+  const { isIos } = usePlatform();
 
   // Effect to reset the loader when the page navigation is complete
   useEffect(() => {
@@ -44,8 +43,6 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
     ? { type: "spring", stiffness: 400, damping: 35 }
     : { type: "tween", duration: 0.4, ease: [0.4, 0, 0.2, 1] };
     
-  const footerContainerClasses = "fixed bottom-0 inset-x-0 mb-4 md:mb-6 px-4 md:px-6 z-50";
-
   const menuContentVariants = {
     hidden: { opacity: 0, y: 10, filter: 'blur(5px)' },
     visible: { 
@@ -69,7 +66,10 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
 
   return (
     <motion.footer 
-      className={cn(footerContainerClasses)}
+      className={cn(
+        "fixed bottom-0 inset-x-0 p-2 z-50",
+        "frosted-glass border-t border-border/10"
+      )}
       animate={{
         y: isCollectiveShifting ? 8 : 0,
       }}
@@ -79,10 +79,9 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
     >
         <motion.div
             className={cn(
-                "p-2 frosted-glass rounded-2xl flex flex-col items-center overflow-hidden w-full max-w-screen-xl mx-auto",
-                isAndroid ? 'shadow-lifted' : 'shadow-soft'
+                "flex flex-col items-center overflow-hidden w-full max-w-screen-xl mx-auto"
             )}
-            animate={{ height: isMenuOpen ? '350px' : '52px' }}
+            animate={{ height: isMenuOpen ? '350px' : '36px' }}
             transition={menuHeightTransition}
         >
             <div className="flex-shrink-0 w-full flex items-center justify-between h-[36px] px-2">

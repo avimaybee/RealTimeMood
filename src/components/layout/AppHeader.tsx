@@ -1,4 +1,3 @@
-
 "use client";
 import React from 'react';
 import { useMood } from '@/contexts/MoodContext';
@@ -33,16 +32,18 @@ const AppHeader: React.FC = () => {
     (adjective === 'Joyful' || adjective === 'Energetic' || adjective === 'Passionate') ? 'animate-logo-joyful' :
     'animate-logo-calm';
 
-  const headerBaseClasses = "w-full h-14 px-4 md:px-6 z-30 frosted-glass rounded-2xl shadow-soft flex items-center justify-start group";
-
   return (
     <motion.header 
-      className={cn("fixed top-0 inset-x-0 mt-4 md:mt-6 px-4 md:px-6 z-30")}
+      className={cn(
+        "fixed top-0 inset-x-0 h-20 px-4 md:px-6 z-30",
+        "flex items-center justify-start",
+        "frosted-glass border-b border-border/10"
+      )}
       animate={{ y: isCollectiveShifting ? -8 : 0 }}
       transition={{ type: 'spring', stiffness: 100, damping: 10, delay: 0.1 }}
     >
-      <div className={cn(headerBaseClasses, "max-w-screen-xl mx-auto")}>
-        <a href="/" className="flex items-center">
+      <div className="w-full max-w-screen-xl mx-auto">
+        <a href="/" className="flex items-center group">
             <AppHeaderLogo animationClass={animationClass} isIos={isIos} />
             <span className="ml-3 text-xl md:text-2xl font-medium text-foreground opacity-90 text-shadow-pop transition-opacity group-hover:opacity-100">
                 RealTimeMood

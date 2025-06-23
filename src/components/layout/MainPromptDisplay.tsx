@@ -1,4 +1,3 @@
-
 "use client";
 import React from 'react';
 import { useMood } from '@/contexts/MoodContext';
@@ -18,12 +17,12 @@ const MainPromptDisplay: React.FC = () => {
       transition={{ type: 'spring', stiffness: 100, damping: 10 }}
     >
       <h1 className={cn(
-          "text-3xl md:text-4xl font-light text-shadow-pop transition-opacity animate-text-breathe"
+          "text-3xl md:text-4xl font-normal text-shadow-pop transition-opacity animate-text-breathe"
         )}>
         How are you feeling right now?
       </h1>
       <p className={cn(
-        "text-lg md:text-xl text-shadow-pop transition-opacity animate-text-breathe"
+        "text-base md:text-lg text-shadow-pop transition-opacity animate-text-breathe opacity-90"
       )}>
         The Collective Mood: <span className="font-semibold">{currentMood.adjective}</span>
       </p>
