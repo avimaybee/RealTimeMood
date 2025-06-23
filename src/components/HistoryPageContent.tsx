@@ -285,7 +285,7 @@ const HistoryPageContent = () => {
         transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
       >
         <header className="w-full max-w-5xl mx-auto flex items-center justify-between z-10 mb-6">
-            <Button asChild variant="outline" className="frosted-glass shadow-soft interactive-glow rounded-full w-10 h-10 p-0 md:w-auto md:px-4 md:flex-shrink-0">
+            <Button asChild variant="outline" className="interactive-glow rounded-full w-10 h-10 p-0 md:w-auto md:px-4 md:flex-shrink-0">
               <Link href="/">
                 <ArrowLeft className="h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />
                 {!isAndroid && <span className="hidden md:inline md:ml-2">Back to Live</span>}
