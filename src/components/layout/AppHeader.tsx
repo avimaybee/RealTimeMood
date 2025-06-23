@@ -1,10 +1,10 @@
-
 "use client";
 import React from 'react';
 import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { usePlatform } from '@/contexts/PlatformContext';
+import { moodToHslString } from '@/lib/colorUtils';
 
 const AppHeaderLogo: React.FC<{ animationClass: string; isIos: boolean }> = ({ animationClass, isIos }) => (
   <svg
@@ -32,13 +32,15 @@ const AppHeader: React.FC = () => {
     adjective === 'Anxious' ? 'animate-logo-anxious' :
     (adjective === 'Joyful' || adjective === 'Energetic' || adjective === 'Passionate') ? 'animate-logo-joyful' :
     'animate-logo-calm';
+  
+  const moodColor = moodToHslString(currentMood);
 
   return (
     <motion.header 
       className={cn(
         "fixed top-4 inset-x-0 mx-auto h-14 px-4 z-30",
         "w-[calc(100%-2rem)] max-w-lg",
-        "flex items-center justify-start",
+        "flex items-center justify-between",
         "frosted-glass rounded-2xl shadow-soft"
       )}
       animate={{ y: isCollectiveShifting ? -8 : 0 }}
@@ -50,6 +52,22 @@ const AppHeader: React.FC = () => {
               RealTimeMood
           </span>
       </a>
+      
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-foreground/70 hidden sm:inline">
+          {currentMood.adjective}
+        </span>
+        <motion.div
+            className="w-3 h-3 rounded-full"
+            style={{ 
+                backgroundColor: moodColor,
+                boxShadow: `0 0 8px 1px ${moodColor}`
+            }}
+            animate={{ scale: [1, 1.15, 1] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            key={currentMood.hue} // Re-trigger animation on hue change
+        />
+      </div>
     </motion.header>
   );
 };
