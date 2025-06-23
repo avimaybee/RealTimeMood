@@ -11,6 +11,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: [
+          'var(--font-manrope)',
           'system-ui',
           '-apple-system',
           'BlinkMacSystemFont',
