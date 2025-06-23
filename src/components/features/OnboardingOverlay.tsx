@@ -101,11 +101,11 @@ const OnboardingOverlay: React.FC = () => {
           exit="exit"
           className="fixed inset-x-0 bottom-[12rem] md:bottom-[14rem] z-30 flex flex-col items-center justify-center gap-4 pointer-events-none"
         >
-          <motion.div variants={itemVariants} className="flex items-center gap-2 text-white/90 text-shadow-pop text-sm md:text-base bg-black/20 px-3 py-1.5 rounded-full shadow-soft">
+          <motion.div variants={itemVariants} className="flex items-center gap-2 text-white/90 text-sm md:text-base bg-black/20 px-3 py-1.5 rounded-full shadow-soft">
             <MousePointerClick className="w-4 h-4" strokeWidth={isIos ? 1.5 : 2} />
             <p>Tap the Orb to select a color mood.</p>
           </motion.div>
-          <motion.div variants={itemVariants} className="flex items-center gap-2 text-white/90 text-shadow-pop text-sm md:text-base bg-black/20 px-3 py-1.5 rounded-full shadow-soft">
+          <motion.div variants={itemVariants} className="flex items-center gap-2 text-white/90 text-sm md:text-base bg-black/20 px-3 py-1.5 rounded-full shadow-soft">
             <Hand className="w-4 h-4" strokeWidth={isIos ? 1.5 : 2} />
             <p>Hold the Orb for more mood words.</p>
           </motion.div>

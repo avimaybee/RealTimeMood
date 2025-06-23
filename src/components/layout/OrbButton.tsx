@@ -340,7 +340,7 @@ const OrbButton: React.FC = () => {
           <AnimatePresence>
             {isBar && !isCharging && !isPanning && (
               <motion.p
-                className="absolute -top-8 w-full text-center text-xs sm:text-sm text-white/90 text-shadow-pop pointer-events-none"
+                className="absolute -top-8 w-full text-center text-xs sm:text-sm text-white/90 pointer-events-none"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0, transition: { delay: 0.4, duration: 0.4 } }}
                 exit={{ opacity: 0, y: 5, transition: { duration: 0.2 } }}

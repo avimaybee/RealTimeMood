@@ -33,7 +33,7 @@ const defaultQuotes = [
 
 const CollectiveThoughtsPage = () => {
     useDynamicColors(thoughtsPageMood);
-    const { isIos, isAndroid } = usePlatform();
+    const { isIos } = usePlatform();
     const { toast } = useToast();
     const [quotes, setQuotes] = useState<(CommunityQuote & { id: string })[]>([]);
     const [isLoadingQuotes, setIsLoadingQuotes] = useState(true);

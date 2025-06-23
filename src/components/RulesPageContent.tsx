@@ -20,7 +20,7 @@ const rulesPageMood: Mood = {
 
 const RulesPageContent = () => {
   useDynamicColors(rulesPageMood);
-  const { isIos, isAndroid } = usePlatform();
+  const { isIos } = usePlatform();
 
   return (
     <>

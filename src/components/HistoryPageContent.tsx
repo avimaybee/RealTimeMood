@@ -91,7 +91,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 const HistoryPageContent = () => {
   useDynamicColors(historyPageMood);
-  const { isIos, isAndroid } = usePlatform();
+  const { isIos } = usePlatform();
   const [timeRange, setTimeRange] = useState<number>(30); // 30 days, 7 days, 1 day (for 24h)
   const [chartData, setChartData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);

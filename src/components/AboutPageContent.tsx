@@ -19,7 +19,7 @@ const aboutPageMood: Mood = {
 
 const AboutPageContent = () => {
   useDynamicColors(aboutPageMood);
-  const { isIos, isAndroid } = usePlatform();
+  const { isIos } = usePlatform();
 
   return (
     <>
