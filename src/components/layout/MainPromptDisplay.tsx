@@ -10,7 +10,7 @@ const MainPromptDisplay: React.FC = () => {
 
   return (
     <motion.div 
-      className="flex flex-col items-center justify-center gap-y-3 md:gap-y-4 p-4"
+      className="flex flex-col items-start justify-center gap-y-3 md:gap-y-4"
       animate={{ 
         scale: isCollectiveShifting ? 0.95 : 1,
         y: isCollectiveShifting ? -4 : 0,

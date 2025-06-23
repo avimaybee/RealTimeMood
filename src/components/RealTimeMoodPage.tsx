@@ -84,7 +84,7 @@ const PageContent: React.FC = () => {
       <AppHeader />
 
       <main className={cn(
-        "flex-grow flex flex-col items-center justify-center w-full px-4 text-center z-10 gap-12 md:gap-16",
+        "flex-grow flex flex-col items-start justify-center w-full max-w-screen-md mx-auto px-4 md:px-6 z-10",
         isCollectiveShifting ? 'opacity-90' : 'opacity-100',
         )}>
         <MainPromptDisplay />
