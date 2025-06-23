@@ -18,6 +18,7 @@ import { archiveCollectiveMoodIfNeeded } from '@/lib/archiving-service';
 import { db } from '@/lib/firebase';
 import { collection, query, where, orderBy, getDocs, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 
 // Define a static, near-white mood for the history page's background
@@ -278,25 +279,37 @@ const HistoryPageContent = () => {
       <div className="vignette-overlay" />
       <div className="noise-overlay" />
       <LivingParticles />
+
+      <motion.header
+        className={cn(
+          "fixed top-4 inset-x-0 mx-auto z-30",
+          "w-[calc(100%-2rem)] max-w-lg",
+          "flex items-center justify-between",
+          "h-12 px-3",
+          "frosted-glass rounded-2xl shadow-soft"
+        )}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+      >
+        <Button asChild variant="ghost" size="icon" className="interactive-glow -ml-2">
+          <Link href="/">
+            <ArrowLeft className="h-5 w-5" strokeWidth={isIos ? 1.5 : 2} />
+            <span className="sr-only">Back to Live</span>
+          </Link>
+        </Button>
+        <h1 className="text-base font-medium text-center truncate px-2">
+          Collective Mood History
+        </h1>
+        <div className="w-8 h-8" /> {/* Spacer */}
+      </motion.header>
+
       <motion.div
-        className="min-h-screen w-full flex flex-col items-center p-4 md:p-6"
+        className="min-h-screen w-full flex flex-col items-center p-4 md:p-6 pt-24"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
       >
-        <header className="w-full max-w-5xl mx-auto flex items-center justify-between z-10 mb-6">
-            <Button asChild variant="outline" className="interactive-glow rounded-full w-10 h-10 p-0 md:w-auto md:px-4 md:flex-shrink-0">
-              <Link href="/">
-                <ArrowLeft className="h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />
-                {!isAndroid && <span className="hidden md:inline md:ml-2">Back to Live</span>}
-              </Link>
-            </Button>
-            <h1 className="text-2xl md:text-3xl font-bold">
-              Collective Mood History
-            </h1>
-            <div className="w-10 md:w-auto md:flex-shrink-0 md:w-[148px]"></div> {/* Spacer */}
-        </header>
-
         <main className="w-full flex-grow flex flex-col items-center justify-center gap-6">
           <Card className="w-full max-w-5xl frosted-glass shadow-soft rounded-2xl">
             <CardHeader>

@@ -15,6 +15,7 @@ import { usePlatform } from '@/contexts/PlatformContext';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 // Static mood for this page for a clean, stable background
 const thoughtsPageMood: Mood = {
@@ -208,26 +209,37 @@ const CollectiveThoughtsPage = () => {
             <div className="vignette-overlay" />
             <div className="noise-overlay" />
             <LivingParticles />
+
+            <motion.header
+              className={cn(
+                "fixed top-4 inset-x-0 mx-auto z-30",
+                "w-[calc(100%-2rem)] max-w-lg",
+                "flex items-center justify-between",
+                "h-12 px-3",
+                "frosted-glass rounded-2xl shadow-soft"
+              )}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+            >
+              <Button asChild variant="ghost" size="icon" className="interactive-glow -ml-2">
+                <Link href="/">
+                  <ArrowLeft className="h-5 w-5" strokeWidth={isIos ? 1.5 : 2} />
+                  <span className="sr-only">Back to Live</span>
+                </Link>
+              </Button>
+              <h1 className="text-base font-medium text-center truncate px-2">
+                Collective Thoughts
+              </h1>
+              <div className="w-8 h-8" /> {/* Spacer to balance the back button */}
+            </motion.header>
+
             <motion.div
-                className="min-h-screen w-full flex flex-col items-center p-4 md:p-8 bg-transparent text-foreground"
+                className="min-h-screen w-full flex flex-col items-center p-4 md:p-8 pt-24 bg-transparent text-foreground"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
             >
-                <header className="w-full max-w-5xl mx-auto flex items-center justify-between z-10 mb-8">
-                    <Button asChild variant="outline" className="interactive-glow rounded-full w-10 h-10 p-0 md:w-auto md:px-4 md:flex-shrink-0">
-                        <Link href="/">
-                            <ArrowLeft className="h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />
-                            {!isAndroid && <span className="hidden md:inline md:ml-2">Back to Live</span>}
-                        </Link>
-                    </Button>
-                    <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
-                         <MessageSquareQuote className="h-7 w-7 opacity-80" strokeWidth={isIos ? 1.5 : 2} />
-                         Collective Thoughts
-                    </h1>
-                    <div className="w-10 md:w-auto md:flex-shrink-0 md:w-[148px]"></div>
-                </header>
-
                 <main className="w-full flex-grow flex items-center justify-center">
                     <Card className="w-full max-w-4xl frosted-glass shadow-soft rounded-2xl relative">
                         <CardContent className="p-8 md:p-12 min-h-[250px] flex items-center justify-center relative">
@@ -259,7 +271,7 @@ const CollectiveThoughtsPage = () => {
                                                 animate={{ opacity: 1, y: 0 }}
                                                 exit={{ opacity: 0, y: -15 }}
                                                 transition={{ duration: 0.5, ease: "easeInOut" }}
-                                                className="text-2xl md:text-3xl font-normal text-center text-shadow-pop"
+                                                className="text-2xl md:text-3xl font-normal text-center"
                                             >
                                                 "{currentQuote.text}"
                                             </motion.p>
