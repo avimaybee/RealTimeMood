@@ -97,10 +97,13 @@
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-background text-foreground font-sans;
-    /* CSS Transitions for background-color and color are removed here. 
-       Smooth color changes are now handled by JavaScript LERPing 
-       of --mood-hue, --mood-saturation, --mood-lightness, and HSL components of --foreground-hsl and --primary-foreground-hsl. */
+    @apply text-foreground font-sans;
+    background: radial-gradient(
+      circle 600px at var(--cursor-x, 50vw) var(--cursor-y, 50vh), 
+      hsl(var(--mood-hue) var(--mood-saturation) calc(var(--mood-lightness) + 4%)),
+      hsl(var(--background))
+    );
+    transition: background 0.2s ease-out;
   }
   
   /* Apply platform-specific fonts */
