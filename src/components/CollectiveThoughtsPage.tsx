@@ -320,7 +320,7 @@ const CollectiveThoughtsPage = () => {
                         ref={textareaRef}
                         name="thought"
                         placeholder="Share a thought..."
-                        className="flex-grow bg-transparent border-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none h-10 px-2 leading-10"
+                        className="flex-grow bg-transparent border-0 border-b-2 border-transparent focus:border-primary focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 transition-colors resize-none h-10 px-2 leading-10"
                         rows={1}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {
