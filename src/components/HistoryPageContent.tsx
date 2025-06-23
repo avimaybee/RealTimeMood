@@ -192,7 +192,7 @@ const HistoryPageContent = () => {
     if (error) {
         return (
             <div className="h-[300px] sm:h-[400px] w-full flex flex-col items-center justify-center text-destructive">
-                <AlertCircle className="h-10 w-10 mb-4" />
+                <AlertCircle className="h-10 w-10 mb-4" strokeWidth={isIos ? 1.5 : 2} />
                 <p className="font-semibold">An Error Occurred</p>
                 <p className="text-sm">{error}</p>
             </div>
@@ -202,7 +202,7 @@ const HistoryPageContent = () => {
     if (chartData.length === 0) {
         return (
             <div className="h-[300px] sm:h-[400px] w-full flex flex-col items-center justify-center text-foreground/70">
-                <History className="h-10 w-10 mb-4" />
+                <History className="h-10 w-10 mb-4" strokeWidth={isIos ? 1.5 : 2} />
                 <p className="font-semibold">Not Enough Data</p>
                 <p className="text-sm">No historical mood data is available for this time range yet.</p>
             </div>

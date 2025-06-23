@@ -106,7 +106,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                     transition={{ duration: 0.2 }}
                     className="flex items-center justify-center"
                     >
-                    {isMenuOpen ? <X className="w-5 h-5 md:w-6 md:h-6 opacity-90" /> : <Menu className="w-5 h-5 md:w-6 md:h-6 opacity-90" />}
+                    {isMenuOpen ? <X className="w-5 h-5 md:w-6 md:h-6 opacity-90" strokeWidth={isIos ? 1.5 : 2} /> : <Menu className="w-5 h-5 md:w-6 md:h-6 opacity-90" strokeWidth={isIos ? 1.5 : 2} />}
                     </motion.div>
                 </AnimatePresence>
                 </Button>
@@ -138,7 +138,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                             </>
                             ) : (
                             <>
-                                <BarChart2 className="mr-2 h-4 w-4" />
+                                <BarChart2 className="mr-2 h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />
                                 View Mood History
                             </>
                             )}
@@ -158,7 +158,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                             </>
                             ) : (
                             <>
-                                <MessageSquareQuote className="mr-2 h-4 w-4" />
+                                <MessageSquareQuote className="mr-2 h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />
                                 Collective Thoughts
                             </>
                             )}
@@ -171,7 +171,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                         onClick={handleAmbientClick}
                         disabled={!!loadingPath}
                         >
-                        <Eye className="mr-2 h-4 w-4" />
+                        <Eye className="mr-2 h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />
                         Ambient Mode
                         </Button>
                         <Button 
@@ -188,7 +188,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                             </>
                             ) : (
                             <>
-                                <Info className="mr-2 h-4 w-4" />
+                                <Info className="mr-2 h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />
                                 About
                             </>
                             )}
@@ -208,7 +208,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                             </>
                             ) : (
                             <>
-                                <Gavel className="mr-2 h-4 w-4" />
+                                <Gavel className="mr-2 h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />
                                 Guidelines
                             </>
                             )}

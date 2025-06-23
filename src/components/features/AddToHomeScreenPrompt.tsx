@@ -7,21 +7,16 @@ import { Button } from '@/components/ui/button';
 import { ArrowDownToLine, Share, X, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
+import { usePlatform } from '@/contexts/PlatformContext';
 
 const AddToHomeScreenPrompt: React.FC = () => {
   const { contributionCount } = useMood();
   const { toast } = useToast();
   const [promptToInstall, setPromptToInstall] = useState<any>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [isIos, setIsIos] = useState(false);
+  const { isIos } = usePlatform();
 
   useEffect(() => {
-    const isUserOnIos = () => {
-        if (typeof navigator === 'undefined') return false;
-        return /iPad|iPhone|iPod/.test(navigator.userAgent);
-    }
-    setIsIos(isUserOnIos());
-
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setPromptToInstall(e);
@@ -74,13 +69,13 @@ const AddToHomeScreenPrompt: React.FC = () => {
   const getIosInstructions = () => (
     <div className="space-y-2">
         <div className="flex items-center gap-3">
-          <Share className="h-5 w-5 flex-shrink-0 text-primary"/>
+          <Share className="h-5 w-5 flex-shrink-0 text-primary" strokeWidth={isIos ? 1.5 : 2}/>
           <p>To install, tap the 'Share' icon in your browser toolbar.</p>
         </div>
         <div className="flex items-center gap-3">
             <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
                 <div className="bg-white/90 p-1 rounded-md shadow-sm">
-                 <Plus className="h-3 w-3 text-black"/>
+                 <Plus className="h-3 w-3 text-black" strokeWidth={isIos ? 2 : 2.5}/>
                 </div>
             </div>
           <p>Then, scroll down and select 'Add to Home Screen'.</p>
@@ -99,7 +94,7 @@ const AddToHomeScreenPrompt: React.FC = () => {
           transition={{ type: 'spring', damping: 20, stiffness: 150 }}
         >
           <Button variant="ghost" size="icon" className="absolute top-2 right-2 w-7 h-7 rounded-full" onClick={handleDismiss}>
-            <X className="w-4 h-4"/>
+            <X className="w-4 h-4" strokeWidth={isIos ? 1.5 : 2}/>
             <span className="sr-only">Dismiss</span>
           </Button>
 
@@ -117,7 +112,7 @@ const AddToHomeScreenPrompt: React.FC = () => {
           {!isIos && promptToInstall && (
             <div className="mt-4 flex justify-end">
               <Button onClick={handleInstallClick} className="interactive-glow">
-                <ArrowDownToLine className="mr-2 h-4 w-4"/>
+                <ArrowDownToLine className="mr-2 h-4 w-4" strokeWidth={isIos ? 1.5 : 2}/>
                 Install App
               </Button>
             </div>

@@ -100,14 +100,6 @@
     @apply bg-background text-foreground font-sans;
     transition: background-color 0.8s ease-in-out;
   }
-  
-  /* Apply platform-specific fonts */
-  body.ios {
-    @apply font-sans-ios;
-  }
-  body.android {
-    @apply font-sans-android;
-  }
 }
 
 @layer utilities {

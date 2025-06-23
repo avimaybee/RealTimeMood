@@ -40,7 +40,7 @@ const AboutPageContent = () => {
             </Link>
           </Button>
           <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
-             <Info className="h-6 w-6 opacity-80" />
+             <Info className="h-6 w-6 opacity-80" strokeWidth={isIos ? 1.5 : 2} />
              About RealTimeMood
           </h1>
           <div className="w-10 md:w-auto md:flex-shrink-0 md:w-[148px]"></div>

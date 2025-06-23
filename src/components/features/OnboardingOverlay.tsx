@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MousePointerClick, Hand } from 'lucide-react';
+import { usePlatform } from '@/contexts/PlatformContext';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -31,6 +32,7 @@ const OnboardingOverlay: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isFirstVisit, setIsFirstVisit] = useState<boolean | null>(null);
   const autoDismissTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const { isIos } = usePlatform();
 
   const handleDismiss = useRef(() => {
     if (autoDismissTimerRef.current) {
@@ -100,11 +102,11 @@ const OnboardingOverlay: React.FC = () => {
           className="fixed inset-x-0 bottom-[12rem] md:bottom-[14rem] z-30 flex flex-col items-center justify-center gap-4 pointer-events-none"
         >
           <motion.div variants={itemVariants} className="flex items-center gap-2 text-white/90 text-shadow-pop text-sm md:text-base bg-black/20 px-3 py-1.5 rounded-full shadow-soft">
-            <MousePointerClick className="w-4 h-4" />
+            <MousePointerClick className="w-4 h-4" strokeWidth={isIos ? 1.5 : 2} />
             <p>Tap the Orb to select a color mood.</p>
           </motion.div>
           <motion.div variants={itemVariants} className="flex items-center gap-2 text-white/90 text-shadow-pop text-sm md:text-base bg-black/20 px-3 py-1.5 rounded-full shadow-soft">
-            <Hand className="w-4 h-4" />
+            <Hand className="w-4 h-4" strokeWidth={isIos ? 1.5 : 2} />
             <p>Hold the Orb for more mood words.</p>
           </motion.div>
         </motion.div>

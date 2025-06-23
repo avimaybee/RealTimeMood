@@ -3,10 +3,12 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { usePlatform } from '@/contexts/PlatformContext';
 
 const ShareSnapshotButton: React.FC = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const { isIos } = usePlatform();
 
   const takeSnapshot = async () => {
     setIsLoading(true);
@@ -153,7 +155,7 @@ const ShareSnapshotButton: React.FC = () => {
       disabled={isLoading}
       className="text-base w-full justify-start"
     >
-      {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
+      {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />}
       Share Snapshot
     </Button>
   );

@@ -222,7 +222,7 @@ const CollectiveThoughtsPage = () => {
                         </Link>
                     </Button>
                     <h1 className="text-xl md:text-2xl font-semibold flex items-center gap-3 frosted-glass shadow-soft px-6 py-3 rounded-full">
-                         <MessageSquareQuote className="h-6 w-6 opacity-80" />
+                         <MessageSquareQuote className="h-6 w-6 opacity-80" strokeWidth={isIos ? 1.5 : 2} />
                          Collective Thoughts
                     </h1>
                     <div className="w-10 md:w-auto md:min-w-[148px]"></div> {/* Spacer to balance header */}
@@ -240,7 +240,7 @@ const CollectiveThoughtsPage = () => {
                                     aria-label="Previous thought"
                                     className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 bg-background/20 hover:bg-background/40"
                                 >
-                                    <ChevronLeft className="w-6 h-6" />
+                                    <ChevronLeft className="w-6 h-6" strokeWidth={isIos ? 1.5 : 2} />
                                 </Button>
                             )}
 
@@ -276,7 +276,7 @@ const CollectiveThoughtsPage = () => {
                                     aria-label="Next thought"
                                     className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 bg-background/20 hover:bg-background/40"
                                 >
-                                    <ChevronRight className="w-6 h-6" />
+                                    <ChevronRight className="w-6 h-6" strokeWidth={isIos ? 1.5 : 2} />
                                 </Button>
                             )}
                         </CardContent>
@@ -305,7 +305,7 @@ const CollectiveThoughtsPage = () => {
                       animate={{ opacity: isInputVisible ? 0 : 1, transition: { duration: 0.2 } }}
                       style={{ pointerEvents: isInputVisible ? 'none' : 'auto' }}
                     >
-                      <Plus className="mr-2 w-4 h-4" />
+                      <Plus className="mr-2 w-4 h-4" strokeWidth={isIos ? 1.5 : 2} />
                       <span className="text-base font-medium">Share your thought</span>
                     </motion.div>
 
@@ -331,7 +331,7 @@ const CollectiveThoughtsPage = () => {
                         disabled={isSubmitting}
                       />
                       <Button type="submit" size="icon" className="rounded-full flex-shrink-0 w-10 h-10 ml-2" disabled={isSubmitting}>
-                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" strokeWidth={isIos ? 1.5 : 2} />}
                       </Button>
                       <Button
                         type="button"
@@ -341,7 +341,7 @@ const CollectiveThoughtsPage = () => {
                         onClick={() => setIsInputVisible(false)}
                         disabled={isSubmitting}
                       >
-                        <X className="w-5 h-5" />
+                        <X className="w-5 h-5" strokeWidth={isIos ? 1.5 : 2} />
                       </Button>
                     </motion.div>
                   </motion.form>
