@@ -109,8 +109,8 @@
   
   .frosted-glass {
     /* JS updates --panel-background-rgba and --panel-bg-alpha if needed */
-    background-color: rgba(var(--panel-background-rgba), var(--panel-bg-alpha));
-    @apply backdrop-blur-2xl;
+    background-color: rgba(var(--panel-background-rgba), 0.25);
+    @apply backdrop-blur-xl;
   }
 
   .content-auto {
