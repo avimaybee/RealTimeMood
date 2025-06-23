@@ -1,7 +1,7 @@
 
 "use client";
 import Link from 'next/link';
-import { ArrowLeft, Plus, Send, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect, useRef } from 'react';
@@ -36,8 +36,8 @@ const CollectiveThoughtsPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const [isInputVisible, setIsInputVisible] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [thoughtValue, setThoughtValue] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const lastSubmissionTimeRef = useRef<number>(0);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -47,16 +47,14 @@ const CollectiveThoughtsPage = () => {
     };
 
     useEffect(() => {
-        // This logic makes sure that we only auto-scroll if the user is already near the bottom.
-        // This prevents interrupting a user who is scrolling up to read older messages.
-        const scrollContainer = messagesEndRef.current?.parentElement?.parentElement; // Adjust based on your final DOM structure
+        const scrollContainer = messagesEndRef.current?.parentElement?.parentElement;
         if (scrollContainer) {
-            const isScrolledToBottom = scrollContainer.scrollHeight - scrollContainer.clientHeight <= scrollContainer.scrollTop + 100; // 100px tolerance
+            const isScrolledToBottom = scrollContainer.scrollHeight - scrollContainer.clientHeight <= scrollContainer.scrollTop + 100;
             if (isScrolledToBottom) {
                 scrollToBottom();
             }
         } else {
-             scrollToBottom(); // Fallback for initial load
+             scrollToBottom();
         }
     }, [quotes]);
 
@@ -67,7 +65,7 @@ const CollectiveThoughtsPage = () => {
         const q = query(
             quotesCollection,
             orderBy('submittedAt', 'asc'),
-            limitToLast(50) // Listen to the 50 most recent thoughts, in chronological order
+            limitToLast(50)
         );
 
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -86,14 +84,8 @@ const CollectiveThoughtsPage = () => {
             setIsLoading(false);
         });
 
-        return () => unsubscribe(); // Cleanup listener on unmount
+        return () => unsubscribe();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-    useEffect(() => {
-        if (isInputVisible) {
-            textareaRef.current?.focus();
-        }
-    }, [isInputVisible]);
 
     const formatTimestamp = (timestamp: any): string => {
         if (!timestamp || typeof timestamp.toDate !== 'function') {
@@ -124,8 +116,7 @@ const CollectiveThoughtsPage = () => {
         }
 
         setIsSubmitting(true);
-        const formData = new FormData(event.currentTarget);
-        const thoughtText = (formData.get('thought') as string)?.trim();
+        const thoughtText = thoughtValue.trim();
 
         if (!thoughtText || thoughtText.length === 0) {
             toast({
@@ -152,8 +143,11 @@ const CollectiveThoughtsPage = () => {
                 title: "Thought Submitted",
                 description: "Your thought has been shared with the collective.",
             });
-            setIsInputVisible(false);
-            // No need to manually refetch; the onSnapshot listener will handle it.
+
+            setThoughtValue('');
+            if (textareaRef.current) {
+              textareaRef.current.style.height = 'auto';
+            }
         } catch (err) {
             console.error("Error submitting thought: ", err);
             toast({
@@ -167,9 +161,9 @@ const CollectiveThoughtsPage = () => {
     };
     
     const thoughtBubbleVariants = {
-        initial: { opacity: 0, y: 20 }, // Start from below and faded out
-        animate: { opacity: 1, y: 0 },    // Animate to final position
-        exit: { opacity: 0, y: -20 },   // Animate out by sliding up
+        initial: { opacity: 0, y: 20 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: -20 },
     };
 
     return (
@@ -202,7 +196,7 @@ const CollectiveThoughtsPage = () => {
               <div className="w-8 h-8" />
             </motion.header>
 
-            <div className="h-full w-full flex flex-col pt-20 pb-24">
+            <div className="h-full w-full flex flex-col pt-20 pb-28">
                 <AnimatePresence>
                     <motion.main
                         className="w-full max-w-2xl mx-auto flex-grow flex flex-col overflow-hidden px-4"
@@ -257,66 +251,52 @@ const CollectiveThoughtsPage = () => {
                 </AnimatePresence>
             </div>
                 
-            <footer className="fixed bottom-4 inset-x-0 mx-auto z-20 w-[calc(100%-2rem)] max-w-lg flex justify-center">
-                <motion.form
-                onSubmit={handleFormSubmit}
-                onClick={() => {
-                    if (!isInputVisible && !isSubmitting) setIsInputVisible(true);
-                }}
-                className="relative flex items-center justify-center frosted-glass shadow-soft overflow-hidden"
-                animate={{
-                    width: isInputVisible ? '100%' : '220px',
-                    height: '56px',
-                    borderRadius: isInputVisible ? '1rem' : '9999px',
-                }}
-                transition={{ type: 'tween', duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-                initial={false}
-                style={{ cursor: isSubmitting ? 'not-allowed' : (isInputVisible ? 'default' : 'pointer') }}
-                >
-                <motion.div
-                    className="absolute flex items-center justify-center"
-                    animate={{ opacity: isInputVisible ? 0 : 1, transition: { duration: 0.2 } }}
-                    style={{ pointerEvents: isInputVisible ? 'none' : 'auto' }}
-                >
-                    <Plus className="mr-2 w-4 h-4" strokeWidth={isIos ? 1.5 : 2} />
-                    <span className="text-base font-medium">Share your thought</span>
-                </motion.div>
-
-                <motion.div
-                    className="flex items-center w-full px-2"
-                    animate={{ opacity: isInputVisible ? 1 : 0, transition: { delay: isInputVisible ? 0.15 : 0, duration: 0.2 } }}
-                    style={{ pointerEvents: isInputVisible ? 'auto' : 'none' }}
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <Textarea
-                    ref={textareaRef}
-                    name="thought"
-                    placeholder="Share a thought..."
-                    className="flex-grow bg-transparent border-0 border-b-2 border-transparent focus:border-primary focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 transition-colors resize-none h-10 px-2 leading-10"
-                    rows={1}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            (e.currentTarget.form as HTMLFormElement).requestSubmit();
-                        }
-                    }}
-                    disabled={isSubmitting}
-                    />
-                    <Button type="submit" size="icon" className="rounded-full flex-shrink-0 w-10 h-10 ml-2" disabled={isSubmitting}>
-                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" strokeWidth={isIos ? 1.5 : 2} />}
-                    </Button>
-                    <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    className="rounded-full flex-shrink-0 w-10 h-10"
-                    onClick={() => setIsInputVisible(false)}
-                    disabled={isSubmitting}
-                    >
-                    <X className="w-5 h-5" strokeWidth={isIos ? 1.5 : 2} />
-                    </Button>
-                </motion.div>
-                </motion.form>
+            <footer className="fixed bottom-0 inset-x-0 z-20" data-prevent-snapshot>
+              <div className="p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-[calc(1rem+env(safe-area-inset-bottom))]">
+                  <div className="max-w-2xl mx-auto">
+                      <form
+                          onSubmit={handleFormSubmit}
+                          className="relative flex items-end w-full p-1 sm:p-2 frosted-glass shadow-soft rounded-2xl"
+                      >
+                          <Textarea
+                              ref={textareaRef}
+                              name="thought"
+                              placeholder="Share a thought..."
+                              value={thoughtValue}
+                              onChange={(e) => {
+                                  setThoughtValue(e.target.value);
+                                  const textarea = e.currentTarget;
+                                  // Auto-resize logic with a max-height
+                                  textarea.style.height = 'auto';
+                                  textarea.style.height = `${Math.min(textarea.scrollHeight, 128)}px`; // Cap height at 128px (max-h-32)
+                              }}
+                              onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && !e.shiftKey) {
+                                      e.preventDefault();
+                                      if (!isSubmitting && thoughtValue.trim()) {
+                                          (e.currentTarget.form as HTMLFormElement).requestSubmit();
+                                      }
+                                  }
+                              }}
+                              className="flex-grow bg-transparent border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none max-h-32 py-2 px-2 text-base"
+                              rows={1}
+                              disabled={isSubmitting}
+                          />
+                          <Button 
+                              type="submit" 
+                              size="icon" 
+                              className="rounded-full flex-shrink-0 w-10 h-10 ml-2" 
+                              disabled={isSubmitting || !thoughtValue.trim()}
+                          >
+                              {isSubmitting ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                  <Send className="w-4 h-4" strokeWidth={isIos ? 1.5 : 2} />
+                              )}
+                          </Button>
+                      </form>
+                  </div>
+              </div>
             </footer>
         </>
     );
