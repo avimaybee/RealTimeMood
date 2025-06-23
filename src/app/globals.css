@@ -38,7 +38,7 @@
     /* UI Panel specific backgrounds */
     --panel-bg-light-rgba: 255, 255, 255; /* r, g, b values for rgba() */
     --panel-bg-dark-rgba: 0, 0, 0; /* r, g, b values for rgba() */
-    --panel-bg-alpha: 0.08;
+    --panel-bg-alpha: 0.12;
     /* Default to light panel, JS will update based on background */
     --panel-background-rgba: var(--panel-bg-light-rgba); /* This stores "r, g, b" string. JS updates this. */
     /* --panel-background is used directly in .frosted-glass, not by Tailwind's hsl() */
