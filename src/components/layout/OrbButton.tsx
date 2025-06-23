@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { usePlatform } from '@/contexts/PlatformContext';
 
 const OrbButton: React.FC = () => {
-  const { recordContribution, isCollectiveShifting, setPreviewMood } = useMood();
+  const { recordContribution, isCollectiveShifting, setPreviewMood, previewMood } = useMood();
   const { toast } = useToast();
   const { isIos } = usePlatform();
   const [interactionMode, setInteractionMode] = useState<'orb' | 'bar'>('orb');
@@ -26,6 +26,8 @@ const OrbButton: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
   const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSubmissionTimeRef = useRef<number>(0);
+  const [isPanning, setIsPanning] = useState(false);
+
 
   useEffect(() => {
     setIsClient(true);
@@ -68,27 +70,55 @@ const OrbButton: React.FC = () => {
     }
   };
 
-  const handleBarTap = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (!barRef.current || isCharging) return;
+  const calculateMoodFromPoint = (point: { x: number; y: number }): Mood | null => {
+    if (!barRef.current) return null;
     const rect = barRef.current.getBoundingClientRect();
-
-    let relativeX = info.point.x - rect.left;
+    let relativeX = point.x - rect.left;
     relativeX = Math.max(0, Math.min(relativeX, rect.width));
-
     const percentage = relativeX / rect.width;
     const selectedHue = Math.round(percentage * 360);
-    
     const closestMood = findClosestMood(selectedHue);
-    const newMood: Mood = {
+    return {
       ...closestMood,
       hue: selectedHue,
       saturation: 85,
       lightness: 60,
     };
-    setIsCharging(true);
-    setChargeData({ mood: newMood });
-    setPreviewMood(null);
   };
+
+  const handleBarTap = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (isCharging) return;
+    const mood = calculateMoodFromPoint(info.point);
+    if (mood) {
+      setIsCharging(true);
+      setChargeData({ mood });
+      setPreviewMood(null);
+    }
+  };
+
+  const handlePanStart = () => {
+    if (isCharging) return;
+    setIsPanning(true);
+  };
+  
+  const handlePan = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (isCharging) return;
+    const newMood = calculateMoodFromPoint(info.point);
+    if (newMood) {
+      setPreviewMood(newMood);
+    }
+  };
+  
+  const handlePanEnd = () => {
+    setIsPanning(false);
+    if (isCharging || !previewMood) return;
+  
+    // The final mood is the one we were just previewing
+    setChargeData({ mood: previewMood });
+    setIsCharging(true);
+    setPreviewMood(null); // Clear preview after submission starts
+  };
+  
   
   const handleDismissBar = useCallback(() => {
     if (isCharging) return;
@@ -204,7 +234,7 @@ const OrbButton: React.FC = () => {
   const isBar = interactionMode === 'bar';
   const orbContainerBaseClasses = "fixed bottom-20 md:bottom-24 z-40 flex items-center justify-center";
   const morphTransition = { type: 'tween', duration: 0.5, ease: [0.76, 0, 0.24, 1] };
-  const gradientBackground = 'linear-gradient(to right, hsl(0 100% 60%), hsl(60 100% 60%), hsl(120 100% 60%), hsl(180 100% 60%), hsl(240 100% 60%), hsl(300 100% 60%), hsl(360 100% 60%))';
+  const gradientBackground = 'linear-gradient(to right, hsl(0, 100%, 60%), hsl(60, 100%, 60%), hsl(120, 100%, 60%), hsl(180, 100%, 60%), hsl(240, 100%, 60%), hsl(300, 100%, 60%), hsl(0, 100%, 60%))';
   
   const orbVariants = {
     orb: {
@@ -264,15 +294,24 @@ const OrbButton: React.FC = () => {
             variants={orbVariants}
             initial={false}
             animate={animationState}
-            onTap={animationState === 'orb' ? handleOrbTap : handleBarTap}
+            onTap={animationState === 'bar' ? handleBarTap : handleOrbTap}
+            onPanStart={animationState === 'bar' ? handlePanStart : undefined}
+            onPan={animationState === 'bar' ? handlePan : undefined}
+            onPanEnd={animationState === 'bar' ? handlePanEnd : undefined}
             onPointerDown={handlePointerDown}
             onPointerUp={clearLongPressTimeout}
-            onPointerLeave={clearLongPressTimeout}
+            onPointerLeave={() => {
+              clearLongPressTimeout();
+              if (isPanning) {
+                setPreviewMood(null);
+                setIsPanning(false);
+              }
+            }}
             className={cn(
               "relative flex items-center justify-center shadow-soft",
               (isCharging || bloomPoint) && "pointer-events-none",
               animationState === 'orb' && "cursor-pointer",
-              animationState === 'bar' && "cursor-pointer"
+              animationState === 'bar' && "cursor-pointer touch-none" // Add touch-none to prevent scrolling on mobile
             )}
           >
             <motion.div 
@@ -291,14 +330,14 @@ const OrbButton: React.FC = () => {
           </motion.div>
 
           <AnimatePresence>
-            {isBar && !isCharging && (
+            {isBar && !isCharging && !isPanning && (
               <motion.p
                 className="absolute -top-8 w-full text-center text-xs sm:text-sm text-white/90 text-shadow-pop pointer-events-none"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0, transition: { delay: 0.4, duration: 0.4 } }}
                 exit={{ opacity: 0, y: 5, transition: { duration: 0.2 } }}
               >
-                Tap anywhere on the gradient to submit your mood
+                Tap or drag along the gradient to submit your mood
               </motion.p>
             )}
           </AnimatePresence>
