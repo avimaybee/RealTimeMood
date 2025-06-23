@@ -1,3 +1,4 @@
+
 "use client";
 import React from 'react';
 import { useMood } from '@/contexts/MoodContext';
@@ -35,7 +36,7 @@ const AppHeader: React.FC = () => {
   return (
     <motion.header 
       className={cn(
-        "fixed top-4 inset-x-0 mx-auto h-16 px-6 z-30",
+        "fixed top-4 inset-x-0 mx-auto h-14 px-4 z-30",
         "w-[calc(100%-2rem)] max-w-lg",
         "flex items-center justify-start",
         "frosted-glass rounded-2xl shadow-soft"
@@ -45,7 +46,7 @@ const AppHeader: React.FC = () => {
     >
       <a href="/" className="flex items-center group">
           <AppHeaderLogo animationClass={animationClass} isIos={isIos} />
-          <span className="ml-3 text-xl md:text-2xl font-medium text-foreground opacity-90 text-shadow-pop transition-opacity group-hover:opacity-100">
+          <span className="ml-3 text-lg md:text-xl font-medium text-foreground opacity-90 text-shadow-pop transition-opacity group-hover:opacity-100">
               RealTimeMood
           </span>
       </a>
