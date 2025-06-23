@@ -215,17 +215,17 @@ const CollectiveThoughtsPage = () => {
                 transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
             >
                 <header className="w-full max-w-5xl mx-auto flex items-center justify-between z-10 mb-8">
-                    <Button asChild variant="outline" className="frosted-glass shadow-soft interactive-glow rounded-full w-10 h-10 p-0 md:w-auto md:px-4">
+                    <Button asChild variant="outline" className="frosted-glass shadow-soft interactive-glow rounded-full w-10 h-10 p-0 md:w-auto md:px-4 md:flex-shrink-0">
                         <Link href="/">
                             <ArrowLeft className="h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />
                             {!isAndroid && <span className="hidden md:inline md:ml-2">Back to Live</span>}
                         </Link>
                     </Button>
-                    <h1 className="text-xl md:text-2xl font-semibold flex items-center gap-3 frosted-glass shadow-soft px-6 py-3 rounded-full">
-                         <MessageSquareQuote className="h-6 w-6 opacity-80" strokeWidth={isIos ? 1.5 : 2} />
+                    <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
+                         <MessageSquareQuote className="h-7 w-7 opacity-80" strokeWidth={isIos ? 1.5 : 2} />
                          Collective Thoughts
                     </h1>
-                    <div className="w-10 md:w-auto md:min-w-[148px]"></div> {/* Spacer to balance header */}
+                    <div className="w-10 md:w-auto md:flex-shrink-0 md:w-[148px]"></div>
                 </header>
 
                 <main className="w-full flex-grow flex items-center justify-center">
