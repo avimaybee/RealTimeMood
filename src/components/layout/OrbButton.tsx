@@ -188,6 +188,7 @@ const OrbButton: React.FC = () => {
           title: "A moment of reflection...",
           description: `Please wait a few seconds before sharing again.`,
           variant: "destructive",
+          duration: 4000,
         });
         setIsCharging(false);
         setChargeData(null);
@@ -212,6 +213,7 @@ const OrbButton: React.FC = () => {
           toast({
             title: "Mood Submitted",
             description: `Your feeling of "${chargeData.mood.adjective}" has been added to the collective.`,
+            duration: 4000,
           });
         } catch (error) {
           console.error('Error during charging sequence:', error);
