@@ -216,13 +216,13 @@ const CollectiveThoughtsPage = () => {
                                                 layout
                                                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                                             >
-                                                <Card className="frosted-glass shadow-soft rounded-2xl">
-                                                    <CardContent className="p-4 md:p-6 space-y-2">
-                                                        <p className="text-base md:text-lg text-foreground/90">
+                                                <Card className="bg-white/10 backdrop-blur-xl shadow-soft rounded-2xl border border-white/10">
+                                                    <CardContent className="p-4 md:p-6 flex flex-col">
+                                                        <p className="text-base md:text-lg text-foreground/90 text-left w-full">
                                                             {quote.text}
                                                         </p>
                                                         {quote.submittedAt && (
-                                                            <p className="text-xs text-right text-foreground/60">
+                                                            <p className="text-xs text-foreground/60 self-end mt-2">
                                                                 {formatTimestamp(quote.submittedAt)}
                                                             </p>
                                                         )}
