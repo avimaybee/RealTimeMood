@@ -196,7 +196,7 @@ const CollectiveThoughtsPage = () => {
                 "w-[calc(100%-2rem)] max-w-lg",
                 "flex items-center justify-between",
                 "h-12 px-3",
-                "frosted-glass rounded-2xl shadow-soft border border-white/10"
+                "frosted-glass rounded-2xl shadow-soft"
               )}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -243,7 +243,7 @@ const CollectiveThoughtsPage = () => {
                                                 layout
                                                 transition={{ duration: 0.5, ease: 'easeInOut' }}
                                             >
-                                                <Card className="bg-white/10 backdrop-blur-xl shadow-soft rounded-2xl border border-white/10">
+                                                <Card className="bg-white/10 backdrop-blur-xl shadow-soft rounded-2xl border-0">
                                                     <CardContent className="p-4 md:p-6 flex flex-col">
                                                         <p className="text-base md:text-lg text-foreground/90 text-left w-full break-words">
                                                             {quote.text}
@@ -277,7 +277,7 @@ const CollectiveThoughtsPage = () => {
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
               <div className="p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-[calc(1rem+env(safe-area-inset-bottom))]">
-                  <div className="max-w-2xl mx-auto p-1 sm:p-2 frosted-glass shadow-soft rounded-2xl border border-white/10">
+                  <div className="max-w-2xl mx-auto p-1 sm:p-2 frosted-glass shadow-soft rounded-2xl">
                       <form
                           onSubmit={handleFormSubmit}
                           className="relative flex items-end w-full"
