@@ -32,6 +32,9 @@ const CollectiveThoughtsPage = () => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const lastSubmissionTimeRef = useRef<number>(0);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    
+    const [newestQuoteId, setNewestQuoteId] = useState<string | null>(null);
+    const animatedQuotesRef = useRef(new Set<string>());
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -60,6 +63,16 @@ const CollectiveThoughtsPage = () => {
         );
 
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            querySnapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    const newId = change.doc.id;
+                    if (!animatedQuotesRef.current.has(newId)) {
+                        setNewestQuoteId(newId);
+                        animatedQuotesRef.current.add(newId);
+                    }
+                }
+            });
+
             const fetchedQuotes = querySnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data(),
@@ -152,8 +165,17 @@ const CollectiveThoughtsPage = () => {
     };
     
     const thoughtBubbleVariants = {
-        initial: { opacity: 0, y: 20 },
-        animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeInOut' } },
+        initial: (isNew: boolean) => ({
+            opacity: 0,
+            y: isNew ? 100 : 20,
+            scale: isNew ? 0.9 : 1,
+        }),
+        animate: {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } // Fast-to-slow curve
+        },
         exit: { opacity: 0, y: -20 },
     };
 
@@ -211,6 +233,7 @@ const CollectiveThoughtsPage = () => {
                                             <motion.li
                                                 key={quote.id}
                                                 variants={thoughtBubbleVariants}
+                                                custom={quote.id === newestQuoteId}
                                                 initial="initial"
                                                 animate="animate"
                                                 exit="exit"
