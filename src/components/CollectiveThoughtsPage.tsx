@@ -159,10 +159,10 @@ const CollectiveThoughtsPage = () => {
     return (
         <>
             <DynamicBackground />
+            <div className="fixed inset-0 w-full h-full backdrop-brightness-80 backdrop-blur-[5px] z-0" />
             <div className="vignette-overlay" />
             <div className="noise-overlay" />
             <LivingParticles />
-            <div className="fixed inset-0 w-full h-full backdrop-brightness-80 backdrop-blur-[5px] z-0" />
 
             <motion.header
               className={cn(
@@ -214,7 +214,7 @@ const CollectiveThoughtsPage = () => {
                                                 animate="animate"
                                                 exit="exit"
                                                 layout
-                                                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                                                transition={{ duration: 0.5, ease: 'easeInOut' }}
                                             >
                                                 <Card className="bg-white/10 backdrop-blur-xl shadow-soft rounded-2xl border border-white/10">
                                                     <CardContent className="p-4 md:p-6 flex flex-col">
