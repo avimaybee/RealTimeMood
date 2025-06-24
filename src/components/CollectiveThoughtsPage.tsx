@@ -152,7 +152,7 @@ const CollectiveThoughtsPage = () => {
     
     const thoughtBubbleVariants = {
         initial: { opacity: 0, y: 20 },
-        animate: { opacity: 1, y: 0 },
+        animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeInOut' } },
         exit: { opacity: 0, y: -20 },
     };
 
@@ -245,10 +245,10 @@ const CollectiveThoughtsPage = () => {
                 
             <footer className="fixed bottom-0 inset-x-0 z-20" data-prevent-snapshot>
               <div className="p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-[calc(1rem+env(safe-area-inset-bottom))]">
-                  <div className="max-w-2xl mx-auto">
+                  <div className="max-w-2xl mx-auto p-1 sm:p-2 frosted-glass shadow-soft rounded-2xl border border-white/10">
                       <form
                           onSubmit={handleFormSubmit}
-                          className="relative flex items-end w-full p-1 sm:p-2 frosted-glass shadow-soft rounded-2xl"
+                          className="relative flex items-end w-full"
                       >
                           <Textarea
                               ref={textareaRef}
