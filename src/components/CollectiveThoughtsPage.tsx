@@ -170,7 +170,7 @@ const CollectiveThoughtsPage = () => {
                 "w-[calc(100%-2rem)] max-w-lg",
                 "flex items-center justify-between",
                 "h-12 px-3",
-                "frosted-glass rounded-2xl shadow-soft"
+                "frosted-glass rounded-2xl shadow-soft border border-white/10"
               )}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
