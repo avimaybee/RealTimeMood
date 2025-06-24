@@ -28,6 +28,7 @@ const CollectiveThoughtsPage = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [thoughtValue, setThoughtValue] = useState("");
+    const [isFocused, setIsFocused] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const lastSubmissionTimeRef = useRef<number>(0);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -218,7 +219,7 @@ const CollectiveThoughtsPage = () => {
                                             >
                                                 <Card className="bg-white/10 backdrop-blur-xl shadow-soft rounded-2xl border border-white/10">
                                                     <CardContent className="p-4 md:p-6 flex flex-col">
-                                                        <p className="text-base md:text-lg text-foreground/90 text-left w-full">
+                                                        <p className="text-base md:text-lg text-foreground/90 text-left w-full break-words">
                                                             {quote.text}
                                                         </p>
                                                         {quote.submittedAt && (
@@ -243,7 +244,12 @@ const CollectiveThoughtsPage = () => {
                 </AnimatePresence>
             </div>
                 
-            <footer className="fixed bottom-0 inset-x-0 z-20" data-prevent-snapshot>
+            <motion.footer 
+              className="fixed bottom-0 inset-x-0 z-20" 
+              data-prevent-snapshot
+              animate={{ scale: isFocused ? 1.02 : 1 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            >
               <div className="p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-[calc(1rem+env(safe-area-inset-bottom))]">
                   <div className="max-w-2xl mx-auto p-1 sm:p-2 frosted-glass shadow-soft rounded-2xl border border-white/10">
                       <form
@@ -255,6 +261,8 @@ const CollectiveThoughtsPage = () => {
                               name="thought"
                               placeholder="Share a thought..."
                               value={thoughtValue}
+                              onFocus={() => setIsFocused(true)}
+                              onBlur={() => setIsFocused(false)}
                               onChange={(e) => {
                                   setThoughtValue(e.target.value);
                                   const textarea = e.currentTarget;
@@ -283,13 +291,18 @@ const CollectiveThoughtsPage = () => {
                               {isSubmitting ? (
                                   <Loader2 className="w-4 h-4 animate-spin" />
                               ) : (
-                                  <Send className="w-4 h-4" strokeWidth={isIos ? 1.5 : 2} />
+                                  <motion.div
+                                    animate={{ scale: thoughtValue.trim() ? 1.1 : 1.0 }}
+                                    transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                                  >
+                                    <Send className="w-4 h-4" strokeWidth={isIos ? 1.5 : 2} />
+                                  </motion.div>
                               )}
                           </Button>
                       </form>
                   </div>
               </div>
-            </footer>
+            </motion.footer>
         </>
     );
 }
