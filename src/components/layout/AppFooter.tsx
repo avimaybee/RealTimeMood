@@ -1,7 +1,6 @@
-
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Menu, BarChart2, MessageSquareQuote, X, Camera, Eye, Info, Loader2, Gavel } from 'lucide-react';
+import { Menu, BarChart2, MessageSquareQuote, X, Camera, Eye, Info, Loader2, Gavel, Twitter, Github } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
@@ -199,6 +198,25 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                                 )}
                                 Guidelines
                             </Link>
+                        </Button>
+
+                        <Separator className="my-1" />
+
+                        <div className="px-2 pt-2 pb-1">
+                          <p className="text-xs font-medium text-foreground/60">Follow the project</p>
+                        </div>
+                        
+                        <Button asChild variant="ghost" className="text-base w-full justify-start">
+                          <Link href="https://x.com/firebase" target="_blank" rel="noopener noreferrer">
+                            <Twitter className="mr-2 h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />
+                            Twitter / X
+                          </Link>
+                        </Button>
+                        <Button asChild variant="ghost" className="text-base w-full justify-start">
+                          <Link href="https://github.com/firebase" target="_blank" rel="noopener noreferrer">
+                            <Github className="mr-2 h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />
+                            GitHub
+                          </Link>
                         </Button>
                     </div>
                 </motion.div>
