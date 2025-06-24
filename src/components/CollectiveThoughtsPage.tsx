@@ -9,7 +9,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { Mood, CommunityQuote } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { useDynamicColors } from '@/hooks/useDynamicColors';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
 import { usePlatform } from '@/contexts/PlatformContext';
 import { db } from '@/lib/firebase';
@@ -18,18 +17,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
-
-// Static mood for this page for a clean, stable background
-const thoughtsPageMood: Mood = {
-  hue: 220,
-  saturation: 15,
-  lightness: 96,
-  name: "ThoughtsView",
-  adjective: "Contemplative",
-};
+import DynamicBackground from '@/components/ui-fx/DynamicBackground';
 
 const CollectiveThoughtsPage = () => {
-    useDynamicColors(thoughtsPageMood);
     const { isIos } = usePlatform();
     const { toast } = useToast();
     const [quotes, setQuotes] = useState<(CommunityQuote & { id: string })[]>([]);
@@ -168,9 +158,11 @@ const CollectiveThoughtsPage = () => {
 
     return (
         <>
+            <DynamicBackground />
             <div className="vignette-overlay" />
             <div className="noise-overlay" />
             <LivingParticles />
+            <div className="fixed inset-0 w-full h-full backdrop-brightness-80 backdrop-blur-[5px] z-0" />
 
             <motion.header
               className={cn(
@@ -196,7 +188,7 @@ const CollectiveThoughtsPage = () => {
               <div className="w-8 h-8" />
             </motion.header>
 
-            <div className="h-full w-full flex flex-col pt-20 pb-28">
+            <div className="h-full w-full flex flex-col pt-20 pb-28 relative z-10">
                 <AnimatePresence>
                     <motion.main
                         className="w-full max-w-2xl mx-auto flex-grow flex flex-col overflow-hidden px-4"

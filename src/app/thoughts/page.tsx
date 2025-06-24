@@ -3,7 +3,7 @@ import { MoodProvider } from '@/contexts/MoodContext';
 
 export default function ThoughtsPage() {
   return (
-    <MoodProvider>
+    <MoodProvider isLivePage={true}>
       <CollectiveThoughtsPage />
     </MoodProvider>
   );
