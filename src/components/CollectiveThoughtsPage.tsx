@@ -41,9 +41,9 @@ const CollectiveThoughtsPage = () => {
     };
 
     useEffect(() => {
-        const scrollContainer = messagesEndRef.current?.parentElement?.parentElement;
+        const scrollContainer = messagesEndRef.current?.parentElement?.parentElement?.parentElement;
         if (scrollContainer) {
-            const isScrolledToBottom = scrollContainer.scrollHeight - scrollContainer.clientHeight <= scrollContainer.scrollTop + 100;
+            const isScrolledToBottom = scrollContainer.scrollHeight - scrollContainer.clientHeight <= scrollContainer.scrollTop + 150;
             if (isScrolledToBottom) {
                 scrollToBottom();
             }
@@ -182,6 +182,72 @@ const CollectiveThoughtsPage = () => {
         exit: { opacity: 0, y: -20 },
     };
 
+    const renderContent = () => {
+      if (isLoading) {
+        return (
+          <div className="w-full max-w-2xl mx-auto px-4 pt-20 pb-28 space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-24 w-full rounded-2xl" />
+            ))}
+          </div>
+        );
+      }
+  
+      if (error) {
+        return (
+          <div className="h-full flex items-center justify-center text-destructive">
+            <p>{error}</p>
+          </div>
+        );
+      }
+  
+      if (quotes.length === 0) {
+        return (
+          <div className="h-full flex items-center justify-center w-full max-w-2xl mx-auto px-4 pt-20 pb-28">
+            <p className="text-foreground/70">Be the first to share a thought.</p>
+          </div>
+        );
+      }
+  
+      return (
+        <ScrollArea className="h-full">
+            <motion.ul 
+                className="w-full max-w-2xl mx-auto px-4 space-y-4 pt-20 pb-32"
+                layout
+            >
+                <AnimatePresence initial={false}>
+                    {quotes.map((quote) => (
+                        <motion.li
+                            key={quote.id}
+                            variants={thoughtBubbleVariants}
+                            custom={quote.id === newestQuoteId}
+                            initial="initial"
+                            animate="animate"
+                            exit="exit"
+                            layout
+                            transition={{ duration: 0.5, ease: 'easeInOut' }}
+                        >
+                            <Card className="bg-white/10 backdrop-blur-xl shadow-soft rounded-2xl border-white/10">
+                                <CardContent className="p-4 md:p-6 flex flex-col">
+                                    <p className="text-base md:text-lg text-foreground/90 text-left w-full break-words">
+                                        {quote.text}
+                                    </p>
+                                    {quote.submittedAt && (
+                                        <p className="text-xs text-foreground/60 self-end mt-2">
+                                            {formatTimestamp(quote.submittedAt)}
+                                        </p>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </motion.li>
+                    ))}
+                </AnimatePresence>
+                <div ref={messagesEndRef} />
+            </motion.ul>
+        </ScrollArea>
+      );
+    };
+
     return (
         <>
             <DynamicBackground />
@@ -196,7 +262,7 @@ const CollectiveThoughtsPage = () => {
                 "w-[calc(100%-2rem)] max-w-lg",
                 "flex items-center justify-between",
                 "h-12 px-3",
-                "frosted-glass rounded-2xl shadow-soft"
+                "frosted-glass rounded-2xl shadow-soft border border-white/10"
               )}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -213,62 +279,19 @@ const CollectiveThoughtsPage = () => {
               </h1>
               <div className="w-8 h-8" />
             </motion.header>
-
-            <div className="h-full w-full flex flex-col pt-20 pb-28 relative z-10">
+            
+            <main className="h-full w-full flex flex-col relative z-10">
                 <AnimatePresence>
-                    <motion.main
-                        className="w-full max-w-2xl mx-auto flex-grow flex flex-col overflow-hidden px-4"
+                    <motion.div
+                        className="flex-grow flex flex-col overflow-hidden"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
                     >
-                        {isLoading ? (
-                            <div className="space-y-4">
-                                {[...Array(5)].map((_, i) => (
-                                    <Skeleton key={i} className="h-24 w-full rounded-2xl" />
-                                ))}
-                            </div>
-                        ) : quotes.length > 0 ? (
-                            <ScrollArea className="h-full pr-4 -mr-4">
-                                <motion.ul className="space-y-4" layout>
-                                    <AnimatePresence initial={false}>
-                                        {quotes.map((quote) => (
-                                            <motion.li
-                                                key={quote.id}
-                                                variants={thoughtBubbleVariants}
-                                                custom={quote.id === newestQuoteId}
-                                                initial="initial"
-                                                animate="animate"
-                                                exit="exit"
-                                                layout
-                                                transition={{ duration: 0.5, ease: 'easeInOut' }}
-                                            >
-                                                <Card className="bg-white/10 backdrop-blur-xl shadow-soft rounded-2xl border-0">
-                                                    <CardContent className="p-4 md:p-6 flex flex-col">
-                                                        <p className="text-base md:text-lg text-foreground/90 text-left w-full break-words">
-                                                            {quote.text}
-                                                        </p>
-                                                        {quote.submittedAt && (
-                                                            <p className="text-xs text-foreground/60 self-end mt-2">
-                                                                {formatTimestamp(quote.submittedAt)}
-                                                            </p>
-                                                        )}
-                                                    </CardContent>
-                                                </Card>
-                                            </motion.li>
-                                        ))}
-                                    </AnimatePresence>
-                                    <div ref={messagesEndRef} />
-                                </motion.ul>
-                            </ScrollArea>
-                        ) : (
-                             <div className="flex-grow flex items-center justify-center">
-                                <p className="text-foreground/70">Be the first to share a thought.</p>
-                            </div>
-                        )}
-                    </motion.main>
+                      {renderContent()}
+                    </motion.div>
                 </AnimatePresence>
-            </div>
+            </main>
                 
             <motion.footer 
               className="fixed bottom-0 inset-x-0 z-20" 
@@ -277,11 +300,11 @@ const CollectiveThoughtsPage = () => {
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
               <div className="p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-[calc(1rem+env(safe-area-inset-bottom))]">
-                  <div className="max-w-2xl mx-auto p-1 sm:p-2 frosted-glass shadow-soft rounded-2xl">
-                      <form
-                          onSubmit={handleFormSubmit}
-                          className="relative flex items-end w-full"
-                      >
+                  <div className="max-w-2xl mx-auto frosted-glass shadow-soft rounded-2xl border border-white/10">
+                    <form
+                        onSubmit={handleFormSubmit}
+                        className="relative flex items-end w-full p-1 sm:p-2"
+                    >
                           <Textarea
                               ref={textareaRef}
                               name="thought"
