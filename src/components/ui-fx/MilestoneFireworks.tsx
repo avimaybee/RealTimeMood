@@ -5,72 +5,43 @@ import { useMood } from '@/contexts/MoodContext';
 import { moodToHslString } from '@/lib/colorUtils';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Define the milestones we want to celebrate
-const MILESTONES = [25, 50, 100, 250, 500, 1000];
-const LOCAL_STORAGE_KEY = 'celebratedMilestones';
-
 const MilestoneFireworks: React.FC = () => {
-  const { currentMood, contributionCount } = useMood();
+  const { currentMood, celebratedMilestones } = useMood();
   const [activeCelebration, setActiveCelebration] = useState<number | null>(null);
-  const [celebrated, setCelebrated] = useState<number[]>([]);
-  const prevContributionCountRef = useRef(contributionCount);
+  const prevCelebratedRef = useRef<number[]>(celebratedMilestones || []);
 
-  // Load celebrated milestones from localStorage on initial mount
+  // This effect detects when a new milestone has been added to the global list
   useEffect(() => {
-    try {
-      const storedMilestones = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (storedMilestones) {
-        setCelebrated(JSON.parse(storedMilestones));
-      }
-    } catch (error) {
-      console.error("Could not parse celebrated milestones from localStorage", error);
-    }
-  }, []);
-
-
-  // This effect checks if a new, un-celebrated milestone has been crossed
-  useEffect(() => {
-    const prevCount = prevContributionCountRef.current;
-    const currentCount = contributionCount;
-
-    // Find the milestone that was just passed
-    const milestoneCrossed = MILESTONES.find(
-      (milestone) => prevCount < milestone && currentCount >= milestone
+    // Find milestones that are in the new list but were not in the old one
+    const newlyCelebrated = celebratedMilestones.filter(
+      (milestone) => !prevCelebratedRef.current.includes(milestone)
     );
 
-    // Check if this milestone is new and has not been celebrated before
-    if (milestoneCrossed && !celebrated.includes(milestoneCrossed)) {
+    // If we found a newly celebrated milestone, trigger the animation
+    if (newlyCelebrated.length > 0) {
+      const milestoneToCelebrate = newlyCelebrated[0]; // Celebrate the first new one we find
+
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         navigator.vibrate([200, 100, 200]);
       }
       
-      // Start the celebration
-      setActiveCelebration(milestoneCrossed);
+      setActiveCelebration(milestoneToCelebrate);
 
-      // Mark this milestone as celebrated and save to localStorage
-      const newCelebrated = [...celebrated, milestoneCrossed];
-      setCelebrated(newCelebrated);
-      try {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newCelebrated));
-      } catch (error) {
-        console.error("Could not save celebrated milestones to localStorage", error);
-      }
-    }
-
-    // Always update the ref to the current count for the next check
-    prevContributionCountRef.current = currentCount;
-  }, [contributionCount, celebrated]);
-
-  // This effect handles turning OFF the fireworks after a delay
-  useEffect(() => {
-    if (activeCelebration !== null) {
+      // Set a timer to turn off the fireworks display after 10 seconds
       const timer = setTimeout(() => {
         setActiveCelebration(null);
-      }, 10000); // Duration of the celebration
+      }, 10000);
 
+      // Cleanup timer if the component unmounts
       return () => clearTimeout(timer);
     }
-  }, [activeCelebration]);
+  }, [celebratedMilestones]);
+
+  // This effect keeps the "previous" ref updated for the next check
+  useEffect(() => {
+    prevCelebratedRef.current = celebratedMilestones;
+  }, [celebratedMilestones]);
+
 
   const showFireworks = activeCelebration !== null;
   const particleCount = 40;

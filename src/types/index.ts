@@ -39,6 +39,7 @@ export interface CollectiveMoodState {
   lastUpdated: FieldValue | Timestamp; // Firestore serverTimestamp()
   isBigBoomActive: boolean;
   lastMoods: SimpleMood[];
+  celebratedMilestones?: number[];
 }
 
 /**

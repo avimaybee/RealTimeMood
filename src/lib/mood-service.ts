@@ -6,6 +6,7 @@ import { averageHsl, findClosestMood, PREDEFINED_MOODS } from './colorUtils';
 
 const COLLECTIVE_MOOD_DOC_PATH = 'appState/collectiveMood';
 const MAX_RECENT_MOODS = 20; // The number of recent moods to average over
+const MILESTONES = [25, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
 
 /**
  * Submits a user's mood to Firestore and updates the collective mood state
@@ -33,10 +34,13 @@ export async function submitMood(mood: Mood, sessionId: string): Promise<void> {
           totalContributions: 0,
           lastMoods: [{ h: mood.hue, s: mood.saturation, l: mood.lightness }],
           isBigBoomActive: false,
+          celebratedMilestones: [],
         };
       } else {
         currentData = collectiveMoodDoc.data() as CollectiveMoodState;
       }
+      
+      const newTotalContributions = (currentData.totalContributions || 0) + 1;
       
       // Update last moods array
       const newSimpleMood: SimpleMood = { h: mood.hue, s: mood.saturation, l: mood.lightness };
@@ -48,16 +52,26 @@ export async function submitMood(mood: Mood, sessionId: string): Promise<void> {
       // Find the closest adjective for the new mood
       const newAdjective = findClosestMood(h).adjective;
 
+      // Milestone celebration logic
+      const celebratedMilestones = currentData.celebratedMilestones || [];
+      const newCelebratedMilestones = [...celebratedMilestones];
+      const milestoneCrossed = MILESTONES.find(m => newTotalContributions === m);
+
+      if (milestoneCrossed && !celebratedMilestones.includes(milestoneCrossed)) {
+        newCelebratedMilestones.push(milestoneCrossed);
+      }
+
       // Prepare the data to be written
       const newData = {
         h,
         s,
         l,
         moodAdjective: newAdjective,
-        totalContributions: (currentData.totalContributions || 0) + 1,
+        totalContributions: newTotalContributions,
         lastMoods: recentMoods,
         lastUpdated: serverTimestamp(),
         isBigBoomActive: false, // Ensure this field is always present to match security rules
+        celebratedMilestones: newCelebratedMilestones,
       };
 
       // Write the updated data back

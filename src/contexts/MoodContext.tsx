@@ -36,6 +36,7 @@ type MoodContextType = {
   triggerCollectiveShift: () => void;
   isCollectiveShifting: boolean;
   lastUserContribution: Mood | null;
+  celebratedMilestones: number[];
 };
 
 const MoodContext = createContext<MoodContextType | undefined>(undefined);
@@ -52,6 +53,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
   const [currentMood, setCurrentMood] = useState<Mood>(initialState.currentMood);
   const [userCount, setUserCount] = useState<number>(initialState.userCount);
   const [contributionCount, setContributionCount] = useState<number>(initialState.contributionCount);
+  const [celebratedMilestones, setCelebratedMilestones] = useState<number[]>([]);
   const [lastContributionTime, setLastContributionTime] = useState<number | null>(initialState.lastContributionTime);
   const [lastContributorMoodColor, setLastContributorMoodColor] = useState<string | null>(initialState.lastContributorMoodColor);
   const [lastContributionPosition, setLastContributionPosition] = useState<{ x: number; y: number } | null>(initialState.lastContributionPosition);
@@ -231,6 +233,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
         // Use the memoized updateMood to handle state changes and shockwave triggers
         updateMood(newMood);
         setContributionCount(data.totalContributions);
+        setCelebratedMilestones(data.celebratedMilestones || []);
         // Note: userCount is intentionally simulated locally and not set from here.
       } else {
         console.warn("Collective mood document does not exist in Firestore. The app will use its initial state.");
@@ -276,6 +279,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     currentMood,
     userCount,
     contributionCount,
+    celebratedMilestones,
     lastContributionTime,
     lastContributorMoodColor,
     lastContributionPosition,
@@ -291,6 +295,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     currentMood,
     userCount,
     contributionCount,
+    celebratedMilestones,
     lastContributionTime,
     lastContributorMoodColor,
     lastContributionPosition,
