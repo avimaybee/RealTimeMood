@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
-import { Plus } from 'lucide-react';
+import { Plus } from 'lucide-react'; // Removed X import
 import { useMood } from '@/contexts/MoodContext';
 import { findClosestMood, moodToHslString } from '@/lib/colorUtils';
 import type { Mood } from '@/types';
@@ -12,12 +12,8 @@ import { motion, type PanInfo, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { usePlatform } from '@/contexts/PlatformContext';
 
-const RadialBloomEffect = dynamic(() => import('@/components/ui-fx/RadialBloomEffect'), {
-  ssr: false,
-});
-const MoodSelectionButtons = dynamic(() => import('@/components/features/MoodSelectionButtons'), {
-  ssr: false,
-});
+const RadialBloomEffect = dynamic(() => import('@/components/ui-fx/RadialBloomEffect'), { ssr: false });
+const MoodSelectionButtons = dynamic(() => import('@/components/features/MoodSelectionButtons'), { ssr: false });
 
 const OrbButton: React.FC = () => {
   const { recordContribution, isCollectiveShifting, setPreviewMood, previewMood } = useMood();
@@ -33,12 +29,10 @@ const OrbButton: React.FC = () => {
   const lastSubmissionTimeRef = useRef<number>(0);
   const [isPanning, setIsPanning] = useState(false);
 
-
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // Add/remove class to body for UI dimming when bar is active
   useEffect(() => {
     const className = 'bar-mode-active-page';
     if (interactionMode === 'bar' && !isCharging) {
@@ -46,12 +40,9 @@ const OrbButton: React.FC = () => {
     } else {
       document.body.classList.remove(className);
     }
-    return () => {
-      document.body.classList.remove(className);
-    };
+    return () => document.body.classList.remove(className);
   }, [interactionMode, isCharging]);
 
-  // Suppress browser default behaviors (scrolling, text selection) when bloom is active
   useEffect(() => {
     const className = 'no-scroll-select';
     if (bloomPoint) {
@@ -59,20 +50,14 @@ const OrbButton: React.FC = () => {
     } else {
       document.body.classList.remove(className);
     }
-    return () => {
-      document.body.classList.remove(className);
-    };
+    return () => document.body.classList.remove(className);
   }, [bloomPoint]);
-
 
   const handleOrbTap = () => {
     clearLongPressTimeout();
     if (isCharging || bloomPoint) return;
-    
     setInteractionMode('bar');
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(50);
-    }
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50);
   };
 
   const calculateMoodFromPoint = (point: { x: number; y: number }): Mood | null => {
@@ -83,12 +68,7 @@ const OrbButton: React.FC = () => {
     const percentage = relativeX / rect.width;
     const selectedHue = Math.round(percentage * 360);
     const closestMood = findClosestMood(selectedHue);
-    return {
-      ...closestMood,
-      hue: selectedHue,
-      saturation: 85,
-      lightness: 60,
-    };
+    return { ...closestMood, hue: selectedHue, saturation: 85, lightness: 60 };
   };
 
   const handleBarTap = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -105,50 +85,37 @@ const OrbButton: React.FC = () => {
     if (isCharging) return;
     setIsPanning(true);
   };
-  
+
   const handlePan = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (isCharging) return;
     const newMood = calculateMoodFromPoint(info.point);
-    if (newMood) {
-      setPreviewMood(newMood);
-    }
+    if (newMood) setPreviewMood(newMood);
   };
-  
+
   const handlePanEnd = () => {
     setIsPanning(false);
     if (isCharging || !previewMood) return;
-  
-    // The final mood is the one we were just previewing
     setChargeData({ mood: previewMood });
     setIsCharging(true);
-    setPreviewMood(null); // Clear preview after submission starts
+    setPreviewMood(null);
   };
-  
-  
+
   const handleDismissBar = useCallback(() => {
     if (isCharging) return;
     setInteractionMode('orb');
     setPreviewMood(null);
-    setChargeData(null); // Explicitly clear chargeData on dismiss
+    setChargeData(null);
   }, [isCharging, setPreviewMood]);
-
 
   const handleLongPress = () => {
     if (interactionMode === 'bar' || isCharging || !barRef.current) return;
-    
     const rect = barRef.current.getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top + rect.height / 2;
-    
-    setBloomPoint({ x, y });
+    setBloomPoint({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
   };
-  
+
   const handlePointerDown = (event: ReactPointerEvent) => {
     if (interactionMode !== 'orb' || isCharging || bloomPoint) return;
-    
-    longPressTimeoutRef.current = setTimeout(() => {
-      handleLongPress();
-    }, 250);
+    longPressTimeoutRef.current = setTimeout(handleLongPress, 250);
   };
 
   const clearLongPressTimeout = () => {
@@ -160,13 +127,11 @@ const OrbButton: React.FC = () => {
 
   const handleMoodSelectionFromBloom = (mood: Mood) => {
     setBloomPoint(null);
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(100); 
-    }
-    setChargeData({ mood: mood });
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(100);
+    setChargeData({ mood });
     setIsCharging(true);
   };
-  
+
   const handleDismissBloom = useCallback(() => {
     setBloomPoint(null);
     setPreviewMood(null);
@@ -174,75 +139,59 @@ const OrbButton: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && interactionMode === 'bar') {
-        handleDismissBar();
-      }
+      if (e.key === 'Escape' && interactionMode === 'bar') handleDismissBar();
     };
-    
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [interactionMode, handleDismissBar]);
 
   useEffect(() => {
-    if (isCharging && chargeData) {
-      const now = Date.now();
-      const SUBMISSION_COOLDOWN = 5000; // 5 seconds
-
-      if (now - lastSubmissionTimeRef.current < SUBMISSION_COOLDOWN) {
+    if (!isCharging || !chargeData) return;
+    const now = Date.now();
+    const SUBMISSION_COOLDOWN = 5000;
+    if (now - lastSubmissionTimeRef.current < SUBMISSION_COOLDOWN) {
+      toast({
+        title: "A moment of reflection...",
+        description: "Please wait a few seconds before sharing again.",
+        variant: "destructive",
+        duration: 4000,
+      });
+      setIsCharging(false);
+      setChargeData(null);
+      setInteractionMode('orb');
+      return;
+    }
+    const chargeTimeout = setTimeout(() => {
+      try {
+        let ripplePosition: { x: number; y: number } | null = null;
+        if (barRef.current) {
+          const rect = barRef.current.getBoundingClientRect();
+          ripplePosition = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        }
+        recordContribution(chargeData.mood, ripplePosition);
+        lastSubmissionTimeRef.current = Date.now();
         toast({
-          title: "A moment of reflection...",
-          description: `Please wait a few seconds before sharing again.`,
-          variant: "destructive",
+          title: "Mood Submitted",
+          description: `Your feeling of "${chargeData.mood.adjective}" has been added to the collective.`,
           duration: 4000,
         });
+      } catch (error) {
+        console.error('Error during charging sequence:', error);
+        toast({ title: "Error", description: "Could not submit mood.", variant: "destructive" });
+      } finally {
         setIsCharging(false);
         setChargeData(null);
         setInteractionMode('orb');
-        return;
       }
-      
-      const chargeTimeout = setTimeout(() => {
-        try {
-          let ripplePosition: { x: number; y: number } | null = null;
-          
-          if (barRef.current) {
-            const rect = barRef.current.getBoundingClientRect();
-            ripplePosition = {
-              x: rect.left + rect.width / 2,
-              y: rect.top + rect.height / 2,
-            };
-          }
-          
-          recordContribution(chargeData.mood, ripplePosition);
-          lastSubmissionTimeRef.current = Date.now();
-          toast({
-            title: "Mood Submitted",
-            description: `Your feeling of "${chargeData.mood.adjective}" has been added to the collective.`,
-            duration: 4000,
-          });
-        } catch (error) {
-          console.error('Error during charging sequence:', error);
-          toast({
-            title: "Error",
-            description: "Could not submit mood.",
-            variant: "destructive",
-          });
-        } finally {
-          setIsCharging(false);
-          setChargeData(null);
-          setInteractionMode('orb');
-        }
-      }, 500);
-
-      return () => clearTimeout(chargeTimeout);
-    }
+    }, 500);
+    return () => clearTimeout(chargeTimeout);
   }, [isCharging, chargeData, recordContribution, toast]);
-  
+
   const isBar = interactionMode === 'bar';
   const orbContainerBaseClasses = "fixed bottom-20 md:bottom-24 z-40 flex items-center justify-center";
   const morphTransition = { type: 'tween', duration: 0.5, ease: [0.76, 0, 0.24, 1] };
   const gradientBackground = 'linear-gradient(to right, hsl(0, 100%, 60%), hsl(60, 100%, 60%), hsl(120, 100%, 60%), hsl(180, 100%, 60%), hsl(240, 100%, 60%), hsl(300, 100%, 60%), hsl(0, 100%, 60%))';
-  
+
   const orbVariants = {
     orb: {
       width: '80px', height: '80px', borderRadius: '9999px',
@@ -257,23 +206,21 @@ const OrbButton: React.FC = () => {
       transition: { ...morphTransition }
     },
     charging: {
-        width: '80px', height: '80px', borderRadius: '9999px',
-        background: 'rgba(255, 255, 255, 0.1)', 
-        boxShadow: chargeData ? `0 0 25px 8px ${moodToHslString(chargeData.mood)}, inset 0 0 10px 2px rgba(255,255,255,0.5)` : '0 12px 32px rgba(0,0,0,0.3)',
-        scale: 1, opacity: 1,
-        transition: { ...morphTransition }
-    },
-    hidden: { 
-      scale: 0, opacity: 0,
+      width: '80px', height: '80px', borderRadius: '9999px',
+      background: 'rgba(255, 255, 255, 0.1)', 
+      // Removed backdropFilter
+      boxShadow: chargeData ? `0 0 25px 8px ${moodToHslString(chargeData.mood)}, inset 0 0 10px 2px rgba(255,255,255,0.5)` : '0 12px 32px rgba(0,0,0,0.3)',
+      scale: 1, opacity: 1,
       transition: { ...morphTransition }
-    }
+    },
+    hidden: { scale: 0, opacity: 0, transition: { ...morphTransition } }
   };
 
   const iconVariants = {
     orb: { scale: 1, opacity: 1, rotate: 0, transition: { delay: 0.1, ...morphTransition } },
     bar: { scale: 0, opacity: 0, rotate: 90, transition: morphTransition },
     charging: { scale: 0, opacity: 0, transition: morphTransition },
-    hidden: { scale: 0, opacity: 0, transition: morphTransition },
+    hidden: { scale: 0, opacity: 0, transition: morphTransition }
   };
 
   const getAnimationState = () => {
@@ -281,8 +228,8 @@ const OrbButton: React.FC = () => {
     if (isCharging) return 'charging';
     if (isBar) return 'bar';
     return 'orb';
-  }
-  
+  };
+
   const animationState = getAnimationState();
 
   return (
@@ -322,30 +269,22 @@ const OrbButton: React.FC = () => {
           >
             <motion.div
               className="absolute inset-0 w-full h-full"
-              style={{ 
-                background: gradientBackground,
-                borderRadius: 'inherit'
-              }}
+              style={{ background: gradientBackground, borderRadius: 'inherit' }}
               initial={{ scale: 0, rotate: 45 }}
-              animate={{ 
-                scale: isBar ? 1 : 0,
-                rotate: isBar ? 0 : 45
-              }}
+              animate={{ scale: isBar ? 1 : 0, rotate: isBar ? 0 : 45 }}
               transition={morphTransition}
             />
-            
-            <motion.div 
-              variants={iconVariants} 
-              animate={animationState} 
+            <motion.div
+              variants={iconVariants}
+              animate={animationState}
               className="relative flex items-center justify-center"
             >
-              <Plus 
+              <Plus
                 className="w-10 h-10 text-white"
                 strokeWidth={isIos ? 1.5 : 2}
               />
             </motion.div>
           </motion.div>
-
           <AnimatePresence>
             {isBar && !isCharging && !isPanning && (
               <motion.p
@@ -360,7 +299,6 @@ const OrbButton: React.FC = () => {
           </AnimatePresence>
         </div>
       </motion.div>
-
       {isClient && createPortal(
         <AnimatePresence>
           {interactionMode === 'bar' && !isCharging && (
@@ -376,7 +314,6 @@ const OrbButton: React.FC = () => {
           {bloomPoint && (
             <motion.div key="bloom-container">
               <div data-radial-bloom-active-page-marker />
-
               <motion.div
                 className="fixed inset-0 z-30 bg-black/10"
                 onPointerDown={handleDismissBloom}
@@ -385,13 +322,11 @@ const OrbButton: React.FC = () => {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4 }}
               />
-
               <RadialBloomEffect point={bloomPoint} />
-              
-              <MoodSelectionButtons 
+              <MoodSelectionButtons
                 key="mood-buttons"
-                point={bloomPoint} 
-                onSelect={handleMoodSelectionFromBloom} 
+                point={bloomPoint}
+                onSelect={handleMoodSelectionFromBloom}
                 onPreviewChange={setPreviewMood}
               />
             </motion.div>
