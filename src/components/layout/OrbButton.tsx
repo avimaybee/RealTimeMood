@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
-import { Plus } from 'lucide-react'; // Removed X import
+import { Plus } from 'lucide-react';
 import { useMood } from '@/contexts/MoodContext';
 import { findClosestMood, moodToHslString } from '@/lib/colorUtils';
 import type { Mood } from '@/types';
@@ -28,6 +28,7 @@ const OrbButton: React.FC = () => {
   const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSubmissionTimeRef = useRef<number>(0);
   const [isPanning, setIsPanning] = useState(false);
+  const [orbKey, setOrbKey] = useState(0); // Added to force re-render
 
   useEffect(() => {
     setIsClient(true);
@@ -159,6 +160,7 @@ const OrbButton: React.FC = () => {
       setIsCharging(false);
       setChargeData(null);
       setInteractionMode('orb');
+      setOrbKey(prev => prev + 1); // Force re-render
       return;
     }
     const chargeTimeout = setTimeout(() => {
@@ -182,6 +184,7 @@ const OrbButton: React.FC = () => {
         setIsCharging(false);
         setChargeData(null);
         setInteractionMode('orb');
+        setOrbKey(prev => prev + 1); // Force re-render
       }
     }, 500);
     return () => clearTimeout(chargeTimeout);
@@ -208,7 +211,7 @@ const OrbButton: React.FC = () => {
     charging: {
       width: '80px', height: '80px', borderRadius: '9999px',
       background: 'rgba(255, 255, 255, 0.1)', 
-      // Removed backdropFilter
+      backdropFilter: 'blur(12px)', // Re-added to maintain consistency
       boxShadow: chargeData ? `0 0 25px 8px ${moodToHslString(chargeData.mood)}, inset 0 0 10px 2px rgba(255,255,255,0.5)` : '0 12px 32px rgba(0,0,0,0.3)',
       scale: 1, opacity: 1,
       transition: { ...morphTransition }
@@ -235,6 +238,7 @@ const OrbButton: React.FC = () => {
   return (
     <>
       <motion.div
+        key={orbKey} // Added to force re-render
         data-orb-button-container
         className={cn(orbContainerBaseClasses, "left-1/2")}
         style={{ x: "-50%" }}
