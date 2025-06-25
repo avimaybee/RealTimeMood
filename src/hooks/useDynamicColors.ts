@@ -88,12 +88,17 @@ export const useDynamicColors = (targetMood: Mood) => {
       const {
         foregroundHue, foregroundSaturation, foregroundLightness,
         primaryForegroundHue, primaryForegroundSaturation, primaryForegroundLightness,
-        panelBackgroundRgba
+        panelBackgroundRgba,
+        lightShadowHsl,
+        darkShadowHsl,
       } = getDerivedColors(interpolatedMoodForDerived);
 
       root.style.setProperty('--foreground-hsl', `${foregroundHue.toFixed(2)} ${foregroundSaturation.toFixed(2)}% ${foregroundLightness.toFixed(2)}%`);
       root.style.setProperty('--primary-foreground-hsl', `${primaryForegroundHue.toFixed(2)} ${primaryForegroundSaturation.toFixed(2)}% ${primaryForegroundLightness.toFixed(2)}%`);
       root.style.setProperty('--panel-background-rgba', panelBackgroundRgba);
+      root.style.setProperty('--shadow-light-hsl', lightShadowHsl);
+      root.style.setProperty('--shadow-dark-hsl', darkShadowHsl);
+
 
       if (rawProgress < 1) {
         animationFrameRef.current = requestAnimationFrame(animate);

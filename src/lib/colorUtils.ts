@@ -38,6 +38,8 @@ export function getDerivedColors(mood: Mood): {
   primaryForegroundSaturation: number;
   primaryForegroundLightness: number;
   panelBackgroundRgba: string; // "r, g, b" string
+  lightShadowHsl: string;
+  darkShadowHsl: string;
 } {
   const bgLuminance = getRelativeLuminance(mood.hue, mood.saturation, mood.lightness);
 
@@ -65,6 +67,10 @@ export function getDerivedColors(mood: Mood): {
   // Use the same threshold as text for consistency
   const panelRgba = isBgLight ? '255, 255, 255' : '0, 0, 0';
 
+  // For the neumorphic effect, shadows are subtle variations of the background
+  const lightShadowLightness = Math.min(100, mood.lightness + 5);
+  const darkShadowLightness = Math.max(0, mood.lightness - 5);
+
   return {
     foregroundHue: fgHue,
     foregroundSaturation: fgSat,
@@ -73,6 +79,8 @@ export function getDerivedColors(mood: Mood): {
     primaryForegroundSaturation: pfgSat,
     primaryForegroundLightness: pfgLightness,
     panelBackgroundRgba: panelRgba,
+    lightShadowHsl: `${mood.hue.toFixed(2)} ${mood.saturation.toFixed(2)}% ${lightShadowLightness.toFixed(2)}%`,
+    darkShadowHsl: `${mood.hue.toFixed(2)} ${mood.saturation.toFixed(2)}% ${darkShadowLightness.toFixed(2)}%`,
   };
 }
 

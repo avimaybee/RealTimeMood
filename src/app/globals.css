@@ -29,6 +29,10 @@
 
     --primary-foreground-hsl: var(--foreground-dark-hsl); /* Default to light text on primary HSL values. JS updates this. */
 
+    /* Neumorphic shadow colors */
+    --shadow-light-hsl: 220 15% 98%; /* Default light shadow for near-white bg */
+    --shadow-dark-hsl: 220 15% 85%;  /* Default dark shadow for near-white bg */
+
     /* Variables for Tailwind's hsl(var(...)) consumption - these store HSL VALUES, not hsl() strings */
     --background: var(--background-hsl);
     --foreground: var(--foreground-hsl);
@@ -108,6 +112,15 @@
     /* JS updates --panel-background-rgba and --panel-bg-alpha if needed */
     background-color: rgba(var(--panel-background-rgba), 0.25);
     @apply backdrop-blur-xl;
+  }
+
+  .neumorphic-shadow {
+    background-color: hsl(var(--background));
+    box-shadow: 6px 6px 12px hsla(var(--shadow-dark-hsl), 0.75),
+                -6px -6px 12px hsla(var(--shadow-light-hsl), 0.7);
+    border-width: 1px;
+    border-color: hsla(var(--shadow-light-hsl), 0.25);
+    transition: box-shadow 0.8s ease-in-out, background-color 0.8s ease-in-out, border-color 0.8s ease-in-out;
   }
 
   .content-auto {
