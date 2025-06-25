@@ -42,9 +42,15 @@ export async function submitMood(mood: Mood, sessionId: string): Promise<void> {
       
       const newTotalContributions = (currentData.totalContributions || 0) + 1;
       
-      // Update last moods array
+      // Update last moods array, ensuring data is clean
       const newSimpleMood: SimpleMood = { h: mood.hue, s: mood.saturation, l: mood.lightness };
-      const recentMoods = [newSimpleMood, ...(currentData.lastMoods || [])].slice(0, MAX_RECENT_MOODS);
+      
+      // Sanitize the mood data from Firestore before using it
+      const sanitizedLastMoods = (currentData.lastMoods || []).filter(
+        (m): m is SimpleMood => m && typeof m.h === 'number' && typeof m.s === 'number' && typeof m.l === 'number'
+      );
+
+      const recentMoods = [newSimpleMood, ...sanitizedLastMoods].slice(0, MAX_RECENT_MOODS);
       
       // Calculate new average HSL
       const { h, s, l } = averageHsl(recentMoods);
