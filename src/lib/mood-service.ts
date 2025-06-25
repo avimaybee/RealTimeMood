@@ -1,3 +1,4 @@
+
 import { db } from '@/lib/firebase';
 import { doc, runTransaction, serverTimestamp, setDoc, type Timestamp } from 'firebase/firestore';
 import type { Mood, CollectiveMoodState, SimpleMood } from '@/types';
@@ -21,10 +22,10 @@ export async function submitMood(mood: Mood, sessionId: string): Promise<void> {
       const collectiveMoodDoc = await transaction.get(collectiveMoodRef);
 
       // 1. Determine the starting state (either existing data or a fresh initial state)
-      let oldState: CollectiveMoodState;
+      let oldState: Partial<CollectiveMoodState>;
 
       if (collectiveMoodDoc.exists()) {
-        oldState = collectiveMoodDoc.data() as CollectiveMoodState;
+        oldState = collectiveMoodDoc.data();
       } else {
         // If the document doesn't exist, create a default initial state.
         const initialMood = PREDEFINED_MOODS[0];
@@ -42,17 +43,19 @@ export async function submitMood(mood: Mood, sessionId: string): Promise<void> {
       }
       
       // 2. Perform all calculations based on the old state and the new mood
-      const newTotalContributions = oldState.totalContributions + 1;
+      const newTotalContributions = (oldState.totalContributions || 0) + 1;
       
       const newSimpleMood: SimpleMood = { h: mood.hue, s: mood.saturation, l: mood.lightness };
-      // Prepend the new mood to the old list of moods, ensuring it's an array
-      const recentMoods = [newSimpleMood, ...(oldState.lastMoods || [])].slice(0, MAX_RECENT_MOODS);
+
+      // Ensure lastMoods is an array before spreading
+      const safeLastMoods = Array.isArray(oldState.lastMoods) ? oldState.lastMoods : [];
+      const recentMoods = [newSimpleMood, ...safeLastMoods].slice(0, MAX_RECENT_MOODS);
       
       const { h, s, l } = averageHsl(recentMoods);
       const newAdjective = findClosestMood(h).adjective;
 
       // Ensure celebratedMilestones is an array before spreading
-      const newCelebratedMilestones = [...(oldState.celebratedMilestones || [])];
+      const newCelebratedMilestones = [...(Array.isArray(oldState.celebratedMilestones) ? oldState.celebratedMilestones : [])];
       const milestoneCrossed = MILESTONES.find(m => newTotalContributions === m);
 
       // Add the new milestone if it was crossed and not already celebrated
