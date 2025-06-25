@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Menu, BarChart2, MessageSquareQuote, X, Camera, Eye, Info, Loader2, Gavel, Github, Instagram, Share2 } from 'lucide-react';
+import { Menu, BarChart2, MessageSquareQuote, X, Camera, Eye, Info, Loader2, Gavel, Github, Instagram, Share2, Ghost } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
@@ -17,23 +17,6 @@ interface AppFooterProps {
   setIsMenuOpen: (isOpen: boolean) => void;
   setIsAmbientMode: (isAmbient: boolean) => void;
 }
-
-const SnapchatIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg 
-        xmlns="http://www.w3.org/2000/svg" 
-        width="24" 
-        height="24" 
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-        {...props}
-    >
-        <path d="M12 10.3c.1-.1.2-.3.3-.4.2-.3.3-.6.4-.9.2-1.2-.2-2.4-1.2-2.9-.3-.1-.7-.2-1-.2-1.3 0-2.5.8-3 2.1-.1.3-.1.6 0 .9.1.3.2.5.4.7m0 0c-.1.2-.2.3-.4.4-.2.2-.4.3-.7.4-1.2.5-2.6.2-3.3-.9-.2-.3-.3-.6-.4-1 0-.3.1-.6.1-.9.2-1.2 1.2-2.1 2.4-2.1.3 0 .7 0 1 .1m2.5 0c.1.1.2.2.3.3.4.4.8.8 1.1 1.2.2.5.2 1.1 0 1.6-.2.4-.5.8-.9 1-.5.2-1.1.2-1.6 0-.4-.2-.8-.5-1-.9-.2-.3-.3-.7-.3-1.1.1-.5.2-1 .5-1.4m7.5 3.3v-3.5c0-1.3-.6-2.5-1.6-3.4-.9-.8-2.1-1.3-3.4-1.3h-1.5c-1.3 0-2.5.5-3.4 1.3S10.5 8 10.5 9.3v.3c0 .1 0 .2.1.3.1.1.2.1.3.1s.2 0 .3-.1.1-.2.1-.3v-.3c0-.8.3-1.5.9-2.1.5-.5 1.2-.9 2.1-.9H17c.8 0 1.5.3 2.1.9.5.5.9 1.2.9 2.1v3.5c0 .8-.3 1.5-.9 2.1s-1.2.9-2.1.9h-.3c-.1 0-.2.1-.3.1-.1.1-.1.2-.1.3s0 .2.1.3.2.1.3.1h.3c1.3 0 2.5-.5 3.4-1.3.9-.9 1.5-2.1 1.5-3.4zM4.5 13.8v-3.5c0-1.3.6-2.5 1.6-3.4.9-.8 2.1-1.3 3.4-1.3h1.5c.3 0 .6 0 .9.1.5.1.9.3 1.3.6.1.1.2.1.3.1s.2 0 .3-.1c.1-.1.1-.2.1-.3s-.1-.2-.1-.3c-.4-.3-.8-.5-1.3-.6-.3-.1-.6-.1-.9-.1H9.5c-1.3 0-2.5.5-3.4 1.3C5.2 8 4.6 9.2 4.6 10.5v3.5c0 .8.3 1.5.9 2.1s1.2.9 2.1.9h.3c.1 0 .2.1.3.1s.1.2.1.3-.1.2-.1.3-.2.1-.3.1h-.3C7 17.7 5.8 17.2 5 16.3c-.9-.9-1.5-2.1-1.5-3.4z"/>
-    </svg>
-);
-
 
 const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsAmbientMode }) => {
   const { contributionCount, isCollectiveShifting } = useMood();
@@ -264,7 +247,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                                 </Button>
                                 <Button asChild variant="ghost" size="icon" className="rounded-full h-9 w-9 interactive-glow">
                                     <Link href="https://www.snapchat.com/add/avimaybe" target="_blank" rel="noopener noreferrer" aria-label="Snapchat">
-                                        <SnapchatIcon className="h-5 w-5" strokeWidth={isIos ? 1.5 : 2} />
+                                        <Ghost className="h-5 w-5" strokeWidth={isIos ? 1.5 : 2} />
                                     </Link>
                                 </Button>
                                 <Button asChild variant="ghost" size="icon" className="rounded-full h-9 w-9 interactive-glow">
