@@ -301,7 +301,7 @@ const CollectiveThoughtsPage = () => {
                   <div className="max-w-2xl mx-auto frosted-glass shadow-soft rounded-2xl border border-white/10 relative overflow-hidden">
                     <motion.div
                       aria-hidden="true"
-                      className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_100%_50%,#f472b622_0%,#8b5cf611_50%,transparent_70%)]"
+                      className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_100%_50%,#f472b655_0%,#8b5cf62a_50%,transparent_70%)]"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: isFocused ? 1 : 0 }}
                       transition={{ duration: 0.5, ease: 'easeOut' }}
