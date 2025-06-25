@@ -17,6 +17,7 @@ const MilestoneFireworks: React.FC = () => {
     10, 25, 50, 100, 250, 500, 1000, 2000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000,
   ], []);
 
+  // Effect to detect the milestone and turn on the fireworks
   useEffect(() => {
     const prevCount = prevContributionCountRef.current;
     const currentCount = contributionCount;
@@ -38,18 +39,22 @@ const MilestoneFireworks: React.FC = () => {
       setTriggeredMilestones(prev => new Set(prev).add(crossedMilestone));
       setMilestoneNumber(crossedMilestone);
       setShowFireworks(true);
-      
-      const timer = setTimeout(() => setShowFireworks(false), 10000); // Show for 10 seconds
-      
-      // Cleanup the timer
-      return () => {
-        if (timer) clearTimeout(timer);
-      };
     }
 
     // Update the ref to the current count for the next check
     prevContributionCountRef.current = currentCount;
   }, [contributionCount, milestones, triggeredMilestones]);
+
+  // This effect handles turning OFF the fireworks after a delay
+  useEffect(() => {
+    if (showFireworks) {
+      const timer = setTimeout(() => {
+        setShowFireworks(false);
+      }, 10000); // Duration of the celebration
+
+      return () => clearTimeout(timer);
+    }
+  }, [showFireworks]);
 
   const particleCount = 40; // Reduced for performance
   const burstCount = 4;
