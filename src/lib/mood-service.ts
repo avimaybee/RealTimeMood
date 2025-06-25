@@ -1,11 +1,10 @@
-
 import { db } from '@/lib/firebase';
-import { doc, runTransaction, serverTimestamp, setDoc } from 'firebase/firestore';
+import { doc, runTransaction, serverTimestamp, setDoc, type Timestamp } from 'firebase/firestore';
 import type { Mood, CollectiveMoodState, SimpleMood } from '@/types';
 import { averageHsl, findClosestMood, PREDEFINED_MOODS } from './colorUtils';
 
 const COLLECTIVE_MOOD_DOC_PATH = 'appState/collectiveMood';
-const MAX_RECENT_MOODS = 20; // The number of recent moods to average over
+const MAX_RECENT_MOODS = 20;
 const MILESTONES = [25, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
 
 /**
@@ -21,54 +20,47 @@ export async function submitMood(mood: Mood, sessionId: string): Promise<void> {
     await runTransaction(db, async (transaction) => {
       const collectiveMoodDoc = await transaction.get(collectiveMoodRef);
 
-      let currentData: Partial<CollectiveMoodState>;
+      // 1. Determine the starting state (either existing data or a fresh initial state)
+      let oldState: CollectiveMoodState;
 
-      if (!collectiveMoodDoc.exists()) {
-        // Initialize the document if it doesn't exist
+      if (collectiveMoodDoc.exists()) {
+        oldState = collectiveMoodDoc.data() as CollectiveMoodState;
+      } else {
+        // If the document doesn't exist, create a default initial state.
         const initialMood = PREDEFINED_MOODS[0];
-        currentData = {
+        oldState = {
           h: initialMood.hue,
           s: initialMood.saturation,
           l: initialMood.lightness,
           moodAdjective: initialMood.adjective,
           totalContributions: 0,
-          lastMoods: [{ h: mood.hue, s: mood.saturation, l: mood.lightness }],
+          lastMoods: [], // Start with an empty array
           isBigBoomActive: false,
           celebratedMilestones: [],
+          lastUpdated: null, // No previous update
         };
-      } else {
-        currentData = collectiveMoodDoc.data() as CollectiveMoodState;
       }
       
-      const newTotalContributions = (currentData.totalContributions || 0) + 1;
+      // 2. Perform all calculations based on the old state and the new mood
+      const newTotalContributions = oldState.totalContributions + 1;
       
-      // Update last moods array, ensuring data is clean
       const newSimpleMood: SimpleMood = { h: mood.hue, s: mood.saturation, l: mood.lightness };
+      // Prepend the new mood to the old list of moods
+      const recentMoods = [newSimpleMood, ...oldState.lastMoods].slice(0, MAX_RECENT_MOODS);
       
-      // Sanitize the mood data from Firestore before using it
-      const sanitizedLastMoods = (currentData.lastMoods || []).filter(
-        (m): m is SimpleMood => m && typeof m.h === 'number' && typeof m.s === 'number' && typeof m.l === 'number'
-      );
-
-      const recentMoods = [newSimpleMood, ...sanitizedLastMoods].slice(0, MAX_RECENT_MOODS);
-      
-      // Calculate new average HSL
       const { h, s, l } = averageHsl(recentMoods);
-      
-      // Find the closest adjective for the new mood
       const newAdjective = findClosestMood(h).adjective;
 
-      // Milestone celebration logic
-      const celebratedMilestones = currentData.celebratedMilestones || [];
-      const newCelebratedMilestones = [...celebratedMilestones];
+      const newCelebratedMilestones = [...oldState.celebratedMilestones];
       const milestoneCrossed = MILESTONES.find(m => newTotalContributions === m);
 
-      if (milestoneCrossed && !celebratedMilestones.includes(milestoneCrossed)) {
+      // Add the new milestone if it was crossed and not already celebrated
+      if (milestoneCrossed && !newCelebratedMilestones.includes(milestoneCrossed)) {
         newCelebratedMilestones.push(milestoneCrossed);
       }
 
-      // Prepare the data to be written
-      const newData = {
+      // 3. Construct the complete new state object to be written
+      const newState: CollectiveMoodState = {
         h,
         s,
         l,
@@ -76,16 +68,12 @@ export async function submitMood(mood: Mood, sessionId: string): Promise<void> {
         totalContributions: newTotalContributions,
         lastMoods: recentMoods,
         lastUpdated: serverTimestamp(),
-        isBigBoomActive: false, // Ensure this field is always present to match security rules
+        isBigBoomActive: false, // Reset or implement logic as needed
         celebratedMilestones: newCelebratedMilestones,
       };
 
-      // Write the updated data back
-      if (!collectiveMoodDoc.exists()) {
-        transaction.set(collectiveMoodRef, newData);
-      } else {
-        transaction.update(collectiveMoodRef, newData as any);
-      }
+      // 4. Write the entire new state back using .set(). This works for both creating and overwriting.
+      transaction.set(collectiveMoodRef, newState);
     });
   } catch (error) {
     console.error("Mood submission transaction failed: ", error);
@@ -102,13 +90,11 @@ export async function submitMood(mood: Mood, sessionId: string): Promise<void> {
 export async function updateUserActivity(sessionId: string): Promise<void> {
   const userActivityRef = doc(db, 'userActivity', sessionId);
   try {
-    // Using set with merge is efficient for create/update operations
     await setDoc(userActivityRef, {
       sessionId: sessionId,
       lastActive: serverTimestamp(),
     }, { merge: true });
   } catch (error) {
     console.error("User activity heartbeat failed: ", error);
-    // This is a background task, so we don't rethrow. We don't want to interrupt the user.
   }
 }

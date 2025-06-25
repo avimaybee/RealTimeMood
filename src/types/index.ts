@@ -36,10 +36,10 @@ export interface CollectiveMoodState {
   l: number; // HSL lightness component (0-100)
   moodAdjective: string;
   totalContributions: number;
-  lastUpdated: FieldValue | Timestamp; // Firestore serverTimestamp()
+  lastUpdated: FieldValue | Timestamp | null;
   isBigBoomActive: boolean;
   lastMoods: SimpleMood[];
-  celebratedMilestones?: number[];
+  celebratedMilestones: number[];
 }
 
 /**
