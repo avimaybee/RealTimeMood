@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
-import { Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { useMood } from '@/contexts/MoodContext';
 import { findClosestMood, moodToHslString } from '@/lib/colorUtils';
 import type { Mood } from '@/types';
@@ -253,8 +253,8 @@ const OrbButton: React.FC = () => {
     },
     bar: {
       width: '80vw', maxWidth: '500px', height: '48px', borderRadius: '24px',
-      background: gradientBackground,
-      backdropFilter: 'blur(0px)', scale: 1, opacity: 1,
+      background: 'rgba(255, 255, 255, 0.1)',
+      backdropFilter: 'blur(12px)', scale: 1, opacity: 1,
       transition: { ...morphTransition }
     },
     charging: {
@@ -272,8 +272,8 @@ const OrbButton: React.FC = () => {
   };
 
   const iconVariants = {
-    orb: { scale: 1, opacity: 1, transition: { delay: 0.1, ...morphTransition } },
-    bar: { scale: 0, opacity: 0, transition: morphTransition },
+    orb: { scale: 1, opacity: 1, rotate: 0, transition: { delay: 0.1, ...morphTransition } },
+    bar: { scale: 0, opacity: 0, rotate: 90, transition: morphTransition },
     charging: { scale: 0, opacity: 0, transition: morphTransition },
     hidden: { scale: 0, opacity: 0, transition: morphTransition },
   };
@@ -319,21 +319,52 @@ const OrbButton: React.FC = () => {
               "relative flex items-center justify-center shadow-soft",
               (isCharging || bloomPoint) && "pointer-events-none",
               animationState === 'orb' && "cursor-pointer",
-              animationState === 'bar' && "cursor-pointer touch-none" // Add touch-none to prevent scrolling on mobile
+              animationState === 'bar' && "cursor-pointer touch-none"
             )}
           >
+            <motion.div
+              className="absolute inset-0 w-full h-full"
+              style={{ 
+                background: gradientBackground,
+                borderRadius: 'inherit'
+              }}
+              initial={{ scale: 0, rotate: 45 }}
+              animate={{ 
+                scale: isBar ? 1 : 0,
+                rotate: isBar ? 0 : 45
+              }}
+              transition={morphTransition}
+            />
+            
             <motion.div 
               variants={iconVariants} 
               animate={animationState} 
-              className="flex items-center justify-center"
+              className="relative flex items-center justify-center"
             >
-              <Plus 
-                className={cn(
-                  "w-10 h-10",
-                  animationState === 'orb' ? "text-white" : "text-transparent"
-                )}
-                strokeWidth={isIos ? 1.5 : 2}
-              />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={isBar ? 'dismiss' : 'add'}
+                  initial={{ opacity: 0, scale: 0.5, rotate: -45 }}
+                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                  exit={{ opacity: 0, scale: 0.5, rotate: 45 }}
+                  transition={{ duration: 0.2, delay: isBar ? 0.2 : 0 }}
+                >
+                  {isBar ? (
+                    <button onClick={handleDismissBar} className="flex items-center justify-center w-full h-full">
+                      <X 
+                        className="w-8 h-8 text-white/70"
+                        strokeWidth={isIos ? 1.5 : 2}
+                      />
+                    </button>
+                  ) : (
+                    <Plus 
+                      className="w-10 h-10 text-white"
+                      strokeWidth={isIos ? 1.5 : 2}
+                    />
+                  )}
+                </motion.div>
+              </AnimatePresence>
+
             </motion.div>
           </motion.div>
 
