@@ -1,10 +1,9 @@
-
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
-import { Plus, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useMood } from '@/contexts/MoodContext';
 import { findClosestMood, moodToHslString } from '@/lib/colorUtils';
 import type { Mood } from '@/types';
@@ -260,7 +259,6 @@ const OrbButton: React.FC = () => {
     charging: {
         width: '80px', height: '80px', borderRadius: '9999px',
         background: 'rgba(255, 255, 255, 0.1)', 
-        backdropFilter: 'blur(12px)',
         boxShadow: chargeData ? `0 0 25px 8px ${moodToHslString(chargeData.mood)}, inset 0 0 10px 2px rgba(255,255,255,0.5)` : '0 12px 32px rgba(0,0,0,0.3)',
         scale: 1, opacity: 1,
         transition: { ...morphTransition }
@@ -341,30 +339,10 @@ const OrbButton: React.FC = () => {
               animate={animationState} 
               className="relative flex items-center justify-center"
             >
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={isBar ? 'dismiss' : 'add'}
-                  initial={{ opacity: 0, scale: 0.5, rotate: -45 }}
-                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                  exit={{ opacity: 0, scale: 0.5, rotate: 45 }}
-                  transition={{ duration: 0.2, delay: isBar ? 0.2 : 0 }}
-                >
-                  {isBar ? (
-                    <button onClick={handleDismissBar} className="flex items-center justify-center w-full h-full">
-                      <X 
-                        className="w-8 h-8 text-white/70"
-                        strokeWidth={isIos ? 1.5 : 2}
-                      />
-                    </button>
-                  ) : (
-                    <Plus 
-                      className="w-10 h-10 text-white"
-                      strokeWidth={isIos ? 1.5 : 2}
-                    />
-                  )}
-                </motion.div>
-              </AnimatePresence>
-
+              <Plus 
+                className="w-10 h-10 text-white"
+                strokeWidth={isIos ? 1.5 : 2}
+              />
             </motion.div>
           </motion.div>
 
