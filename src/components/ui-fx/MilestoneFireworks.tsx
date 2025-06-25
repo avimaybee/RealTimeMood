@@ -1,6 +1,6 @@
 
 "use client";
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useMood } from '@/contexts/MoodContext';
 import { moodToHslString } from '@/lib/colorUtils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,42 +8,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 const MilestoneFireworks: React.FC = () => {
   const { currentMood, contributionCount } = useMood();
   const [showFireworks, setShowFireworks] = useState(false);
-  const [milestoneNumber, setMilestoneNumber] = useState(0);
-  const [triggeredMilestones, setTriggeredMilestones] = useState(new Set<number>());
+  const [hasFired, setHasFired] = useState(false);
   const prevContributionCountRef = useRef(contributionCount);
 
-  // Define the milestone thresholds
-  const milestones = useMemo(() => [
-    10, 25, 50, 100, 250, 500, 1000, 2000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000,
-  ], []);
+  const TARGET_MILESTONE = 25;
 
   // Effect to detect the milestone and turn on the fireworks
   useEffect(() => {
     const prevCount = prevContributionCountRef.current;
     const currentCount = contributionCount;
 
-    // Find if any new, untriggered milestone has been crossed
-    const crossedMilestone = milestones.find(m => 
-        prevCount < m && 
-        currentCount >= m && 
-        !triggeredMilestones.has(m)
-    );
-
-    if (crossedMilestone) {
+    // Check if the milestone was crossed and it hasn't fired before
+    if (currentCount >= TARGET_MILESTONE && prevCount < TARGET_MILESTONE && !hasFired) {
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         // Strong, celebratory vibration pattern
-        navigator.vibrate([200, 100, 200]); 
+        navigator.vibrate([200, 100, 200]);
       }
       
-      // Add to memory before showing
-      setTriggeredMilestones(prev => new Set(prev).add(crossedMilestone));
-      setMilestoneNumber(crossedMilestone);
+      setHasFired(true); // Mark as fired to prevent it from running again
       setShowFireworks(true);
     }
 
     // Update the ref to the current count for the next check
     prevContributionCountRef.current = currentCount;
-  }, [contributionCount, milestones, triggeredMilestones]);
+  }, [contributionCount, hasFired]);
 
   // This effect handles turning OFF the fireworks after a delay
   useEffect(() => {
@@ -56,7 +44,7 @@ const MilestoneFireworks: React.FC = () => {
     }
   }, [showFireworks]);
 
-  const particleCount = 40; // Reduced for performance
+  const particleCount = 40;
   const burstCount = 4;
 
   return (
@@ -73,7 +61,7 @@ const MilestoneFireworks: React.FC = () => {
               filter: `drop-shadow(0 0 20px ${moodToHslString(currentMood)}) drop-shadow(0 0 10px white)`
             }}
           >
-            {milestoneNumber.toLocaleString()} Moods Shared!
+            {TARGET_MILESTONE.toLocaleString()} Moods Shared!
           </motion.h1>
         )}
       </AnimatePresence>
