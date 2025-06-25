@@ -113,14 +113,15 @@
     @apply backdrop-blur-xl border border-white/10;
   }
 
-  .neumorphic-shadow {
+  /* New glass card style based on the provided reference */
+  .glass-card {
     background-color: rgba(var(--panel-background-rgba), 0.075);
     -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.222);
     transition: all ease 0.3s;
   }
-  .neumorphic-shadow:hover {
+  .glass-card:hover {
     box-shadow: 0px 0px 20px 1px hsla(var(--primary), 0.25);
     border: 1px solid rgba(255, 255, 255, 0.454);
   }
