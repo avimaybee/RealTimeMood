@@ -296,14 +296,19 @@ const CollectiveThoughtsPage = () => {
             <motion.footer 
               className="fixed bottom-0 inset-x-0 z-20" 
               data-prevent-snapshot
-              animate={{ scale: isFocused ? 1.02 : 1 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
               <div className="p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-[calc(1rem+env(safe-area-inset-bottom))]">
-                  <div className="max-w-2xl mx-auto frosted-glass shadow-soft rounded-2xl border border-white/10">
+                  <div className="max-w-2xl mx-auto frosted-glass shadow-soft rounded-2xl border border-white/10 relative overflow-hidden">
+                    <motion.div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_100%_50%,#f472b622_0%,#8b5cf611_50%,transparent_70%)]"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: isFocused ? 1 : 0 }}
+                      transition={{ duration: 0.5, ease: 'easeOut' }}
+                    />
                     <form
                         onSubmit={handleFormSubmit}
-                        className="relative flex items-end w-full p-1 sm:p-2"
+                        className="relative z-10 flex items-end w-full p-1 sm:p-2"
                     >
                           <Textarea
                               ref={textareaRef}
