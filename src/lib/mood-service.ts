@@ -45,13 +45,14 @@ export async function submitMood(mood: Mood, sessionId: string): Promise<void> {
       const newTotalContributions = oldState.totalContributions + 1;
       
       const newSimpleMood: SimpleMood = { h: mood.hue, s: mood.saturation, l: mood.lightness };
-      // Prepend the new mood to the old list of moods
-      const recentMoods = [newSimpleMood, ...oldState.lastMoods].slice(0, MAX_RECENT_MOODS);
+      // Prepend the new mood to the old list of moods, ensuring it's an array
+      const recentMoods = [newSimpleMood, ...(oldState.lastMoods || [])].slice(0, MAX_RECENT_MOODS);
       
       const { h, s, l } = averageHsl(recentMoods);
       const newAdjective = findClosestMood(h).adjective;
 
-      const newCelebratedMilestones = [...oldState.celebratedMilestones];
+      // Ensure celebratedMilestones is an array before spreading
+      const newCelebratedMilestones = [...(oldState.celebratedMilestones || [])];
       const milestoneCrossed = MILESTONES.find(m => newTotalContributions === m);
 
       // Add the new milestone if it was crossed and not already celebrated
