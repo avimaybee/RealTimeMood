@@ -109,27 +109,20 @@
 @layer utilities {
   
   .frosted-glass {
-    /* JS updates --panel-background-rgba and --panel-bg-alpha if needed */
-    background-color: rgba(var(--panel-background-rgba), 0.25);
-    @apply backdrop-blur-xl;
+    background-color: rgba(var(--panel-background-rgba), 0.1);
+    @apply backdrop-blur-xl border border-white/10;
   }
 
-  /* "Frosted Neumorphism" - a hybrid style for card elements */
   .neumorphic-shadow {
-    /* Frosted glass properties */
-    background-color: rgba(var(--panel-background-rgba), 0.2);
-    @apply backdrop-blur-xl;
-
-    /* Subtle dual shadows for depth */
-    box-shadow: 5px 5px 12px hsla(var(--shadow-dark-hsl), 0.35),
-                -5px -5px 12px hsla(var(--shadow-light-hsl), 0.5);
-
-    /* A very subtle border to catch the light */
-    border-width: 1px;
-    border-color: hsla(var(--shadow-light-hsl), 0.15);
-
-    /* Keep transitions for dynamic color changes */
-    transition: box-shadow 0.8s ease-in-out, background-color 0.8s ease-in-out, border-color 0.8s ease-in-out;
+    background-color: rgba(var(--panel-background-rgba), 0.075);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.222);
+    transition: all ease 0.3s;
+  }
+  .neumorphic-shadow:hover {
+    box-shadow: 0px 0px 20px 1px hsla(var(--primary), 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.454);
   }
 
   .content-auto {
