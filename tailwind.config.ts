@@ -1,4 +1,3 @@
-
 import type {Config} from 'tailwindcss';
 
 const config: Config = {
@@ -185,6 +184,10 @@ const config: Config = {
           '70%': { transform: 'translate(1px, 1px) scale(1)' },
           '90%': { transform: 'translate(0, 0) scale(0.98)' },
         },
+        'aurora-spin': {
+          'from': { transform: 'rotate(0deg)' },
+          'to': { transform: 'rotate(360deg)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -203,6 +206,7 @@ const config: Config = {
         'logo-calm': 'logo-calm 4s ease-in-out infinite',
         'logo-joyful': 'logo-joyful 1.5s ease-in-out infinite',
         'logo-anxious': 'logo-anxious 0.5s linear infinite',
+        'aurora-spin': 'aurora-spin 12s linear infinite',
       },
       backdropBlur: {
         'xl': '24px',

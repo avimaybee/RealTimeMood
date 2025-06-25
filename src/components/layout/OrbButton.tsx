@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
@@ -202,12 +201,14 @@ const OrbButton: React.FC = () => {
       width: '80px', height: '80px', borderRadius: '9999px',
       background: 'rgba(255, 255, 255, 0.1)', 
       backdropFilter: 'blur(12px)', scale: 1, opacity: 1,
+      overflow: 'hidden',
       transition: { ...morphTransition }
     },
     bar: {
       width: '80vw', maxWidth: '500px', height: '48px', borderRadius: '24px',
       background: 'rgba(255, 255, 255, 0.1)',
       backdropFilter: 'blur(12px)', scale: 1, opacity: 1,
+      overflow: 'hidden',
       transition: { ...morphTransition }
     },
     charging: {
@@ -216,6 +217,7 @@ const OrbButton: React.FC = () => {
       backdropFilter: 'blur(12px)', // Ensured consistency
       boxShadow: chargeData ? `0 0 25px 8px ${moodToHslString(chargeData.mood)}, inset 0 0 10px 2px rgba(255,255,255,0.5)` : '0 12px 32px rgba(0,0,0,0.3)',
       scale: 1, opacity: 1,
+      overflow: 'hidden',
       transition: { ...morphTransition }
     },
     hidden: { scale: 0, opacity: 0, transition: { ...morphTransition } }
@@ -280,6 +282,22 @@ const OrbButton: React.FC = () => {
               animate={{ scale: isBar ? 1 : 0, rotate: isBar ? 0 : 45 }}
               transition={morphTransition}
             />
+            <AnimatePresence>
+              {animationState === 'orb' && (
+                <motion.div
+                  key="aurora-effect"
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.7, transition: { delay: 0.3, duration: 0.5 } }}
+                  exit={{ opacity: 0 }}
+                >
+                  <div
+                    className="h-40 w-40 animate-aurora-spin bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500"
+                    style={{ filter: 'blur(30px)' }}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
             <motion.div
               variants={iconVariants}
               animate={animationState}
@@ -345,5 +363,3 @@ const OrbButton: React.FC = () => {
 };
 
 export default OrbButton;
-
-    
