@@ -309,7 +309,7 @@ const HistoryPageContent = () => {
         transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
       >
         <main className="w-full flex-grow flex flex-col items-center justify-center gap-6">
-          <Card className="w-full max-w-5xl neumorphic-shadow rounded-2xl bg-transparent border-none shadow-none">
+          <Card className="w-full max-w-5xl neumorphic-shadow rounded-2xl">
             <CardHeader>
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                 <CardTitle>{getTitle()}</CardTitle>
@@ -336,7 +336,7 @@ const HistoryPageContent = () => {
             </CardContent>
           </Card>
 
-          <Card className="w-full max-w-5xl neumorphic-shadow rounded-2xl bg-transparent border-none shadow-none">
+          <Card className="w-full max-w-5xl neumorphic-shadow rounded-2xl">
             <CardHeader>
               <CardTitle className="text-xl flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary" strokeWidth={isIos ? 1.5 : 2} />

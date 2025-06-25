@@ -227,7 +227,7 @@ const CollectiveThoughtsPage = () => {
                             layout
                             transition={{ duration: 0.5, ease: 'easeInOut' }}
                         >
-                            <Card className="neumorphic-shadow rounded-2xl bg-transparent border-none shadow-none">
+                            <Card className="neumorphic-shadow rounded-2xl">
                                 <CardContent className="p-4 md:p-6 flex flex-col bg-transparent">
                                     <p className="text-base md:text-lg text-foreground/90 text-left w-full break-words">
                                         {quote.text}
