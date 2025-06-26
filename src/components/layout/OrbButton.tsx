@@ -28,7 +28,7 @@ const OrbButton: React.FC = () => {
   const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSubmissionTimeRef = useRef<number>(0);
   const [isPanning, setIsPanning] = useState(false);
-  const [resetTrigger, setResetTrigger] = useState(0); // New state to force style reapplication
+  const [resetTrigger, setResetTrigger] = useState(0); 
 
   useEffect(() => {
     setIsClient(true);
@@ -106,7 +106,7 @@ const OrbButton: React.FC = () => {
     setInteractionMode('orb');
     setPreviewMood(null);
     setChargeData(null);
-    setResetTrigger(prev => prev + 1); // Trigger style reset
+    setResetTrigger(prev => prev + 1); 
   }, [isCharging, setPreviewMood]);
 
   const handleLongPress = () => {
@@ -161,7 +161,7 @@ const OrbButton: React.FC = () => {
       setIsCharging(false);
       setChargeData(null);
       setInteractionMode('orb');
-      setResetTrigger(prev => prev + 1); // Trigger style reset
+      setResetTrigger(prev => prev + 1); 
       return;
     }
     const chargeTimeout = setTimeout(() => {
@@ -185,11 +185,11 @@ const OrbButton: React.FC = () => {
         setIsCharging(false);
         setChargeData(null);
         setInteractionMode('orb');
-        setResetTrigger(prev => prev + 1); // Trigger style reset
+        setResetTrigger(prev => prev + 1); 
       }
     }, 500);
     return () => clearTimeout(chargeTimeout);
-  }, [isCharging, chargeData, recordContribution, toast]);
+  }, [isCharging, chargeData, recordContribution, toast, handleDismissBar]);
 
   const isBar = interactionMode === 'bar';
   const orbContainerBaseClasses = "fixed bottom-20 md:bottom-24 z-40 flex items-center justify-center";
@@ -214,7 +214,7 @@ const OrbButton: React.FC = () => {
     charging: {
       width: '80px', height: '80px', borderRadius: '9999px',
       background: 'rgba(255, 255, 255, 0.1)', 
-      backdropFilter: 'blur(12px)', // Ensured consistency
+      backdropFilter: 'blur(12px)',
       boxShadow: chargeData ? `0 0 25px 8px ${moodToHslString(chargeData.mood)}, inset 0 0 10px 2px rgba(255,255,255,0.5)` : '0 12px 32px rgba(0,0,0,0.3)',
       scale: 1, opacity: 1,
       overflow: 'hidden',
@@ -242,7 +242,7 @@ const OrbButton: React.FC = () => {
   return (
     <>
       <motion.div
-        key={resetTrigger} // Forces re-render and style reapplication
+        key={resetTrigger} 
         data-orb-button-container
         className={cn(orbContainerBaseClasses, "left-1/2")}
         style={{ x: "-50%" }}
@@ -253,7 +253,7 @@ const OrbButton: React.FC = () => {
           <motion.div
             ref={barRef}
             variants={orbVariants}
-            initial="orb" // Explicitly set initial state
+            initial="orb" 
             animate={animationState}
             onTap={animationState === 'bar' ? handleBarTap : handleOrbTap}
             onPanStart={animationState === 'bar' ? handlePanStart : undefined}
@@ -283,7 +283,7 @@ const OrbButton: React.FC = () => {
               transition={morphTransition}
             />
             <AnimatePresence>
-              {animationState === 'orb' && (
+              {isClient && animationState === 'orb' && (
                 <motion.div
                   key="aurora-effect"
                   className="absolute inset-0 flex items-center justify-center pointer-events-none"
