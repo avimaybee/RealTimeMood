@@ -1,6 +1,5 @@
-
 "use client";
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { MoodProvider, useMood } from '@/contexts/MoodContext';
 import DynamicBackground from '@/components/ui-fx/DynamicBackground';
@@ -23,10 +22,14 @@ const AddToHomeScreenPrompt = dynamic(() => import('@/components/features/AddToH
 
 const PageContent: React.FC = () => {
   const { isCollectiveShifting } = useMood();
-  const [isRadialBloomActive, setIsRadialBloomActive] = React.useState(false);
+  const [isEmojiSelectorOpen, setIsEmojiSelectorOpen] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isAmbientMode, setIsAmbientMode] = React.useState(false);
   const { isIos } = usePlatform();
+  
+  // State lifted from OrbButton to avoid client-side only errors
+  const [interactionMode, setInteractionMode] = useState<'orb' | 'bar'>('orb');
+  const [isCharging, setIsCharging] = useState(false);
 
   useEffect(() => {
     // Register Service Worker for PWA capabilities
@@ -42,18 +45,22 @@ const PageContent: React.FC = () => {
           });
       });
     }
-
-    const observer = new MutationObserver((mutationsList) => {
-      for (const mutation of mutationsList) {
-        if (mutation.type === 'childList') {
-          const markerExists = document.querySelector('[data-radial-bloom-active-page-marker]');
-          setIsRadialBloomActive(!!markerExists);
-        }
-      }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
   }, []);
+
+  // This effect handles adding/removing global classes to the body
+  // to prevent scrolling when the emoji selector is open. It's safe
+  // because useEffect only runs on the client.
+  useEffect(() => {
+    const className = 'no-scroll-select';
+    if (isEmojiSelectorOpen) {
+      document.body.classList.add(className);
+    } else {
+      document.body.classList.remove(className);
+    }
+    return () => {
+      document.body.classList.remove(className);
+    };
+  }, [isEmojiSelectorOpen]);
 
   const handlePageClick = () => {
     if (isAmbientMode) {
@@ -61,14 +68,16 @@ const PageContent: React.FC = () => {
     }
   };
 
+  const isBarModeActive = interactionMode === 'bar' && !isCharging;
 
   return (
     <div 
       className={cn(
         "h-screen min-h-screen w-full flex flex-col items-center overflow-hidden",
-        isRadialBloomActive ? 'radial-bloom-active-page' : '',
+        isEmojiSelectorOpen ? 'emoji-selector-active-page' : '',
         isMenuOpen ? (isIos ? 'ios-menu-open-recede-children' : 'menu-open-recede-children') : '',
-        isAmbientMode ? 'ambient-mode-active-page' : ''
+        isAmbientMode ? 'ambient-mode-active-page' : '',
+        isBarModeActive ? 'bar-mode-active-page' : ''
       )}
       onClick={handlePageClick}
     >
@@ -78,7 +87,7 @@ const PageContent: React.FC = () => {
       <LivingParticles />
 
       {/* Suppress global effects during focused mood selection */}
-      {!isRadialBloomActive && (
+      {!isEmojiSelectorOpen && !isBarModeActive && (
         <>
           <GlobalRipple />
           <CollectiveShiftEffect />
@@ -94,7 +103,14 @@ const PageContent: React.FC = () => {
         <MainPromptDisplay />
       </main>
       
-      <OrbButton /> 
+      <OrbButton 
+        isEmojiSelectorOpen={isEmojiSelectorOpen}
+        setIsEmojiSelectorOpen={setIsEmojiSelectorOpen}
+        interactionMode={interactionMode}
+        setInteractionMode={setInteractionMode}
+        isCharging={isCharging}
+        setIsCharging={setIsCharging}
+      /> 
       
       <AppFooter 
         isMenuOpen={isMenuOpen} 

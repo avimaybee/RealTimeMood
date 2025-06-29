@@ -136,10 +136,10 @@
     transform: scale(1.05); /* slightly less pop */
   }
 
-  /* When the radial bloom is active, fade out the main UI elements */
-  .radial-bloom-active-page > header,
-  .radial-bloom-active-page > main,
-  .radial-bloom-active-page > footer {
+  /* When the emoji selector is active, fade out the main UI elements */
+  .emoji-selector-active-page > header,
+  .emoji-selector-active-page > main,
+  .emoji-selector-active-page > footer {
     transition: opacity 0.4s ease-in-out;
     opacity: 0.2;
     pointer-events: none;

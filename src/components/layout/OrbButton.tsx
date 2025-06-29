@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
@@ -13,18 +12,30 @@ import { motion, type PanInfo, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { usePlatform } from '@/contexts/PlatformContext';
 
-const RadialBloomEffect = dynamic(() => import('@/components/ui-fx/RadialBloomEffect'), { ssr: false });
 const MoodSelectionButtons = dynamic(() => import('@/components/features/MoodSelectionButtons'), { ssr: false });
 
-const OrbButton: React.FC = () => {
+interface OrbButtonProps {
+  isEmojiSelectorOpen: boolean;
+  setIsEmojiSelectorOpen: (isOpen: boolean) => void;
+  interactionMode: 'orb' | 'bar';
+  setInteractionMode: (mode: 'orb' | 'bar') => void;
+  isCharging: boolean;
+  setIsCharging: (isCharging: boolean) => void;
+}
+
+const OrbButton: React.FC<OrbButtonProps> = ({ 
+  isEmojiSelectorOpen, 
+  setIsEmojiSelectorOpen,
+  interactionMode,
+  setInteractionMode,
+  isCharging,
+  setIsCharging
+}) => {
   const { recordContribution, isCollectiveShifting, setPreviewMood, previewMood } = useMood();
   const { toast } = useToast();
   const { isIos } = usePlatform();
-  const [interactionMode, setInteractionMode] = useState<'orb' | 'bar'>('orb');
-  const [isCharging, setIsCharging] = useState(false);
   const [chargeData, setChargeData] = useState<{ mood: Mood } | null>(null);
   const barRef = useRef<HTMLDivElement>(null);
-  const [bloomPoint, setBloomPoint] = useState<{ x: number; y: number } | null>(null);
   const [isClient, setIsClient] = useState(false);
   const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSubmissionTimeRef = useRef<number>(0);
@@ -35,29 +46,9 @@ const OrbButton: React.FC = () => {
     setIsClient(true);
   }, []);
 
-  useEffect(() => {
-    const className = 'bar-mode-active-page';
-    if (interactionMode === 'bar' && !isCharging) {
-      document.body.classList.add(className);
-    } else {
-      document.body.classList.remove(className);
-    }
-    return () => document.body.classList.remove(className);
-  }, [interactionMode, isCharging]);
-
-  useEffect(() => {
-    const className = 'no-scroll-select';
-    if (bloomPoint) {
-      document.body.classList.add(className);
-    } else {
-      document.body.classList.remove(className);
-    }
-    return () => document.body.classList.remove(className);
-  }, [bloomPoint]);
-
   const handleOrbTap = () => {
     clearLongPressTimeout();
-    if (isCharging || bloomPoint) return;
+    if (isCharging || isEmojiSelectorOpen) return;
     setInteractionMode('bar');
     if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50);
   };
@@ -108,16 +99,15 @@ const OrbButton: React.FC = () => {
     setPreviewMood(null);
     setChargeData(null);
     setResetTrigger(prev => prev + 1); 
-  }, [isCharging, setPreviewMood]);
+  }, [isCharging, setInteractionMode, setPreviewMood]);
 
   const handleLongPress = () => {
-    if (interactionMode === 'bar' || isCharging || !barRef.current) return;
-    const rect = barRef.current.getBoundingClientRect();
-    setBloomPoint({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+    if (interactionMode === 'bar' || isCharging) return;
+    setIsEmojiSelectorOpen(true);
   };
 
   const handlePointerDown = (event: ReactPointerEvent) => {
-    if (interactionMode !== 'orb' || isCharging || bloomPoint) return;
+    if (interactionMode !== 'orb' || isCharging || isEmojiSelectorOpen) return;
     longPressTimeoutRef.current = setTimeout(handleLongPress, 250);
   };
 
@@ -128,25 +118,32 @@ const OrbButton: React.FC = () => {
     }
   };
 
-  const handleMoodSelectionFromBloom = (mood: Mood) => {
-    setBloomPoint(null);
+  const handleMoodSelection = (mood: Mood) => {
+    setIsEmojiSelectorOpen(false);
     if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(100);
     setChargeData({ mood });
     setIsCharging(true);
   };
 
-  const handleDismissBloom = useCallback(() => {
-    setBloomPoint(null);
+  const handleDismissEmojiSelector = useCallback(() => {
+    setIsEmojiSelectorOpen(false);
     setPreviewMood(null);
-  }, [setPreviewMood]);
+  }, [setPreviewMood, setIsEmojiSelectorOpen]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && interactionMode === 'bar') handleDismissBar();
+      if (e.key === 'Escape') {
+        if (interactionMode === 'bar') {
+          handleDismissBar();
+        }
+        if (isEmojiSelectorOpen) {
+          handleDismissEmojiSelector();
+        }
+      }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [interactionMode, handleDismissBar]);
+  }, [interactionMode, isEmojiSelectorOpen, handleDismissBar, handleDismissEmojiSelector]);
 
   useEffect(() => {
     if (!isCharging || !chargeData) return;
@@ -190,7 +187,7 @@ const OrbButton: React.FC = () => {
       }
     }, 500);
     return () => clearTimeout(chargeTimeout);
-  }, [isCharging, chargeData, recordContribution, toast]);
+  }, [isCharging, chargeData, recordContribution, toast, setIsCharging, setInteractionMode]);
 
   const isBar = interactionMode === 'bar';
   const orbContainerBaseClasses = "fixed bottom-20 md:bottom-24 z-40 flex items-center justify-center";
@@ -232,7 +229,7 @@ const OrbButton: React.FC = () => {
   };
 
   const getAnimationState = () => {
-    if (bloomPoint) return 'hidden';
+    if (isEmojiSelectorOpen) return 'hidden';
     if (isCharging) return 'charging';
     if (isBar) return 'bar';
     return 'orb';
@@ -287,7 +284,7 @@ const OrbButton: React.FC = () => {
             }}
             className={cn(
               "relative flex items-center justify-center shadow-soft",
-              (isCharging || bloomPoint) && "pointer-events-none",
+              (isCharging || isEmojiSelectorOpen) && "pointer-events-none",
               animationState === 'orb' && "cursor-pointer",
               animationState === 'bar' && "cursor-pointer touch-none"
             )}
@@ -337,23 +334,18 @@ const OrbButton: React.FC = () => {
               transition={{ duration: 0.4 }}
             />
           )}
-          {bloomPoint && (
-            <motion.div key="bloom-container">
-              <div data-radial-bloom-active-page-marker />
+          {isEmojiSelectorOpen && (
+            <motion.div key="emoji-selector-container">
               <motion.div
-                className="fixed inset-0 z-30 bg-black/10"
-                onPointerDown={handleDismissBloom}
+                className="fixed inset-0 z-30"
+                onPointerDown={handleDismissEmojiSelector}
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
+                animate={{ opacity: 1, transition: { duration: 0.4 } }}
+                exit={{ opacity: 0, transition: { duration: 0.2 } }}
               />
-              <RadialBloomEffect point={bloomPoint} />
               <MoodSelectionButtons
                 key="mood-buttons"
-                point={bloomPoint}
-                onSelect={handleMoodSelectionFromBloom}
-                onPreviewChange={setPreviewMood}
+                onSelect={handleMoodSelection}
               />
             </motion.div>
           )}
