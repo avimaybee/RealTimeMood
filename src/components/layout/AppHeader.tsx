@@ -57,7 +57,7 @@ const AppHeader: React.FC = () => {
       </a>
       
       <div className="flex items-center gap-2">
-        <span className="text-xs text-foreground/70 hidden sm:inline">
+        <span className="text-xs text-foreground/70">
           {currentMood.adjective}
         </span>
         <motion.div
