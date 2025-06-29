@@ -5,81 +5,60 @@
 
 @layer base {
   :root {
-    /* Base mood color components - to be updated by JS */
-    --mood-hue: 210; /* Default: Calm Blue */
-    --mood-saturation: 100%;
-    --mood-lightness: 60%; /* Brighter default */
-    --mood-saturation-value: 100; /* Numeric value for calcs */
-    --mood-lightness-value: 60;  /* Numeric value for calcs */
+    /* Base mood color from JS */
+    --mood-hue: 210;
 
+    /* --- New High-Contrast Dark Theme System --- */
 
-    /* Derived HSL value strings */
-    --background-hsl: var(--mood-hue) var(--mood-saturation) var(--mood-lightness);
+    /* Page Background: Dark, desaturated version of the mood color */
+    --background-hsl: var(--mood-hue) 15% 10%;
     
-    /* Accent/Primary: shifted 30deg left for UI elements */
-    --primary-hue: calc((var(--mood-hue) - 30 + 360) % 360);
-    --primary-saturation: var(--mood-saturation);
-    --primary-lightness: calc(var(--mood-lightness) * 0.9); /* Slightly darker/more saturated for UI */
-    --primary-hsl: var(--primary-hue) var(--primary-saturation) var(--primary-lightness);
+    /* Card Background: Slightly lighter than the page background */
+    --card-hsl: var(--mood-hue) 15% 15%;
+
+    /* Text: Consistently light off-white for high contrast */
+    --foreground-hsl: 210 20% 95%;
+
+    /* Accent/Primary: Vibrant, saturated version of the mood color */
+    --primary-hsl: var(--mood-hue) 90% 65%;
     
-    /* Foreground (text) colors based on background lightness - defaults, JS will refine these HSL values */
-    --foreground-light-hsl: 204 10% 10%; /* Off-black: HSL values for hsl(204, 10%, 10%) -> #1F1F1F */
-    --foreground-dark-hsl: 200 0% 91.8%; /* Off-white: HSL values for hsl(200, 0%, 91.8%) -> #EAEAEA */
-    --foreground-hsl: var(--foreground-light-hsl); /* Default to dark text HSL values. JS updates this variable. */
+    /* Accent/Primary Text: Dark version of accent color for contrast on buttons */
+    --primary-foreground-hsl: var(--mood-hue) 25% 10%;
 
-    --primary-foreground-hsl: var(--foreground-dark-hsl); /* Default to light text on primary HSL values. JS updates this. */
-
-    /* Neumorphic shadow colors */
-    --shadow-light-hsl: 220 15% 98%; /* Default light shadow for near-white bg */
-    --shadow-dark-hsl: 220 15% 85%;  /* Default dark shadow for near-white bg */
-
-    /* Variables for Tailwind's hsl(var(...)) consumption - these store HSL VALUES, not hsl() strings */
+    /* --- Mapping to Shadcn/Tailwind Variables --- */
     --background: var(--background-hsl);
     --foreground: var(--foreground-hsl);
+    
+    --card: var(--card-hsl);
+    --card-foreground: var(--foreground-hsl);
+    
+    --popover: var(--card-hsl);
+    --popover-foreground: var(--foreground-hsl);
+    
     --primary: var(--primary-hsl);
     --primary-foreground: var(--primary-foreground-hsl);
 
-    /* UI Panel specific backgrounds */
-    --panel-bg-light-rgba: 255, 255, 255; /* r, g, b values for rgba() */
-    --panel-bg-dark-rgba: 0, 0, 0; /* r, g, b values for rgba() */
-    --panel-bg-alpha: 0.12;
-    /* Default to light panel, JS will update based on background */
-    --panel-background-rgba: var(--panel-bg-light-rgba); /* This stores "r, g, b" string. JS updates this. */
-    /* --panel-background is used directly in .frosted-glass, not by Tailwind's hsl() */
+    --secondary-hsl: var(--mood-hue) 20% 25%;
+    --secondary: var(--secondary-hsl);
+    --secondary-foreground: var(--foreground-hsl);
 
-    /* Standard shadcn variables, derived or static */
-    --card-hsl: var(--mood-hue) var(--mood-saturation) calc(var(--mood-lightness) + 5%); 
-    --card: var(--card-hsl); /* HSL VALUES */
-    --card-foreground: var(--foreground-hsl); /* HSL VALUES */
+    --muted-hsl: var(--mood-hue) 15% 25%;
+    --muted: var(--muted-hsl);
+    --muted-foreground: 210 15% 65%; /* Lighter muted text */
     
-    --popover-hsl: var(--card-hsl);
-    --popover: var(--popover-hsl); /* HSL VALUES */
-    --popover-foreground: var(--foreground-hsl); /* HSL VALUES */
-    
-    --secondary-hsl: calc((var(--mood-hue) + 15 + 360) % 360) var(--mood-saturation) calc(var(--mood-lightness) - 5%);
-    --secondary: var(--secondary-hsl); /* HSL VALUES */
-    --secondary-foreground: var(--foreground-hsl); /* HSL VALUES */
+    --accent: var(--primary-hsl);
+    --accent-foreground: var(--primary-foreground-hsl);
 
-    --muted-hsl: var(--mood-hue) calc(var(--mood-saturation) * 0.8) calc(var(--mood-lightness) + 10%);
-    --muted: var(--muted-hsl); /* HSL VALUES */
-    --muted-foreground-hsl: var(--mood-hue) calc(var(--mood-saturation) * 0.7) calc(var(--mood-lightness) - 20%);
-    --muted-foreground: var(--muted-foreground-hsl); /* HSL VALUES */
-    
-    --accent-hsl: var(--primary-hsl); 
-    --accent: var(--accent-hsl); /* HSL VALUES */
-    --accent-foreground: var(--primary-foreground-hsl); /* HSL VALUES */
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%; /* Direct HSL VALUES */
-    --destructive-foreground: 0 0% 98%; /* Direct HSL VALUES */
-
-    --border-hsl: var(--mood-hue) var(--mood-saturation) calc(var(--mood-lightness) - 10%);
-    --border: var(--border-hsl); /* HSL VALUES */
-    --input-hsl: var(--mood-hue) var(--mood-saturation) calc(var(--mood-lightness) - 15%);
-    --input: var(--input-hsl); /* HSL VALUES */
-    --ring-hsl: var(--primary-hsl);
-    --ring: var(--ring-hsl); /* HSL VALUES */
+    --border-hsl: var(--mood-hue) 15% 25%;
+    --border: var(--border-hsl);
+    --input-hsl: var(--mood-hue) 15% 20%;
+    --input: var(--input-hsl);
+    --ring: var(--primary-hsl);
     
-    --radius: 1rem; /* 16px, for "generous border-radius (e.g., 16px to 24px)" */
+    --radius: 1rem;
 
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
@@ -109,32 +88,31 @@
 @layer utilities {
   
   .frosted-glass {
-    background-color: rgba(var(--panel-background-rgba), 0.1);
-    @apply backdrop-blur-xl border border-white/10;
+    background-color: hsla(var(--card-hsl), 0.7);
+    @apply backdrop-blur-lg border border-white/10;
   }
 
-  /* New glass card style based on the provided reference */
   .glass-card {
-    background-color: rgba(var(--panel-background-rgba), 0.075);
-    -webkit-backdrop-filter: blur(20px);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.222);
+    background-color: hsla(var(--card-hsl), 0.5);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsla(var(--foreground-hsl), 0.1);
     transition: all ease 0.3s;
   }
   .glass-card:hover {
     box-shadow: 0px 0px 20px 1px hsla(var(--primary), 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.454);
+    border: 1px solid hsla(var(--foreground-hsl), 0.2);
   }
 
   .content-auto {
     content: ""; /* for pseudo-elements */
   }
 
-  /* For vignette effect */
+  /* Vignette is now more subtle on a dark theme */
   .vignette-overlay {
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 50%, rgba(0,0,0,0.15) 100%);
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%);
     pointer-events: none;
     z-index: 1; /* Above background, below particles */
   }
@@ -144,7 +122,7 @@
     position: fixed;
     inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    opacity: 0.04; /* Subtle noise */
+    opacity: 0.03; /* More subtle noise on dark bg */
     pointer-events: none;
     z-index: 1; /* Same level as vignette or just above */
   }
@@ -154,8 +132,8 @@
   }
   .interactive-glow:hover,
   .interactive-glow:focus-visible {
-    filter: drop-shadow(0 0 6px hsl(var(--primary)));
-    transform: scale(1.1);
+    filter: drop-shadow(0 0 8px hsl(var(--primary)));
+    transform: scale(1.05); /* slightly less pop */
   }
 
   /* When the radial bloom is active, fade out the main UI elements */
@@ -236,29 +214,23 @@
     90% { transform: translate(0, 0) scale(0.98); }
   }
   
-  /* Platform-specific scrollbar styling */
-  .ios ::-webkit-scrollbar {
+  /* Scrollbar styling - now only one dark mode style is needed */
+  ::-webkit-scrollbar {
     width: 5px;
     height: 5px;
   }
-  .ios ::-webkit-scrollbar-track {
+  ::-webkit-scrollbar-track {
     background: transparent;
   }
-  .ios ::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
     border-radius: 10px;
     border: 1px solid transparent;
     background-clip: content-box;
   }
-  .dark .ios ::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
 
   .android ::-webkit-scrollbar {
     width: 8px;
-  }
-  .android ::-webkit-scrollbar-track {
-    background: transparent;
   }
   .android ::-webkit-scrollbar-thumb {
     background-color: hsla(var(--foreground-hsl), 0.3);
