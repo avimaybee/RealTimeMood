@@ -307,7 +307,7 @@ const CollectiveThoughtsPage = () => {
     const renderContent = () => {
       if (isLoading) {
         return (
-          <div className="w-full max-w-4xl mx-auto px-8 pt-20 pb-28 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="w-full max-w-4xl mx-auto px-8 pt-20 pb-32 grid grid-cols-1 md:grid-cols-2 gap-6">
             {[...Array(6)].map((_, i) => (
               <Skeleton key={i} className="h-20 w-full rounded-2xl" />
             ))}
@@ -351,8 +351,8 @@ const CollectiveThoughtsPage = () => {
                             layout
                             transition={{ type: "spring", stiffness: 500, damping: 50 }}
                         >
-                            <Card className="rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm">
-                                <CardContent className="p-3 flex flex-col">
+                            <Card className="rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm h-full flex flex-col">
+                                <CardContent className="p-3 flex flex-col flex-grow">
                                     <div className="flex-grow">
                                         <p
                                             ref={el => {
@@ -361,7 +361,7 @@ const CollectiveThoughtsPage = () => {
                                             }}
                                             className={cn(
                                                 "text-body text-foreground/90 text-left w-full break-words whitespace-pre-wrap",
-                                                !isExpanded && isClamped && "line-clamp-4"
+                                                !isExpanded && "line-clamp-4"
                                             )}
                                         >
                                             {quote.text}
@@ -447,27 +447,28 @@ const CollectiveThoughtsPage = () => {
                       {isClient ? renderContent() : null}
                     </motion.div>
                 </AnimatePresence>
-                <AnimatePresence>
-                    {showGoToBottom && (
-                        <motion.div
-                            className="absolute bottom-[calc(4rem+env(safe-area-inset-bottom))] sm:bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 sm:right-8 z-30"
-                            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                        >
-                            <Button
-                                onClick={handleGoToBottom}
-                                size="icon"
-                                className="rounded-full shadow-lg interactive-glow h-12 w-12"
-                                aria-label="Go to bottom"
-                            >
-                                <ArrowDown className="w-6 h-6" />
-                            </Button>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
             </main>
+            
+            <AnimatePresence>
+                {showGoToBottom && (
+                    <motion.div
+                        className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] sm:bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 sm:right-8 z-30"
+                        initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                    >
+                        <Button
+                            onClick={handleGoToBottom}
+                            size="icon"
+                            className="rounded-full shadow-lg interactive-glow h-12 w-12"
+                            aria-label="Go to bottom"
+                        >
+                            <ArrowDown className="w-6 h-6" />
+                        </Button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
                 
             <motion.footer 
               className="fixed bottom-0 inset-x-0 z-20" 
@@ -534,7 +535,3 @@ const CollectiveThoughtsPage = () => {
 }
 
 export default CollectiveThoughtsPage;
-
-    
-
-    
