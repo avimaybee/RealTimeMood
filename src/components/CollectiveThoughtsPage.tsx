@@ -38,6 +38,11 @@ const CollectiveThoughtsPage = () => {
     const animatedQuotesRef = useRef(new Set<string>());
 
     const [likedQuotes, setLikedQuotes] = useState<Set<string>>(new Set());
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     useEffect(() => {
         try {
@@ -274,7 +279,7 @@ const CollectiveThoughtsPage = () => {
                             animate="animate"
                             exit="exit"
                             layout="position"
-                            transition={{ duration: 0.5, ease: 'easeInOut' }}
+                            transition={{ type: "spring", stiffness: 500, damping: 50 }}
                         >
                             <Card className="rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm">
                                 <CardContent className="p-4 md:p-6 flex flex-col">
@@ -285,7 +290,7 @@ const CollectiveThoughtsPage = () => {
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="flex items-center gap-1.5 text-foreground/70 hover:text-primary px-2 -ml-2"
+                                            className="flex items-center gap-1.5 text-foreground/70 hover:text-primary px-2 -ml-2 hover:bg-primary/10"
                                             onClick={() => handleLikeClick(quote.id)}
                                             disabled={likedQuotes.has(quote.id)}
                                             aria-label="Like thought"
@@ -332,7 +337,7 @@ const CollectiveThoughtsPage = () => {
             >
               <Button asChild variant="ghost" size="icon" className="interactive-glow -ml-2 rounded-full">
                 <Link href="/">
-                  <ArrowLeft className="h-5 w-5" strokeWidth={isIos ? 1.5 : 2} />
+                  <ArrowLeft className="h-5 w-5" strokeWidth={isClient && isIos ? 1.5 : 2} />
                   <span className="sr-only">Back to Live</span>
                 </Link>
               </Button>
@@ -407,7 +412,7 @@ const CollectiveThoughtsPage = () => {
                                     animate={{ scale: thoughtValue.trim() ? 1.1 : 1.0 }}
                                     transition={{ type: 'spring', stiffness: 500, damping: 15 }}
                                   >
-                                    <Send className="w-4 h-4" strokeWidth={isIos ? 1.5 : 2} />
+                                    <Send className="w-4 h-4" strokeWidth={isClient && isIos ? 1.5 : 2} />
                                   </motion.div>
                               )}
                           </Button>
@@ -420,7 +425,3 @@ const CollectiveThoughtsPage = () => {
 }
 
 export default CollectiveThoughtsPage;
-
-    
-
-    
