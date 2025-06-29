@@ -236,7 +236,7 @@ const CollectiveThoughtsPage = () => {
         return (
           <div className="w-full max-w-2xl mx-auto px-4 pt-20 pb-28 space-y-4">
             {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full rounded-2xl" />
+              <Skeleton key={i} className="h-20 w-full rounded-2xl" />
             ))}
           </div>
         );
@@ -273,7 +273,7 @@ const CollectiveThoughtsPage = () => {
                             initial="initial"
                             animate="animate"
                             exit="exit"
-                            layout
+                            layout="position"
                             transition={{ duration: 0.5, ease: 'easeInOut' }}
                         >
                             <Card className="rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm">
@@ -285,7 +285,7 @@ const CollectiveThoughtsPage = () => {
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="flex items-center gap-1.5 text-foreground/70 hover:text-foreground px-2 -ml-2"
+                                            className="flex items-center gap-1.5 text-foreground/70 hover:text-primary px-2 -ml-2"
                                             onClick={() => handleLikeClick(quote.id)}
                                             disabled={likedQuotes.has(quote.id)}
                                             aria-label="Like thought"
@@ -420,5 +420,7 @@ const CollectiveThoughtsPage = () => {
 }
 
 export default CollectiveThoughtsPage;
+
+    
 
     
