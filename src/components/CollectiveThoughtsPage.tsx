@@ -285,7 +285,7 @@ const CollectiveThoughtsPage = () => {
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="flex items-center gap-1.5 text-foreground/70 hover:text-primary px-2 -ml-2"
+                                            className="flex items-center gap-1.5 text-foreground/70 hover:text-foreground px-2 -ml-2"
                                             onClick={() => handleLikeClick(quote.id)}
                                             disabled={likedQuotes.has(quote.id)}
                                             aria-label="Like thought"
