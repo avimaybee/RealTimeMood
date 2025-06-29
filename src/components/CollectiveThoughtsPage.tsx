@@ -28,6 +28,7 @@ const CollectiveThoughtsPage = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [thoughtValue, setThoughtValue] = useState("");
+    const [isInputActive, setIsInputActive] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const lastSubmissionTimeRef = useRef<number>(0);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -296,7 +297,10 @@ const CollectiveThoughtsPage = () => {
               data-prevent-snapshot
             >
               <div className="p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-[calc(1rem+env(safe-area-inset-bottom))]">
-                  <div className="max-w-2xl mx-auto rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm relative overflow-hidden shadow-soft">
+                  <div className={cn(
+                    "max-w-2xl mx-auto rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm relative overflow-hidden shadow-soft transition-all duration-200",
+                    isInputActive && "border-primary/50 bg-foreground/10"
+                  )}>
                     <form
                         onSubmit={handleFormSubmit}
                         className="relative z-10 flex items-end w-full p-1 sm:p-2"
@@ -306,6 +310,8 @@ const CollectiveThoughtsPage = () => {
                               name="thought"
                               placeholder="Share a thought..."
                               value={thoughtValue}
+                              onFocus={() => setIsInputActive(true)}
+                              onBlur={() => setIsInputActive(false)}
                               onChange={(e) => {
                                   setThoughtValue(e.target.value);
                                   const textarea = e.currentTarget;
