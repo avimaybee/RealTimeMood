@@ -14,9 +14,6 @@ import MainPromptDisplay from '@/components/layout/MainPromptDisplay';
 import { cn } from '@/lib/utils';
 import { usePlatform } from '@/contexts/PlatformContext';
 
-const MilestoneFireworks = dynamic(() => import('@/components/ui-fx/MilestoneFireworks'), {
-  ssr: false,
-});
 const OnboardingOverlay = dynamic(() => import('@/components/features/OnboardingOverlay'), {
   ssr: false,
 });
@@ -85,7 +82,6 @@ const PageContent: React.FC = () => {
         <>
           <GlobalRipple />
           <CollectiveShiftEffect />
-          <MilestoneFireworks />
         </>
       )}
       
