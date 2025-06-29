@@ -173,16 +173,17 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     let simulationTimeout: NodeJS.Timeout;
 
     const runSimulation = () => {
-      // Schedule the next simulation event at a random interval
-      const nextEventIn = 2000 + Math.random() * 4000; // 2s to 6s
+      // Schedule the next simulation event at a much longer random interval
+      // to reduce database writes and visual noise from ripples.
+      const nextEventIn = 8000 + Math.random() * 7000; // 8s to 15s, was 2s to 6s
       simulationTimeout = setTimeout(runSimulation, nextEventIn);
 
       setUserCount(prev => {
         let newCount;
         const chance = Math.random();
 
-        // If we are at the upper bound (11), always decrease.
-        if (prev >= 11) {
+        // If we are at the upper bound, always decrease.
+        if (prev >= 15) { // Increased upper bound from 11
           newCount = prev - 1;
         } 
         // Otherwise, 50/50 chance to increase or decrease.
@@ -190,12 +191,13 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
           newCount = chance < 0.5 ? prev + 1 : prev - 1;
         }
 
-        // Clamp the value to a minimum of 1
-        if (newCount < 1) {
-            newCount = 1;
+        // Clamp the value to a more reasonable minimum.
+        if (newCount < 5) { // Increased lower bound from 1
+            newCount = 5;
         }
         
-        // A simulated user "joined" and submitted a mood.
+        // A simulated user "joined" and submitted a mood. This now happens less frequently
+        // because the entire simulation loop is slower.
         if (newCount > prev) {
           if (sessionIdRef.current) {
             const randomX = window.innerWidth * (0.2 + Math.random() * 0.6);
