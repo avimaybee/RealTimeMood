@@ -1,7 +1,7 @@
 
 "use client";
 import Link from 'next/link';
-import { ArrowLeft, Send, Loader2, Heart } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, Heart, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect, useRef } from 'react';
@@ -39,6 +39,13 @@ const CollectiveThoughtsPage = () => {
 
     const [likedQuotes, setLikedQuotes] = useState<Set<string>>(new Set());
     const [isClient, setIsClient] = useState(false);
+
+    // State for "Read More" and "Back to Top" features
+    const [expandedQuotes, setExpandedQuotes] = useState<Set<string>>(new Set());
+    const [clampedQuotes, setClampedQuotes] = useState<Set<string>>(new Set());
+    const [showBackToTop, setShowBackToTop] = useState(false);
+    const textRefs = useRef(new Map<string, HTMLParagraphElement | null>());
+    const scrollAreaRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setIsClient(true);
@@ -111,6 +118,66 @@ const CollectiveThoughtsPage = () => {
         return () => unsubscribe();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+    // Effect to detect which quotes are clamped after they have rendered
+    useEffect(() => {
+        if (isLoading || quotes.length === 0) return;
+
+        // A small delay to let the DOM settle after render, especially after font loading.
+        const timer = setTimeout(() => {
+            const newClamped = new Set<string>();
+            textRefs.current.forEach((el, id) => {
+                if (el && el.scrollHeight > el.clientHeight) {
+                    newClamped.add(id);
+                }
+            });
+
+            // Only update state if the set of clamped quotes has actually changed.
+            setClampedQuotes(currentClamped => {
+                if (currentClamped.size === newClamped.size && [...currentClamped].every(id => newClamped.has(id))) {
+                    return currentClamped; // No change, avoid re-render
+                }
+                return newClamped;
+            });
+        }, 150); 
+
+        return () => clearTimeout(timer);
+    }, [quotes, isLoading]);
+
+    // Effect to add scroll listener for the "Back to Top" button
+    useEffect(() => {
+        const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+        if (!viewport) return;
+
+        const handleScroll = () => {
+            const threshold = 800; // A reasonable pixel value for ~5 cards
+            if (viewport.scrollTop > threshold) {
+                setShowBackToTop(true);
+            } else {
+                setShowBackToTop(false);
+            }
+        };
+
+        viewport.addEventListener('scroll', handleScroll, { passive: true });
+        return () => viewport.removeEventListener('scroll', handleScroll);
+    }, [isLoading]); // Re-attach listener when content is ready
+
+    const handleToggleExpand = (quoteId: string) => {
+        setExpandedQuotes(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(quoteId)) {
+                newSet.delete(quoteId);
+            } else {
+                newSet.add(quoteId);
+            }
+            return newSet;
+        });
+    };
+    
+    const handleBackToTop = () => {
+        const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+        viewport?.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     const formatTimestamp = (timestamp: any): string => {
         if (!timestamp || typeof timestamp.toDate !== 'function') {
             return '';
@@ -156,7 +223,6 @@ const CollectiveThoughtsPage = () => {
             setQuotes(originalQuotes);
         }
     };
-
 
     const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -242,7 +308,7 @@ const CollectiveThoughtsPage = () => {
         return (
           <div className="w-full max-w-4xl mx-auto px-8 pt-20 pb-28 grid grid-cols-1 md:grid-cols-2 gap-6">
             {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full rounded-2xl" />
+              <Skeleton key={i} className="h-20 w-full rounded-2xl" />
             ))}
           </div>
         );
@@ -265,13 +331,15 @@ const CollectiveThoughtsPage = () => {
       }
   
       return (
-        <ScrollArea className="h-full">
+        <ScrollArea className="h-full" ref={scrollAreaRef}>
             <motion.ul 
                 className="w-full max-w-4xl mx-auto px-8 pt-20 pb-32 grid grid-cols-1 md:grid-cols-2 gap-6"
-                layout="position"
             >
                 <AnimatePresence initial={false}>
-                    {quotes.map((quote) => (
+                    {quotes.map((quote) => {
+                        const isExpanded = expandedQuotes.has(quote.id);
+                        const isClamped = clampedQuotes.has(quote.id);
+                        return (
                         <motion.li
                             key={quote.id}
                             variants={thoughtBubbleVariants}
@@ -279,19 +347,38 @@ const CollectiveThoughtsPage = () => {
                             initial="initial"
                             animate="animate"
                             exit="exit"
-                            layout="position"
+                            layout
                             transition={{ type: "spring", stiffness: 500, damping: 50 }}
                         >
                             <Card className="rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm">
                                 <CardContent className="p-3 flex flex-col">
-                                    <p className="text-body text-foreground/90 text-left w-full break-words whitespace-pre-wrap">
-                                        {quote.text}
-                                    </p>
-                                    <div className="flex justify-between items-center mt-3 pt-2 border-t border-foreground/10">
+                                    <div className="flex-grow">
+                                        <p
+                                            ref={el => {
+                                                if (el) textRefs.current.set(quote.id, el);
+                                                else textRefs.current.delete(quote.id);
+                                            }}
+                                            className={cn(
+                                                "text-body text-foreground/90 text-left w-full break-words whitespace-pre-wrap",
+                                                !isExpanded && isClamped && "line-clamp-4"
+                                            )}
+                                        >
+                                            {quote.text}
+                                        </p>
+                                        {isClamped && (
+                                            <button
+                                                onClick={() => handleToggleExpand(quote.id)}
+                                                className="text-sm font-semibold text-primary hover:underline mt-1 focus:outline-none"
+                                            >
+                                                {isExpanded ? "Show less" : "…read more"}
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="flex justify-between items-center mt-2 pt-2 border-t border-foreground/10">
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="flex items-center gap-1.5 text-foreground/70 hover:text-primary px-2 -ml-2 hover:bg-primary/10"
+                                            className="group flex items-center gap-1.5 text-foreground/70 hover:text-primary px-2 -ml-2 hover:bg-primary/10"
                                             onClick={() => handleLikeClick(quote.id)}
                                             disabled={likedQuotes.has(quote.id)}
                                             aria-label="Like thought"
@@ -309,7 +396,7 @@ const CollectiveThoughtsPage = () => {
                                 </CardContent>
                             </Card>
                         </motion.li>
-                    ))}
+                    )})}
                 </AnimatePresence>
                 <div ref={messagesEndRef} />
             </motion.ul>
@@ -358,6 +445,26 @@ const CollectiveThoughtsPage = () => {
                     >
                       {isClient ? renderContent() : null}
                     </motion.div>
+                </AnimatePresence>
+                <AnimatePresence>
+                    {showBackToTop && (
+                        <motion.div
+                            className="absolute bottom-[calc(4rem+env(safe-area-inset-bottom))] sm:bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 sm:right-8 z-30"
+                            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                        >
+                            <Button
+                                onClick={handleBackToTop}
+                                size="icon"
+                                className="rounded-full shadow-lg interactive-glow h-12 w-12"
+                                aria-label="Back to top"
+                            >
+                                <ArrowUp className="w-6 h-6" />
+                            </Button>
+                        </motion.div>
+                    )}
                 </AnimatePresence>
             </main>
                 
@@ -426,3 +533,5 @@ const CollectiveThoughtsPage = () => {
 }
 
 export default CollectiveThoughtsPage;
+
+    
