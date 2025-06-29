@@ -239,9 +239,9 @@ const CollectiveThoughtsPage = () => {
     const renderContent = () => {
       if (isLoading) {
         return (
-          <div className="w-full max-w-2xl mx-auto px-4 pt-20 pb-28 space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full rounded-2xl" />
+          <div className="w-full max-w-4xl mx-auto px-8 pt-20 pb-28 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-24 w-full rounded-2xl" />
             ))}
           </div>
         );
@@ -266,7 +266,7 @@ const CollectiveThoughtsPage = () => {
       return (
         <ScrollArea className="h-full">
             <motion.ul 
-                className="w-full max-w-2xl mx-auto px-4 space-y-4 pt-20 pb-32"
+                className="w-full max-w-4xl mx-auto px-8 pt-20 pb-32 grid grid-cols-1 md:grid-cols-2 gap-6"
                 layout
             >
                 <AnimatePresence initial={false}>
@@ -281,12 +281,12 @@ const CollectiveThoughtsPage = () => {
                             layout="position"
                             transition={{ type: "spring", stiffness: 500, damping: 50 }}
                         >
-                            <Card className="rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm">
-                                <CardContent className="p-3 md:p-4 flex flex-col">
-                                    <p className="text-body text-foreground/90 text-left w-full break-words whitespace-pre-wrap">
+                            <Card className="rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm h-full">
+                                <CardContent className="p-5 flex flex-col h-full">
+                                    <p className="text-body text-foreground/90 text-left w-full break-words whitespace-pre-wrap flex-grow">
                                         {quote.text}
                                     </p>
-                                    <div className="flex justify-between items-center mt-3">
+                                    <div className="flex justify-between items-center mt-3 pt-3 border-t border-foreground/5">
                                         <Button
                                             variant="ghost"
                                             size="sm"
@@ -366,7 +366,7 @@ const CollectiveThoughtsPage = () => {
             >
               <div className="p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-[calc(1rem+env(safe-area-inset-bottom))]">
                   <div className={cn(
-                    "max-w-2xl mx-auto rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm relative overflow-hidden shadow-soft transition-all duration-200",
+                    "max-w-4xl mx-auto rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm relative overflow-hidden shadow-soft transition-all duration-200",
                     isInputActive && "border-primary/50 bg-foreground/10"
                   )}>
                     <form
