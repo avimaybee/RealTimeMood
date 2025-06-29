@@ -297,8 +297,7 @@ const CollectiveThoughtsPage = () => {
             y: 0,
             scale: 1,
             transition: { 
-                duration: 0.5,
-                ease: "easeInOut"
+                type: "spring", stiffness: 350, damping: 35 
             }
         },
         exit: { opacity: 0, y: -20 },
@@ -348,7 +347,7 @@ const CollectiveThoughtsPage = () => {
                             initial="initial"
                             animate="animate"
                             exit="exit"
-                            layout
+                            layout="position"
                             transition={{ type: "spring", stiffness: 500, damping: 50 }}
                         >
                             <Card className="rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm h-full flex flex-col">
@@ -452,7 +451,7 @@ const CollectiveThoughtsPage = () => {
             <AnimatePresence>
                 {showGoToBottom && (
                     <motion.div
-                        className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] sm:bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 sm:right-8 z-30"
+                        className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] sm:bottom-[calc(6.5rem+env(safe-area-inset-bottom))] right-4 sm:right-6 z-30"
                         initial={{ opacity: 0, scale: 0.8, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.8, y: 20 }}
@@ -461,10 +460,10 @@ const CollectiveThoughtsPage = () => {
                         <Button
                             onClick={handleGoToBottom}
                             size="icon"
-                            className="rounded-full shadow-lg interactive-glow h-12 w-12"
+                            className="rounded-full shadow-lg interactive-glow h-10 w-10"
                             aria-label="Go to bottom"
                         >
-                            <ArrowDown className="w-6 h-6" />
+                            <ArrowDown className="w-5 h-5" />
                         </Button>
                     </motion.div>
                 )}
