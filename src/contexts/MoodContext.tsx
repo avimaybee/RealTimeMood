@@ -32,7 +32,7 @@ type MoodContextType = {
   previewMood: Mood | null;
   setPreviewMood: (mood: Mood | null) => void;
   updateMood: (newMood: Mood) => void;
-  recordContribution: (mood: Mood, position: { x: number; y: number } | null) => void;
+  recordContribution: (mood: Mood, position: { x: number; y: number } | null, options?: { isSimulated?: boolean }) => void;
   triggerCollectiveShift: () => void;
   isCollectiveShifting: boolean;
   lastUserContribution: Mood | null;
@@ -135,6 +135,36 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     };
   }, [isLivePage]);
 
+  const recordContribution = useCallback((mood: Mood, position: { x: number, y: number } | null, options?: { isSimulated?: boolean }) => {
+    // Optimistic UI updates for responsiveness
+    if (!options?.isSimulated) {
+      setLastUserContribution(mood);
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(50); 
+      }
+    }
+    
+    setContributionCount(prev => prev + 1);
+    setLastContributionTime(Date.now());
+    setLastContributorMoodColor(moodToHslString(mood));
+    setLastContributionPosition(position);
+
+    // Call the backend submission logic
+    if (sessionIdRef.current) {
+      submitMood(mood, sessionIdRef.current).catch(error => {
+        console.error("Submission failed:", error);
+        // Simple rollback for the optimistic update
+        setContributionCount(prev => prev - 1);
+        // The OrbButton will show a toast notification to the user about the failure.
+      });
+    }
+
+    // Clear the ripple effect after its animation
+    setTimeout(() => {
+      setLastContributorMoodColor(null);
+      setLastContributionPosition(null);
+    }, 2000);
+  }, []);
 
   // Enhanced user count and activity simulation
   useEffect(() => {
@@ -165,22 +195,15 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
             newCount = 1;
         }
         
-        // Trigger ripple effect if a user "joined"
+        // A simulated user "joined" and submitted a mood.
         if (newCount > prev) {
-          const randomX = window.innerWidth * (0.2 + Math.random() * 0.6);
-          const randomY = window.innerHeight * (0.2 + Math.random() * 0.6);
-          
-          // Select a random mood for the new simulated user
-          const randomMood = PREDEFINED_MOODS[Math.floor(Math.random() * PREDEFINED_MOODS.length)];
-          const rippleColor = `hsl(${randomMood.hue}, ${randomMood.saturation}%, ${Math.min(100, randomMood.lightness + 15)}%)`;
-          
-          setLastContributorMoodColor(rippleColor);
-          setLastContributionPosition({ x: randomX, y: randomY });
-
-          setTimeout(() => {
-              setLastContributorMoodColor(null);
-              setLastContributionPosition(null);
-          }, 2000); // Ripple effect duration
+          if (sessionIdRef.current) {
+            const randomX = window.innerWidth * (0.2 + Math.random() * 0.6);
+            const randomY = window.innerHeight * (0.2 + Math.random() * 0.6);
+            const randomMood = PREDEFINED_MOODS[Math.floor(Math.random() * PREDEFINED_MOODS.length)];
+            
+            recordContribution(randomMood, { x: randomX, y: randomY }, { isSimulated: true });
+          }
         }
         
         return newCount;
@@ -191,7 +214,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     simulationTimeout = setTimeout(runSimulation, 1000);
 
     return () => clearTimeout(simulationTimeout);
-  }, [isLivePage]); // This effect should only run once for the page lifetime
+  }, [isLivePage, recordContribution]);
 
 
   const triggerCollectiveShift = useCallback(() => {
@@ -246,35 +269,6 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     // Cleanup listener on component unmount
     return () => unsubscribe();
   }, [isLivePage, updateMood]);
-
-
-  const recordContribution = useCallback((mood: Mood, position: { x: number, y: number } | null) => {
-    // Optimistic UI updates for responsiveness
-    setLastUserContribution(mood);
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(50); 
-    }
-    setContributionCount(prev => prev + 1);
-    setLastContributionTime(Date.now());
-    setLastContributorMoodColor(moodToHslString(mood));
-    setLastContributionPosition(position);
-
-    // Call the backend submission logic
-    if (sessionIdRef.current) {
-      submitMood(mood, sessionIdRef.current).catch(error => {
-        console.error("Submission failed:", error);
-        // Simple rollback for the optimistic update
-        setContributionCount(prev => prev - 1);
-        // The OrbButton will show a toast notification to the user about the failure.
-      });
-    }
-
-    // Clear the ripple effect after its animation
-    setTimeout(() => {
-      setLastContributorMoodColor(null);
-      setLastContributionPosition(null);
-    }, 2000);
-  }, []);
 
   const contextValue = useMemo(() => ({
     currentMood,
