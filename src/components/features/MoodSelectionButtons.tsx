@@ -9,7 +9,7 @@ interface MoodSelectionButtonsProps {
   onSelect: (mood: Mood) => void;
 }
 
-const MOOD_CHOICES = PREDEFINED_MOODS.slice(0, 8);
+const MOOD_CHOICES = PREDEFINED_MOODS;
 
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
