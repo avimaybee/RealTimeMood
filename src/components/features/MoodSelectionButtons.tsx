@@ -53,7 +53,10 @@ const MoodSelectionButtons: React.FC<MoodSelectionButtonsProps> = ({ onSelect })
       exit="exit"
     >
       <div
-        className="flex flex-wrap justify-center gap-3 p-3 rounded-full frosted-glass shadow-lifted"
+        className={cn(
+          "grid grid-cols-4 gap-4 p-4 rounded-3xl shadow-lifted",
+          "frosted-glass"
+        )}
       >
         {MOOD_CHOICES.map((mood) => (
           <motion.div
