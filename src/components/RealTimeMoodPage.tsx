@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
@@ -81,9 +82,9 @@ const PageContent: React.FC = () => {
       )}
       onClick={handlePageClick}
     >
-      <DynamicBackground />
       <div className="vignette-overlay" />
       <div className="noise-overlay" />
+      <DynamicBackground />
       <LivingParticles />
 
       {/* Suppress global effects during focused mood selection */}

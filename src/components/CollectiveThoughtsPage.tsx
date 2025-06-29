@@ -406,9 +406,9 @@ const CollectiveThoughtsPage = () => {
 
     return (
         <>
-            <DynamicBackground />
             <div className="vignette-overlay" />
             <div className="noise-overlay" />
+            <DynamicBackground />
             <LivingParticles />
 
             <motion.header
