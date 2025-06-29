@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MousePointerClick, Hand } from 'lucide-react';
+import { MousePointerClick } from 'lucide-react';
 import { usePlatform } from '@/contexts/PlatformContext';
 
 const containerVariants = {
@@ -11,8 +11,6 @@ const containerVariants = {
     opacity: 1,
     transition: {
       delay: 0.5,
-      staggerChildren: 0.4,
-      delayChildren: 0.5,
     },
   },
   exit: {
@@ -25,7 +23,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0, transition: { type: 'spring', damping: 15, stiffness: 200 } },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring', damping: 15, stiffness: 200, delay: 0.7 } },
 };
 
 const OnboardingOverlay: React.FC = () => {
@@ -103,11 +101,7 @@ const OnboardingOverlay: React.FC = () => {
         >
           <motion.div variants={itemVariants} className="flex items-center gap-2 text-white/90 text-sm md:text-base bg-black/20 px-3 py-1.5 rounded-full shadow-soft">
             <MousePointerClick className="w-4 h-4" strokeWidth={isIos ? 1.5 : 2} />
-            <p>Tap the Orb to select a color mood.</p>
-          </motion.div>
-          <motion.div variants={itemVariants} className="flex items-center gap-2 text-white/90 text-sm md:text-base bg-black/20 px-3 py-1.5 rounded-full shadow-soft">
-            <Hand className="w-4 h-4" strokeWidth={isIos ? 1.5 : 2} />
-            <p>Hold the Orb for more mood words.</p>
+            <p>Tap here to share your mood!</p>
           </motion.div>
         </motion.div>
       )}
