@@ -183,7 +183,10 @@ const LivingParticles: React.FC = () => {
           if (p.isNew) {
             node.style.width = `${p.size}px`;
             node.style.height = `${p.size}px`;
-            node.style.backgroundColor = `rgba(255, 255, 255, ${p.opacity})`;
+            const moodForColor = latestPreviewMood || latestCurrentMood;
+            const particleColor = `hsla(${moodForColor.hue}, 90%, 75%, ${p.opacity * 0.8})`;
+            node.style.backgroundColor = particleColor;
+            node.style.boxShadow = `0 0 4px ${particleColor}`;
             p.isNew = false;
           }
           const isPushed = Math.abs(p.pushX) > 0.5 || Math.abs(p.pushY) > 0.5;

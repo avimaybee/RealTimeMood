@@ -10,11 +10,11 @@
 
     /* --- New High-Contrast Dark Theme System --- */
 
-    /* Page Background: Dark, desaturated version of the mood color */
-    --background-hsl: var(--mood-hue) 15% 10%;
+    /* Page Background: Dark, but with a subtle mood color tint */
+    --background-hsl: var(--mood-hue) 25% 10%;
     
-    /* Card Background: Slightly lighter than the page background */
-    --card-hsl: var(--mood-hue) 15% 15%;
+    /* Card Background: Slightly lighter and more saturated than the page background */
+    --card-hsl: var(--mood-hue) 25% 15%;
 
     /* Text: Consistently light off-white for high contrast */
     --foreground-hsl: 210 20% 95%;
