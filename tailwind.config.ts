@@ -1,4 +1,3 @@
-
 import type {Config} from 'tailwindcss';
 
 const config: Config = {
@@ -90,11 +89,15 @@ const config: Config = {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
-        xl: 'calc(var(--radius) + 4px)', 
+        xl: 'calc(var(--radius) + 4px)',
         '2xl': 'calc(var(--radius) + 8px)',
         '3xl': 'calc(var(--radius) + 16px)',
       },
       keyframes: {
+        'shimmer': {
+          'from': { backgroundPosition: '200% 0' },
+          'to': { backgroundPosition: '-200% 0' },
+        },
         'accordion-down': {
           from: {
             height: '0',
@@ -111,11 +114,11 @@ const config: Config = {
             height: '0',
           },
         },
-        'global-pulse': { 
+        'global-pulse': {
           '0%, 100%': { filter: 'brightness(100%) saturate(100%)' },
           '50%': { filter: 'brightness(80%) saturate(80%)' },
         },
-        'orb-pulse': { 
+        'orb-pulse': {
           '0%, 100%': { transform: 'scale(1)' },
           '50%': { transform: 'scale(1.05)' },
         },
@@ -127,7 +130,7 @@ const config: Config = {
           from: { opacity: '0' },
           to: { opacity: '1' },
         },
-         'global-ripple-effect': { 
+         'global-ripple-effect': {
           '0%': { transform: 'translate(-50%, -50%) scale(0.1)', opacity: '0.5' },
           '83%': { opacity: '0.5' },
           '100%': { transform: 'translate(-50%, -50%) scale(200)', opacity: '0' },
@@ -198,17 +201,18 @@ const config: Config = {
         },
       },
       animation: {
+        'shimmer': 'shimmer 2s linear infinite',
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'global-pulse': 'global-pulse 2s ease-in-out', 
-        'orb-pulse': 'orb-pulse 3s ease-in-out infinite', 
+        'global-pulse': 'global-pulse 2s ease-in-out',
+        'orb-pulse': 'orb-pulse 3s ease-in-out infinite',
         'typewriter': 'typewriter 2s steps(40) 1s 1 normal both',
         'fade-in': 'fade-in 1s ease-out forwards',
-        'global-ripple-effect': 'global-ripple-effect 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards', 
+        'global-ripple-effect': 'global-ripple-effect 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
         'particle-calm': 'particle-calm-motion var(--animation-duration, 25s) ease-in-out var(--animation-delay, 0s) infinite',
         'particle-joyful': 'particle-joyful-motion var(--animation-duration, 10s) ease-out var(--animation-delay, 0s) infinite',
         'particle-anxious': 'particle-anxious-motion var(--animation-duration, 7s) linear var(--animation-delay, 0s) infinite',
-        'collective-shift-wave': 'collective-shift-wave 1.5s ease-out forwards', 
+        'collective-shift-wave': 'collective-shift-wave 1.5s ease-out forwards',
         'fireworks-burst': 'fireworks-burst var(--animation-duration, 1.4s) ease-out var(--animation-delay, 0s) forwards',
         'count-bounce': 'count-bounce 0.6s ease-out',
         'logo-calm': 'logo-calm 4s ease-in-out infinite',
