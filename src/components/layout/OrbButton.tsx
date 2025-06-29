@@ -189,7 +189,7 @@ const OrbButton: React.FC = () => {
       }
     }, 500);
     return () => clearTimeout(chargeTimeout);
-  }, [isCharging, chargeData, recordContribution, toast, handleDismissBar]);
+  }, [isCharging, chargeData, recordContribution, toast]);
 
   const isBar = interactionMode === 'bar';
   const orbContainerBaseClasses = "fixed bottom-20 md:bottom-24 z-40 flex items-center justify-center";
