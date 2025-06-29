@@ -1,7 +1,7 @@
 
 "use client";
 import Link from 'next/link';
-import { ArrowLeft, Send, Loader2, Heart, ArrowUp } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, Heart, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect, useRef } from 'react';
@@ -43,7 +43,7 @@ const CollectiveThoughtsPage = () => {
     // State for "Read More" and "Back to Top" features
     const [expandedQuotes, setExpandedQuotes] = useState<Set<string>>(new Set());
     const [clampedQuotes, setClampedQuotes] = useState<Set<string>>(new Set());
-    const [showBackToTop, setShowBackToTop] = useState(false);
+    const [showGoToBottom, setShowGoToBottom] = useState(false);
     const textRefs = useRef(new Map<string, HTMLParagraphElement | null>());
     const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -143,17 +143,18 @@ const CollectiveThoughtsPage = () => {
         return () => clearTimeout(timer);
     }, [quotes, isLoading]);
 
-    // Effect to add scroll listener for the "Back to Top" button
+    // Effect to add scroll listener for the "Go to Bottom" button
     useEffect(() => {
         const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
         if (!viewport) return;
 
         const handleScroll = () => {
-            const threshold = 800; // A reasonable pixel value for ~5 cards
-            if (viewport.scrollTop > threshold) {
-                setShowBackToTop(true);
+            const threshold = 400; // Show button if scrolled up more than 400px from the bottom
+            const isScrolledFromBottom = viewport.scrollHeight - viewport.scrollTop > viewport.clientHeight + threshold;
+            if (isScrolledFromBottom) {
+                setShowGoToBottom(true);
             } else {
-                setShowBackToTop(false);
+                setShowGoToBottom(false);
             }
         };
 
@@ -173,9 +174,9 @@ const CollectiveThoughtsPage = () => {
         });
     };
     
-    const handleBackToTop = () => {
+    const handleGoToBottom = () => {
         const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
-        viewport?.scrollTo({ top: 0, behavior: 'smooth' });
+        viewport?.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
     };
 
     const formatTimestamp = (timestamp: any): string => {
@@ -447,7 +448,7 @@ const CollectiveThoughtsPage = () => {
                     </motion.div>
                 </AnimatePresence>
                 <AnimatePresence>
-                    {showBackToTop && (
+                    {showGoToBottom && (
                         <motion.div
                             className="absolute bottom-[calc(4rem+env(safe-area-inset-bottom))] sm:bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 sm:right-8 z-30"
                             initial={{ opacity: 0, scale: 0.8, y: 20 }}
@@ -456,12 +457,12 @@ const CollectiveThoughtsPage = () => {
                             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                         >
                             <Button
-                                onClick={handleBackToTop}
+                                onClick={handleGoToBottom}
                                 size="icon"
                                 className="rounded-full shadow-lg interactive-glow h-12 w-12"
-                                aria-label="Back to top"
+                                aria-label="Go to bottom"
                             >
-                                <ArrowUp className="w-6 h-6" />
+                                <ArrowDown className="w-6 h-6" />
                             </Button>
                         </motion.div>
                     )}
@@ -533,5 +534,7 @@ const CollectiveThoughtsPage = () => {
 }
 
 export default CollectiveThoughtsPage;
+
+    
 
     
