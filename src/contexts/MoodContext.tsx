@@ -170,8 +170,9 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
           const randomX = window.innerWidth * (0.2 + Math.random() * 0.6);
           const randomY = window.innerHeight * (0.2 + Math.random() * 0.6);
           
-          const latestMood = currentMoodRef.current;
-          const rippleColor = `hsl(${latestMood.hue}, ${latestMood.saturation}%, ${Math.min(100, latestMood.lightness + 15)}%)`;
+          // Select a random mood for the new simulated user
+          const randomMood = PREDEFINED_MOODS[Math.floor(Math.random() * PREDEFINED_MOODS.length)];
+          const rippleColor = `hsl(${randomMood.hue}, ${randomMood.saturation}%, ${Math.min(100, randomMood.lightness + 15)}%)`;
           
           setLastContributorMoodColor(rippleColor);
           setLastContributionPosition({ x: randomX, y: randomY });
