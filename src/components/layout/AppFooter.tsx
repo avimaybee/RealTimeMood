@@ -183,7 +183,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
             <AnimatePresence>
                 {isMenuOpen && (
                 <motion.div
-                    className="flex-grow w-full flex flex-col items-center justify-start pt-0 pb-3 px-2"
+                    className="w-full flex flex-col items-center justify-start pt-0 pb-3 px-2"
                     variants={menuContentVariants}
                     initial="hidden"
                     animate="visible"
@@ -270,7 +270,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                         <Separator className="my-1" />
 
                         <div className="w-full px-2 pt-2 pb-1">
-                            <div className="flex items-center justify-center gap-x-2">
+                            <div className="flex items-center justify-center gap-x-2 bg-black/5 p-1 rounded-xl">
                                 <Button asChild variant="ghost" size="icon" className="rounded-full h-9 w-9 interactive-glow">
                                     <Link href="https://instagram.com/avimaybe" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                                         <Instagram className="h-5 w-5" strokeWidth={isIos ? 1.5 : 2} />
