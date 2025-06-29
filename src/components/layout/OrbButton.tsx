@@ -251,6 +251,22 @@ const OrbButton: React.FC = () => {
         transition={{ type: 'spring', stiffness: 100, damping: 10 }}
       >
         <div className="relative flex items-center justify-center">
+            <AnimatePresence>
+              {isClient && animationState === 'orb' && (
+                <motion.div
+                  key="aurora-effect"
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.5, transition: { delay: 0.3, duration: 0.5 } }}
+                  exit={{ opacity: 0 }}
+                >
+                  <div
+                    className="h-28 w-28 animate-aurora-spin bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500"
+                    style={{ filter: 'blur(40px)' }}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           <motion.div
             ref={barRef}
             variants={orbVariants}
@@ -283,22 +299,7 @@ const OrbButton: React.FC = () => {
               animate={{ scale: isBar ? 1 : 0, rotate: isBar ? 0 : 45 }}
               transition={morphTransition}
             />
-            <AnimatePresence>
-              {isClient && animationState === 'orb' && (
-                <motion.div
-                  key="aurora-effect"
-                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.7, transition: { delay: 0.3, duration: 0.5 } }}
-                  exit={{ opacity: 0 }}
-                >
-                  <div
-                    className="h-40 w-40 animate-aurora-spin bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500"
-                    style={{ filter: 'blur(30px)' }}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            
             <motion.div
               variants={iconVariants}
               animate={animationState}
