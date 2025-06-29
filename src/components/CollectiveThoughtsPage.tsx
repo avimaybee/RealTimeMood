@@ -1,7 +1,7 @@
 
 "use client";
 import Link from 'next/link';
-import { ArrowLeft, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect, useRef } from 'react';
@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
 import DynamicBackground from '@/components/ui-fx/DynamicBackground';
+import { incrementLike } from '@/lib/thoughts-service';
 
 const CollectiveThoughtsPage = () => {
     const { isIos } = usePlatform();
@@ -35,6 +36,19 @@ const CollectiveThoughtsPage = () => {
     
     const [newestQuoteId, setNewestQuoteId] = useState<string | null>(null);
     const animatedQuotesRef = useRef(new Set<string>());
+
+    const [likedQuotes, setLikedQuotes] = useState<Set<string>>(new Set());
+
+    useEffect(() => {
+        try {
+            const liked = localStorage.getItem('likedThoughts');
+            if (liked) {
+                setLikedQuotes(new Set(JSON.parse(liked)));
+            }
+        } catch (error) {
+            console.warn("Could not parse liked thoughts from localStorage", error);
+        }
+    }, []);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -104,6 +118,40 @@ const CollectiveThoughtsPage = () => {
         }
     };
 
+    const handleLikeClick = async (quoteId: string) => {
+        if (likedQuotes.has(quoteId)) return;
+
+        const originalLikedQuotes = new Set(likedQuotes);
+        const originalQuotes = [...quotes];
+
+        // Optimistic UI update
+        const newLikedQuotes = new Set(likedQuotes);
+        newLikedQuotes.add(quoteId);
+        setLikedQuotes(newLikedQuotes);
+        localStorage.setItem('likedThoughts', JSON.stringify(Array.from(newLikedQuotes)));
+
+        setQuotes(currentQuotes =>
+            currentQuotes.map(q =>
+                q.id === quoteId ? { ...q, likes: (q.likes || 0) + 1 } : q
+            )
+        );
+
+        try {
+            await incrementLike(quoteId);
+        } catch (error) {
+            toast({
+                title: "Like Failed",
+                description: "Couldn't register your like. Please try again.",
+                variant: "destructive"
+            });
+            // Rollback UI on failure
+            setLikedQuotes(originalLikedQuotes);
+            localStorage.setItem('likedThoughts', JSON.stringify(Array.from(originalLikedQuotes)));
+            setQuotes(originalQuotes);
+        }
+    };
+
+
     const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         
@@ -136,6 +184,7 @@ const CollectiveThoughtsPage = () => {
             await addDoc(collection(db, 'communityQuotes'), {
                 text: thoughtText,
                 submittedAt: serverTimestamp(),
+                likes: 0,
             });
             
             lastSubmissionTimeRef.current = now;
@@ -229,14 +278,28 @@ const CollectiveThoughtsPage = () => {
                         >
                             <Card className="rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm">
                                 <CardContent className="p-4 md:p-6 flex flex-col">
-                                    <p className="text-body text-foreground/90 text-left w-full break-words">
+                                    <p className="text-body text-foreground/90 text-left w-full break-words whitespace-pre-wrap">
                                         {quote.text}
                                     </p>
-                                    {quote.submittedAt && (
-                                        <p className="text-small text-foreground/60 self-end mt-2">
-                                            {formatTimestamp(quote.submittedAt)}
-                                        </p>
-                                    )}
+                                    <div className="flex justify-between items-center mt-4">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="flex items-center gap-1.5 text-foreground/70 hover:text-primary px-2 -ml-2"
+                                            onClick={() => handleLikeClick(quote.id)}
+                                            disabled={likedQuotes.has(quote.id)}
+                                            aria-label="Like thought"
+                                        >
+                                            <Heart className={cn("w-4 h-4 transition-colors", likedQuotes.has(quote.id) ? "fill-primary text-primary" : "")} />
+                                            <span className="font-medium tabular-nums">{quote.likes || 0}</span>
+                                        </Button>
+
+                                        {quote.submittedAt && (
+                                            <p className="text-small text-foreground/60">
+                                                {formatTimestamp(quote.submittedAt)}
+                                            </p>
+                                        )}
+                                    </div>
                                 </CardContent>
                             </Card>
                         </motion.li>
@@ -357,3 +420,5 @@ const CollectiveThoughtsPage = () => {
 }
 
 export default CollectiveThoughtsPage;
+
+    

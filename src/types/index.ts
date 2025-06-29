@@ -87,4 +87,7 @@ export interface CommunityQuote {
   submittedAt: FieldValue | Timestamp;
   status: 'pending' | 'approved' | 'rejected';
   displayCount?: number;
+  likes?: number;
 }
+
+    
