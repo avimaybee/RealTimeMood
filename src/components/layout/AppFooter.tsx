@@ -26,6 +26,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
   const { isIos } = usePlatform();
   const { toast } = useToast();
   const countRef = useRef<HTMLSpanElement>(null);
+  const prevCountRef = useRef(0); // Ref to store the previous count
 
   // Effect to reset the loader when the page navigation is complete
   useEffect(() => {
@@ -39,13 +40,25 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
     const node = countRef.current;
     if (!node) return;
 
-    const controls = animate(0, contributionCount, {
+    const from = prevCountRef.current;
+    const to = contributionCount;
+
+    // Don't animate if the value hasn't changed
+    if (from === to) {
+        node.textContent = to.toLocaleString();
+        return;
+    };
+
+    const controls = animate(from, to, {
       duration: 1.5,
       ease: "easeOut",
       onUpdate(value) {
         node.textContent = Math.round(value).toLocaleString();
       }
     });
+
+    // Store the new value for the next animation
+    prevCountRef.current = to;
 
     return () => controls.stop();
   }, [contributionCount]);
