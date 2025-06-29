@@ -158,6 +158,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                 </div>
                 
                 <Button 
+                data-menu-button="true"
                 variant="ghost" 
                 size="icon" 
                 aria-label={isMenuOpen ? "Close menu" : "Open menu"}
