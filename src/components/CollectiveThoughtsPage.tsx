@@ -45,6 +45,7 @@ const CollectiveThoughtsPage = () => {
     }, []);
 
     useEffect(() => {
+        if (!isClient) return;
         try {
             const liked = localStorage.getItem('likedThoughts');
             if (liked) {
@@ -53,7 +54,7 @@ const CollectiveThoughtsPage = () => {
         } catch (error) {
             console.warn("Could not parse liked thoughts from localStorage", error);
         }
-    }, []);
+    }, [isClient]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -241,7 +242,7 @@ const CollectiveThoughtsPage = () => {
         return (
           <div className="w-full max-w-4xl mx-auto px-8 pt-20 pb-28 grid grid-cols-1 md:grid-cols-2 gap-6">
             {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full rounded-2xl" />
+              <Skeleton key={i} className="h-20 w-full rounded-2xl" />
             ))}
           </div>
         );
@@ -281,12 +282,12 @@ const CollectiveThoughtsPage = () => {
                             layout="position"
                             transition={{ type: "spring", stiffness: 500, damping: 50 }}
                         >
-                            <Card className="rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm h-full">
-                                <CardContent className="p-5 flex flex-col h-full">
-                                    <p className="text-body text-foreground/90 text-left w-full break-words whitespace-pre-wrap flex-grow">
+                            <Card className="rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm">
+                                <CardContent className="p-4 flex flex-col">
+                                    <p className="text-body text-foreground/90 text-left w-full break-words whitespace-pre-wrap">
                                         {quote.text}
                                     </p>
-                                    <div className="flex justify-between items-center mt-3 pt-3 border-t border-foreground/5">
+                                    <div className="flex justify-between items-center mt-4 pt-3 border-t border-foreground/10">
                                         <Button
                                             variant="ghost"
                                             size="sm"
@@ -355,7 +356,7 @@ const CollectiveThoughtsPage = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
                     >
-                      {renderContent()}
+                      {isClient ? renderContent() : null}
                     </motion.div>
                 </AnimatePresence>
             </main>
@@ -402,7 +403,7 @@ const CollectiveThoughtsPage = () => {
                           <Button 
                               type="submit" 
                               size="icon" 
-                              className="rounded-full flex-shrink-0 w-10 h-10 ml-2" 
+                              className="rounded-full flex-shrink-0 w-10 h-10 ml-2 interactive-glow" 
                               disabled={isSubmitting || !thoughtValue.trim()}
                           >
                               {isSubmitting ? (
