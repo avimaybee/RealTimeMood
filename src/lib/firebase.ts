@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp, getApp, getApps } from "firebase/app";
-import { getAnalytics, isSupported } from "firebase/analytics";
+import { initializeApp, getApp, getApps, type FirebaseApp } from "firebase/app";
+import { getAnalytics, isSupported, type Analytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
@@ -20,24 +20,31 @@ const firebaseConfig = {
 
 
 // Initialize Firebase
-let app;
+let app: FirebaseApp;
 if (!getApps().length) {
   app = initializeApp(firebaseConfig);
 } else {
   app = getApp();
 }
 
-let analytics;
-// Check if window is defined (i.e., we're on the client-side) before checking for analytics support
-if (typeof window !== 'undefined') {
-  isSupported().then(supported => {
-    if (supported) {
-      analytics = getAnalytics(app);
-    }
-  });
+let analytics: Analytics | undefined;
+
+/**
+ * Initializes Firebase Analytics if it hasn't been already and is supported.
+ * This function is safe to call multiple times and is deferred to avoid
+ * blocking the initial page load.
+ */
+export function initializeAnalytics() {
+  if (typeof window !== 'undefined' && !analytics) {
+    isSupported().then((supported) => {
+      if (supported) {
+        analytics = getAnalytics(app);
+      }
+    });
+  }
 }
 
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-export { app, db, auth, analytics };
+export { app, db, auth };

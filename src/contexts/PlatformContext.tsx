@@ -1,6 +1,7 @@
 
 "use client";
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { initializeAnalytics } from '@/lib/firebase';
 
 interface PlatformContextType {
   isIos: boolean;
@@ -24,23 +25,24 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   });
 
   useEffect(() => {
-    // Ensure this runs only on the client
-    if (typeof window !== 'undefined') {
-      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+    // Defer analytics initialization to run client-side after initial render.
+    initializeAnalytics();
 
-      // Check for iOS devices
-      const isIos = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
-      // Check for Android devices
-      const isAndroid = /android/i.test(userAgent);
+    // The rest of this effect only needs to run once on the client.
+    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
 
-      setPlatform({ isIos, isAndroid });
+    // Check for iOS devices
+    const isIos = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
+    // Check for Android devices
+    const isAndroid = /android/i.test(userAgent);
 
-      // Apply class to body for global styling hooks
-      if (isIos) {
-        document.body.classList.add('ios');
-      } else if (isAndroid) {
-        document.body.classList.add('android');
-      }
+    setPlatform({ isIos, isAndroid });
+
+    // Apply class to body for global styling hooks
+    if (isIos) {
+      document.body.classList.add('ios');
+    } else if (isAndroid) {
+      document.body.classList.add('android');
     }
   }, []);
 
