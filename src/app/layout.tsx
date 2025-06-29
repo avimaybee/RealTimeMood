@@ -31,8 +31,8 @@ export default function RootLayout({
       <body className={cn("antialiased font-sans", manrope.variable)}>
         <PlatformProvider>
           {children}
-          <Toaster />
         </PlatformProvider>
+        <Toaster />
       </body>
     </html>
   );
