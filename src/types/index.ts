@@ -8,6 +8,7 @@ export interface Mood {
   lightness: number;
   name: string;
   adjective: string; // e.g., "Joyful", "Calm", "Energetic"
+  emoji?: string;
 }
 
 export interface AppState {

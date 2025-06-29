@@ -4,7 +4,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import type { Mood } from '@/types';
 import { PREDEFINED_MOODS } from '@/lib/colorUtils';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface MoodSelectionButtonsProps {
@@ -74,22 +73,26 @@ const MoodSelectionButtons: React.FC<MoodSelectionButtonsProps> = ({ point, onSe
             key={mood.name}
             custom={i}
             variants={itemVariants}
-            className="absolute"
-            style={{ transform: 'translate(-50%, -50%)' }} // Center the button on its point
+            className="absolute flex items-center justify-center"
+            style={{ 
+              transform: 'translate(-50%, -50%)', // Center the button on its point
+              width: '56px',
+              height: '56px',
+            }} 
             onHoverStart={() => handleHover(mood)}
             onHoverEnd={() => handleHover(null)}
             onTap={() => handleSelect(mood)}
           >
-            <Button
+            <div
               className={cn(
-                "rounded-full h-auto px-4 py-2 text-sm shadow-soft frosted-glass interactive-glow"
+                "w-12 h-12 rounded-full flex items-center justify-center text-3xl shadow-soft frosted-glass interactive-glow cursor-pointer"
               )}
               style={{
                   borderColor: `hsla(${mood.hue}, ${mood.saturation}%, ${mood.lightness}%, 0.5)`
               }}
             >
-              {mood.adjective}
-            </Button>
+              {mood.emoji}
+            </div>
           </motion.div>
         ))}
       </div>

@@ -1,4 +1,5 @@
 
+
 import type { Mood, SimpleMood } from '@/types';
 
 export function moodToHslString(mood: Mood): string {
@@ -10,15 +11,15 @@ export function moodToHslValues(mood: Mood): string {
 }
 
 export const PREDEFINED_MOODS: Mood[] = [
-  { hue: 54, saturation: 95, lightness: 65, name: "Joyful Yellow", adjective: "Joyful" },    // Yellow
-  { hue: 30, saturation: 100, lightness: 60, name: "Energetic Orange", adjective: "Energetic" }, // Orange
-  { hue: 210, saturation: 100, lightness: 70, name: "Calm Blue", adjective: "Calm" },      // Blue
-  { hue: 130, saturation: 70, lightness: 60, name: "Peaceful Green", adjective: "Peaceful" },  // Green
-  { hue: 300, saturation: 80, lightness: 65, name: "Creative Purple", adjective: "Creative" }, // Purple
-  { hue: 0, saturation: 90, lightness: 60, name: "Passionate Red", adjective: "Passionate" }, // Red
-  { hue: 260, saturation: 50, lightness: 55, name: "Anxious Indigo", adjective: "Anxious" },
-  { hue: 240, saturation: 60, lightness: 70, name: "Focused Indigo", adjective: "Focused" },
-  { hue: 180, saturation: 75, lightness: 60, name: "Hopeful Cyan", adjective: "Hopeful" },
+  { hue: 54, saturation: 95, lightness: 65, name: "Joyful Yellow", adjective: "Joyful", emoji: "😊" },
+  { hue: 30, saturation: 100, lightness: 60, name: "Energetic Orange", adjective: "Energetic", emoji: "🔥" },
+  { hue: 210, saturation: 100, lightness: 70, name: "Calm Blue", adjective: "Calm", emoji: "😌" },
+  { hue: 130, saturation: 70, lightness: 60, name: "Peaceful Green", adjective: "Peaceful", emoji: "🧘" },
+  { hue: 300, saturation: 80, lightness: 65, name: "Creative Purple", adjective: "Creative", emoji: "💡" },
+  { hue: 0, saturation: 90, lightness: 60, name: "Passionate Red", adjective: "Passionate", emoji: "❤️" },
+  { hue: 260, saturation: 50, lightness: 55, name: "Anxious Indigo", adjective: "Anxious", emoji: "😰" },
+  { hue: 240, saturation: 60, lightness: 70, name: "Focused Indigo", adjective: "Focused", emoji: "🎯" },
+  { hue: 180, saturation: 75, lightness: 60, name: "Hopeful Cyan", adjective: "Hopeful", emoji: "✨" },
 ];
 
 const shortestAngleDiff = (a: number, b: number): number => {
@@ -29,7 +30,7 @@ const shortestAngleDiff = (a: number, b: number): number => {
 export function findClosestMood(hue: number): Mood {
     if (!PREDEFINED_MOODS.length) {
       // Return a fallback mood if the array is empty
-      return { hue: 54, saturation: 95, lightness: 65, name: "Joyful Yellow", adjective: "Joyful" };
+      return { hue: 54, saturation: 95, lightness: 65, name: "Joyful Yellow", adjective: "Joyful", emoji: "😊" };
     }
   
     return PREDEFINED_MOODS.reduce((prev, curr) => {
