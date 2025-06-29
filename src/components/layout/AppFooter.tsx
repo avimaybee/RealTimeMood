@@ -1,10 +1,11 @@
+
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Menu, BarChart2, MessageSquareQuote, X, Camera, Eye, Info, Loader2, Gavel, Github, Instagram, Share2, Ghost } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, animate } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Separator } from '../ui/separator';
@@ -24,6 +25,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
   const pathname = usePathname();
   const { isIos } = usePlatform();
   const { toast } = useToast();
+  const countRef = useRef<HTMLSpanElement>(null);
 
   // Effect to reset the loader when the page navigation is complete
   useEffect(() => {
@@ -32,6 +34,21 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
+
+  useEffect(() => {
+    const node = countRef.current;
+    if (!node) return;
+
+    const controls = animate(0, contributionCount, {
+      duration: 1.5,
+      ease: "easeOut",
+      onUpdate(value) {
+        node.textContent = Math.round(value).toLocaleString();
+      }
+    });
+
+    return () => controls.stop();
+  }, [contributionCount]);
 
 
   const handleLinkClick = (path: string) => {
@@ -124,7 +141,7 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
         >
             <div className="flex-shrink-0 w-full flex items-center justify-between h-[52px] px-4">
                 <div className="text-sm md:text-base opacity-90">
-                {contributionCount.toLocaleString()} moods shared
+                <span ref={countRef}>0</span> moods shared
                 </div>
                 
                 <Button 
