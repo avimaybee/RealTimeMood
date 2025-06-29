@@ -228,11 +228,11 @@ const CollectiveThoughtsPage = () => {
                         >
                             <Card className="rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm">
                                 <CardContent className="p-4 md:p-6 flex flex-col">
-                                    <p className="text-base md:text-lg text-foreground/90 text-left w-full break-words">
+                                    <p className="text-body text-foreground/90 text-left w-full break-words">
                                         {quote.text}
                                     </p>
                                     {quote.submittedAt && (
-                                        <p className="text-xs text-foreground/60 self-end mt-2">
+                                        <p className="text-small text-foreground/60 self-end mt-2">
                                             {formatTimestamp(quote.submittedAt)}
                                         </p>
                                     )}

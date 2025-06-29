@@ -60,12 +60,12 @@ const RulesPageContent = () => {
       >
         <main className="w-full max-w-2xl mx-auto flex-grow flex flex-col justify-center">
           <div className="space-y-8 text-foreground/90">
-              <h2 className="text-3xl font-bold text-center">Our Shared Space</h2>
-              <p className="text-lg text-center text-foreground/70 -mt-4">
+              <h2 className="text-h2 font-bold text-center">Our Shared Space</h2>
+              <p className="text-body text-center text-foreground/70 -mt-4">
                   To keep RealTimeMood a reflective and positive space, please keep these simple guidelines in mind.
               </p>
               
-              <div className="space-y-6 text-base pt-6 border-t border-foreground/10">
+              <div className="space-y-6 text-body pt-6 border-t border-foreground/10">
                   <div className="flex items-start gap-4">
                       <div className="text-2xl font-bold text-primary">1.</div>
                       <div>
@@ -89,7 +89,7 @@ const RulesPageContent = () => {
                   </div>
               </div>
               
-              <p className="text-sm text-center pt-6 border-t border-foreground/10 text-foreground/60">
+              <p className="text-small text-center pt-6 border-t border-foreground/10 text-foreground/60">
                   This is an experiment in collective emotion, not a crisis support service. If you are in distress, please seek help from a qualified professional.
               </p>
           </div>

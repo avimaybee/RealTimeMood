@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 const config: Config = {
@@ -8,6 +9,12 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontSize: {
+        'h1': ['2.5rem', { lineHeight: '1.5' }],
+        'h2': ['2rem', { lineHeight: '1.5' }],
+        'body': ['1rem', { lineHeight: '1.5' }],
+        'small': ['0.875rem', { lineHeight: '1.5' }],
+      },
       fontFamily: {
         sans: [
           'var(--font-manrope)',

@@ -193,7 +193,7 @@ const HistoryPageContent = () => {
             <div className="h-[300px] sm:h-[400px] w-full flex flex-col items-center justify-center text-destructive">
                 <AlertCircle className="h-10 w-10 mb-4" strokeWidth={isIos ? 1.5 : 2} />
                 <p className="font-semibold">An Error Occurred</p>
-                <p className="text-sm">{error}</p>
+                <p className="text-small">{error}</p>
             </div>
         );
     }
@@ -203,7 +203,7 @@ const HistoryPageContent = () => {
             <div className="h-[300px] sm:h-[400px] w-full flex flex-col items-center justify-center text-foreground/70">
                 <History className="h-10 w-10 mb-4" strokeWidth={isIos ? 1.5 : 2} />
                 <p className="font-semibold">Not Enough Data</p>
-                <p className="text-sm">No historical mood data is available for this time range yet.</p>
+                <p className="text-small">No historical mood data is available for this time range yet.</p>
             </div>
         );
     }
@@ -327,7 +327,7 @@ const HistoryPageContent = () => {
                   ))}
                 </div>
               </div>
-              <CardDescription className="text-foreground/70">
+              <CardDescription className="text-small text-foreground/70">
                 This chart shows the trend of the collective emotional tone over time.
               </CardDescription>
             </CardHeader>

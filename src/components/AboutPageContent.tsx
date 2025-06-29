@@ -60,11 +60,11 @@ const AboutPageContent = () => {
       >
         <main className="w-full max-w-2xl mx-auto flex-grow flex flex-col justify-center">
             <div className="space-y-6 text-foreground/90">
-                <h2 className="text-3xl font-bold text-center">An Experiment in Collective Emotion</h2>
-                <p className="text-lg text-center text-foreground/70">
+                <h2 className="text-h2 font-bold text-center">An Experiment in Collective Emotion</h2>
+                <p className="text-body text-center text-foreground/70">
                     RealTimeMood is a living canvas, painted by the feelings of people from around the world.
                 </p>
-                <div className="pt-6 space-y-4 text-base border-t border-foreground/10">
+                <div className="pt-6 space-y-4 text-body border-t border-foreground/10">
                     <p>
                     At its core, this is an interactive art project exploring a simple question: What does our collective mood look like?
                     </p>
