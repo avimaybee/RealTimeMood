@@ -28,7 +28,6 @@ const CollectiveThoughtsPage = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [thoughtValue, setThoughtValue] = useState("");
-    const [isFocused, setIsFocused] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const lastSubmissionTimeRef = useRef<number>(0);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -227,8 +226,8 @@ const CollectiveThoughtsPage = () => {
                             layout
                             transition={{ duration: 0.5, ease: 'easeInOut' }}
                         >
-                            <Card className="glass-card rounded-2xl">
-                                <CardContent className="p-4 md:p-6 flex flex-col bg-transparent">
+                            <Card className="rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm">
+                                <CardContent className="p-4 md:p-6 flex flex-col">
                                     <p className="text-base md:text-lg text-foreground/90 text-left w-full break-words">
                                         {quote.text}
                                     </p>
@@ -251,7 +250,6 @@ const CollectiveThoughtsPage = () => {
     return (
         <>
             <DynamicBackground />
-            <div className="fixed inset-0 w-full h-full backdrop-brightness-80 backdrop-blur-[5px] z-0" />
             <div className="vignette-overlay" />
             <div className="noise-overlay" />
             <LivingParticles />
@@ -262,7 +260,7 @@ const CollectiveThoughtsPage = () => {
                 "w-[calc(100%-2rem)] max-w-lg",
                 "flex items-center justify-between",
                 "h-12 px-3",
-                "frosted-glass rounded-2xl shadow-soft border border-white/10"
+                "rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm shadow-soft"
               )}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -298,14 +296,7 @@ const CollectiveThoughtsPage = () => {
               data-prevent-snapshot
             >
               <div className="p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-[calc(1rem+env(safe-area-inset-bottom))]">
-                  <div className="max-w-2xl mx-auto frosted-glass shadow-soft rounded-2xl border border-white/10 relative overflow-hidden">
-                    <motion.div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_100%_50%,#f472b655_0%,#8b5cf62a_50%,transparent_70%)]"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: isFocused ? 1 : 0 }}
-                      transition={{ duration: 0.5, ease: 'easeOut' }}
-                    />
+                  <div className="max-w-2xl mx-auto rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm relative overflow-hidden shadow-soft">
                     <form
                         onSubmit={handleFormSubmit}
                         className="relative z-10 flex items-end w-full p-1 sm:p-2"
@@ -315,8 +306,6 @@ const CollectiveThoughtsPage = () => {
                               name="thought"
                               placeholder="Share a thought..."
                               value={thoughtValue}
-                              onFocus={() => setIsFocused(true)}
-                              onBlur={() => setIsFocused(false)}
                               onChange={(e) => {
                                   setThoughtValue(e.target.value);
                                   const textarea = e.currentTarget;
