@@ -242,7 +242,7 @@ const CollectiveThoughtsPage = () => {
         return (
           <div className="w-full max-w-4xl mx-auto px-8 pt-20 pb-28 grid grid-cols-1 md:grid-cols-2 gap-6">
             {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-20 w-full rounded-2xl" />
+              <Skeleton key={i} className="h-16 w-full rounded-2xl" />
             ))}
           </div>
         );
@@ -268,7 +268,7 @@ const CollectiveThoughtsPage = () => {
         <ScrollArea className="h-full">
             <motion.ul 
                 className="w-full max-w-4xl mx-auto px-8 pt-20 pb-32 grid grid-cols-1 md:grid-cols-2 gap-6"
-                layout
+                layout="position"
             >
                 <AnimatePresence initial={false}>
                     {quotes.map((quote) => (
@@ -283,11 +283,11 @@ const CollectiveThoughtsPage = () => {
                             transition={{ type: "spring", stiffness: 500, damping: 50 }}
                         >
                             <Card className="rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm">
-                                <CardContent className="p-4 flex flex-col">
+                                <CardContent className="p-3 flex flex-col">
                                     <p className="text-body text-foreground/90 text-left w-full break-words whitespace-pre-wrap">
                                         {quote.text}
                                     </p>
-                                    <div className="flex justify-between items-center mt-4 pt-3 border-t border-foreground/10">
+                                    <div className="flex justify-between items-center mt-3 pt-2 border-t border-foreground/10">
                                         <Button
                                             variant="ghost"
                                             size="sm"
@@ -296,8 +296,8 @@ const CollectiveThoughtsPage = () => {
                                             disabled={likedQuotes.has(quote.id)}
                                             aria-label="Like thought"
                                         >
-                                            <Heart className={cn("w-4 h-4 transition-colors", likedQuotes.has(quote.id) ? "fill-primary text-primary" : "")} />
-                                            <span className="font-medium tabular-nums">{quote.likes || 0}</span>
+                                            <Heart className={cn("w-4 h-4 transition-colors", likedQuotes.has(quote.id) ? "fill-primary text-primary" : "text-foreground/70", "group-hover:text-primary")} />
+                                            <span className={cn("font-medium tabular-nums", likedQuotes.has(quote.id) ? "text-primary" : "text-foreground/70", "group-hover:text-primary")}>{quote.likes || 0}</span>
                                         </Button>
 
                                         {quote.submittedAt && (
