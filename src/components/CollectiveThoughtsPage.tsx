@@ -241,7 +241,7 @@ const CollectiveThoughtsPage = () => {
         return (
           <div className="w-full max-w-2xl mx-auto px-4 pt-20 pb-28 space-y-4">
             {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-20 w-full rounded-2xl" />
+              <Skeleton key={i} className="h-16 w-full rounded-2xl" />
             ))}
           </div>
         );
@@ -282,11 +282,11 @@ const CollectiveThoughtsPage = () => {
                             transition={{ type: "spring", stiffness: 500, damping: 50 }}
                         >
                             <Card className="rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm">
-                                <CardContent className="p-4 md:p-6 flex flex-col">
+                                <CardContent className="p-3 md:p-4 flex flex-col">
                                     <p className="text-body text-foreground/90 text-left w-full break-words whitespace-pre-wrap">
                                         {quote.text}
                                     </p>
-                                    <div className="flex justify-between items-center mt-4">
+                                    <div className="flex justify-between items-center mt-3">
                                         <Button
                                             variant="ghost"
                                             size="sm"
