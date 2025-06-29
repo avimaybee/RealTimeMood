@@ -266,7 +266,7 @@ const CollectiveThoughtsPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: 'easeOut' }}
             >
-              <Button asChild variant="ghost" size="icon" className="interactive-glow -ml-2">
+              <Button asChild variant="ghost" size="icon" className="interactive-glow -ml-2 rounded-full">
                 <Link href="/">
                   <ArrowLeft className="h-5 w-5" strokeWidth={isIos ? 1.5 : 2} />
                   <span className="sr-only">Back to Live</span>
