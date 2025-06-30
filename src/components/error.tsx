@@ -18,6 +18,8 @@ export default function Error({
     console.error(error);
   }, [error]);
 
+  const isAuthDomainError = error?.message?.includes('auth/unauthorized-domain');
+
   return (
     <div 
       className="min-h-screen w-full flex flex-col items-center justify-center p-4"
@@ -35,13 +37,24 @@ export default function Error({
             </div>
 
             <h1 className="text-2xl font-bold text-foreground mb-3">
-                Oops! Something went wrong.
+                {isAuthDomainError ? "Configuration Required" : "Oops! Something went wrong."}
             </h1>
-
-            <p className="text-base text-foreground/80 mb-6">
-                We encountered an unexpected issue. Please try again, or the problem may resolve itself shortly.
-            </p>
             
+            {isAuthDomainError ? (
+                <div className="text-base text-foreground/80 mb-6 text-left space-y-2">
+                    <p>
+                        This is a Firebase configuration issue. The app's current domain is not authorized to perform this action.
+                    </p>
+                    <p>
+                        To fix this, please follow the instructions in the <code className="bg-black/20 px-1 py-0.5 rounded text-foreground/90">README.md</code> file to add your development domain to the allowlist in the Firebase Console.
+                    </p>
+                </div>
+            ) : (
+                <p className="text-base text-foreground/80 mb-6">
+                    We encountered an unexpected issue. Please try again, or the problem may resolve itself shortly.
+                </p>
+            )}
+
             <Button
                 onClick={() => reset()}
                 size="lg"
