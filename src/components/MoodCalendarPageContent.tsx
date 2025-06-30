@@ -114,7 +114,7 @@ const MoodCalendarPageContent = () => {
         className={cn(
           "fixed top-4 inset-x-0 mx-auto z-30",
           "w-[calc(100%-2rem)] max-w-lg",
-          "flex items-center justify-between",
+          "grid grid-cols-[1fr_auto_1fr] items-center",
           "h-12 px-3",
           "frosted-glass rounded-2xl shadow-soft"
         )}
@@ -122,16 +122,20 @@ const MoodCalendarPageContent = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
       >
-        <Button asChild variant="ghost" size="icon" className="interactive-glow -ml-2 rounded-full">
-          <Link href="/">
-            <ArrowLeft className="h-5 w-5" strokeWidth={isIos ? 1.5 : 2} />
-             <span className="sr-only">Back to Live</span>
-          </Link>
-        </Button>
+        <div className="flex justify-start">
+            <Button asChild variant="ghost" size="icon" className="interactive-glow -ml-2 rounded-full">
+              <Link href="/">
+                <ArrowLeft className="h-5 w-5" strokeWidth={isIos ? 1.5 : 2} />
+                <span className="sr-only">Back to Live</span>
+              </Link>
+            </Button>
+        </div>
+
         <h1 className="text-base font-medium text-center truncate px-2">
           Your Mood Calendar
         </h1>
-        <div className="w-8 h-8">
+
+        <div className="flex justify-end">
             {!isAuthLoading && user && !isAnonymous && (
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
