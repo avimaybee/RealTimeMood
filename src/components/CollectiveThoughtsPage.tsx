@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ArrowLeft, Send, Loader2, Heart, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { CommunityQuote } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,8 +21,12 @@ import DynamicBackground from '@/components/ui-fx/DynamicBackground';
 import { incrementLike, decrementLike } from '@/lib/thoughts-service';
 import { useMood } from '@/contexts/MoodContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { PREDEFINED_MOODS } from '@/lib/colorUtils';
 
 const MAX_THOUGHT_LENGTH = 300;
+
+const FILTER_MOODS = ['Joyful', 'Calm', 'Passionate', 'Creative', 'Anxious', 'Sad'];
+const filterableMoods = PREDEFINED_MOODS.filter(m => FILTER_MOODS.includes(m.adjective));
 
 const AuthorAvatar = ({ hue, adjective }: { hue?: number; adjective?: string }) => {
   if (hue === undefined || hue === null) {
@@ -80,6 +84,8 @@ const CollectiveThoughtsPage = () => {
     const [showGoToBottom, setShowGoToBottom] = useState(false);
     const textRefs = useRef(new Map<string, HTMLParagraphElement | null>());
     const scrollAreaRef = useRef<HTMLDivElement>(null);
+    
+    const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
     const getCounterColorStyle = (currentLength: number, maxLength: number): React.CSSProperties => {
         const overLimit = currentLength > maxLength;
@@ -392,6 +398,8 @@ const CollectiveThoughtsPage = () => {
           </div>
         );
       }
+
+      const filteredQuotes = quotes.filter(q => !activeFilter || q.authorAdjective === activeFilter);
   
       if (quotes.length === 0) {
         return (
@@ -402,100 +410,130 @@ const CollectiveThoughtsPage = () => {
       }
   
       return (
-        <ScrollArea className="h-full" ref={scrollAreaRef}>
-            <motion.ul 
-                className="w-full max-w-4xl mx-auto px-4 sm:px-8 pt-20 pb-32 grid grid-cols-1 md:grid-cols-2 gap-6"
-            >
-                <AnimatePresence initial={false}>
-                    {quotes.map((quote) => {
-                        const isExpanded = expandedQuotes.has(quote.id);
-                        const isClamped = clampedQuotes.has(quote.id);
-                        return (
-                        <motion.li
-                            key={quote.id}
-                            variants={thoughtBubbleVariants}
-                            custom={quote.id === newestQuoteId}
-                            initial="initial"
-                            animate="animate"
-                            exit="exit"
-                            layout="position"
-                            transition={{ type: "spring", stiffness: 500, damping: 50 }}
-                        >
-                            <Card className="rounded-2xl frosted-glass flex flex-col">
-                                <CardContent className="p-3 flex flex-col flex-grow">
-                                    <div className="flex-grow">
-                                        <p
-                                            ref={el => {
-                                                if (el) textRefs.current.set(quote.id, el);
-                                                else textRefs.current.delete(quote.id);
-                                            }}
-                                            className={cn(
-                                                "text-body text-foreground/90 text-left w-full break-words whitespace-pre-wrap",
-                                                !isExpanded && "line-clamp-4"
-                                            )}
-                                        >
-                                            {quote.text}
-                                        </p>
-                                        {isClamped && (
-                                            <button
-                                                onClick={() => handleToggleExpand(quote.id)}
-                                                className="text-sm font-semibold text-primary hover:underline mt-1 focus:outline-none"
-                                            >
-                                                {isExpanded ? "Show less" : "…read more"}
-                                            </button>
-                                        )}
-                                    </div>
-                                    <div className="flex justify-between items-center mt-2 pt-2 border-t border-foreground/10">
-                                        <div className="flex items-center gap-3">
-                                            <AuthorAvatar hue={quote.authorHue} adjective={quote.authorAdjective} />
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="group flex items-center gap-1.5 text-foreground/70 hover:text-primary px-2 hover:bg-primary/10 -ml-2"
-                                                onClick={() => handleLikeToggle(quote.id)}
-                                                aria-label="Like thought"
-                                            >
-                                                <Heart className={cn(
-                                                    "w-4 h-4 transition-all duration-150",
-                                                    likedQuotes.has(quote.id) ? "fill-primary text-primary" : "text-foreground/70",
-                                                    "group-hover:text-primary group-hover:scale-110",
-                                                    "group-active:scale-125"
-                                                )} />
-                                                <div className="relative h-4 w-4">
-                                                    <AnimatePresence initial={false}>
-                                                        <motion.span
-                                                            key={quote.likes}
-                                                            className={cn(
-                                                                "font-medium tabular-nums absolute inset-0",
-                                                                likedQuotes.has(quote.id) ? "text-primary" : "text-foreground/70",
-                                                                "group-hover:text-primary"
-                                                            )}
-                                                            initial={{ y: 10, opacity: 0 }}
-                                                            animate={{ y: 0, opacity: 1 }}
-                                                            exit={{ y: -10, opacity: 0 }}
-                                                            transition={{ type: 'spring', stiffness: 500, damping: 50, duration: 0.2 }}
-                                                        >
-                                                            {quote.likes || 0}
-                                                        </motion.span>
-                                                    </AnimatePresence>
-                                                </div>
-                                            </Button>
-                                        </div>
+        <div className="h-full flex flex-col pt-20">
+            <div className="w-full max-w-4xl mx-auto px-4 sm:px-8 pb-4 flex justify-center flex-wrap gap-2 flex-shrink-0">
+                <Button
+                    size="sm"
+                    variant={!activeFilter ? 'default' : 'outline'}
+                    onClick={() => setActiveFilter(null)}
+                    className="rounded-full"
+                >
+                    All Thoughts
+                </Button>
+                {filterableMoods.map((mood) => (
+                    <Button
+                        key={mood.adjective}
+                        size="sm"
+                        variant={activeFilter === mood.adjective ? 'default' : 'outline'}
+                        onClick={() => setActiveFilter(mood.adjective)}
+                        className="rounded-full"
+                    >
+                        {mood.emoji} {mood.adjective}
+                    </Button>
+                ))}
+            </div>
 
-                                        {quote.submittedAt && (
-                                            <p className="text-small text-foreground/60">
-                                                {formatTimestamp(quote.submittedAt)}
-                                            </p>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </motion.li>
-                    )})}
-                </AnimatePresence>
-                <div ref={messagesEndRef} />
-            </motion.ul>
-        </ScrollArea>
+            {filteredQuotes.length > 0 ? (
+                <ScrollArea className="flex-grow" ref={scrollAreaRef}>
+                    <motion.ul 
+                        className="w-full max-w-4xl mx-auto px-4 sm:px-8 pt-2 pb-32 grid grid-cols-1 md:grid-cols-2 gap-6"
+                    >
+                        <AnimatePresence initial={false}>
+                            {filteredQuotes.map((quote) => {
+                                const isExpanded = expandedQuotes.has(quote.id);
+                                const isClamped = clampedQuotes.has(quote.id);
+                                return (
+                                <motion.li
+                                    key={quote.id}
+                                    variants={thoughtBubbleVariants}
+                                    custom={quote.id === newestQuoteId}
+                                    initial="initial"
+                                    animate="animate"
+                                    exit="exit"
+                                    layout="position"
+                                    transition={{ type: "spring", stiffness: 500, damping: 50 }}
+                                >
+                                    <Card className="rounded-2xl frosted-glass flex flex-col">
+                                        <CardContent className="p-3 flex flex-col flex-grow">
+                                            <div className="flex-grow">
+                                                <p
+                                                    ref={el => {
+                                                        if (el) textRefs.current.set(quote.id, el);
+                                                        else textRefs.current.delete(quote.id);
+                                                    }}
+                                                    className={cn(
+                                                        "text-body text-foreground/90 text-left w-full break-words whitespace-pre-wrap",
+                                                        !isExpanded && "line-clamp-4"
+                                                    )}
+                                                >
+                                                    {quote.text}
+                                                </p>
+                                                {isClamped && (
+                                                    <button
+                                                        onClick={() => handleToggleExpand(quote.id)}
+                                                        className="text-sm font-semibold text-primary hover:underline mt-1 focus:outline-none"
+                                                    >
+                                                        {isExpanded ? "Show less" : "…read more"}
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <div className="flex justify-between items-center mt-2 pt-2 border-t border-foreground/10">
+                                                <div className="flex items-center gap-3">
+                                                    <AuthorAvatar hue={quote.authorHue} adjective={quote.authorAdjective} />
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="group flex items-center gap-1.5 text-foreground/70 hover:text-primary px-2 hover:bg-primary/10 -ml-2"
+                                                        onClick={() => handleLikeToggle(quote.id)}
+                                                        aria-label="Like thought"
+                                                    >
+                                                        <Heart className={cn(
+                                                            "w-4 h-4 transition-all duration-150",
+                                                            likedQuotes.has(quote.id) ? "fill-primary text-primary" : "text-foreground/70",
+                                                            "group-hover:text-primary group-hover:scale-110",
+                                                            "group-active:scale-125"
+                                                        )} />
+                                                        <div className="relative h-4 w-4">
+                                                            <AnimatePresence initial={false}>
+                                                                <motion.span
+                                                                    key={quote.likes}
+                                                                    className={cn(
+                                                                        "font-medium tabular-nums absolute inset-0",
+                                                                        likedQuotes.has(quote.id) ? "text-primary" : "text-foreground/70",
+                                                                        "group-hover:text-primary"
+                                                                    )}
+                                                                    initial={{ y: 10, opacity: 0 }}
+                                                                    animate={{ y: 0, opacity: 1 }}
+                                                                    exit={{ y: -10, opacity: 0 }}
+                                                                    transition={{ type: 'spring', stiffness: 500, damping: 50, duration: 0.2 }}
+                                                                >
+                                                                    {quote.likes || 0}
+                                                                </motion.span>
+                                                            </AnimatePresence>
+                                                        </div>
+                                                    </Button>
+                                                </div>
+
+                                                {quote.submittedAt && (
+                                                    <p className="text-small text-foreground/60">
+                                                        {formatTimestamp(quote.submittedAt)}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </motion.li>
+                            )})}
+                        </AnimatePresence>
+                        <div ref={messagesEndRef} />
+                    </motion.ul>
+                </ScrollArea>
+            ) : (
+                <div className="flex-grow flex items-center justify-center">
+                    <p className="text-foreground/70">No thoughts found for "{activeFilter}".</p>
+                </div>
+            )}
+        </div>
       );
     };
 
@@ -658,3 +696,4 @@ export default CollectiveThoughtsPage;
     
 
     
+
