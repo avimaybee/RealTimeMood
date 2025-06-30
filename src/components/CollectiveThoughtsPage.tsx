@@ -22,6 +22,14 @@ import { incrementLike, decrementLike } from '@/lib/thoughts-service';
 import { useMood } from '@/contexts/MoodContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PREDEFINED_MOODS } from '@/lib/colorUtils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 
 const MAX_THOUGHT_LENGTH = 300;
 
@@ -411,26 +419,28 @@ const CollectiveThoughtsPage = () => {
   
       return (
         <div className="h-full flex flex-col pt-20">
-            <div className="w-full max-w-4xl mx-auto px-4 sm:px-8 pb-4 flex justify-center flex-wrap gap-2 flex-shrink-0">
-                <Button
-                    size="sm"
-                    variant={!activeFilter ? 'default' : 'outline'}
-                    onClick={() => setActiveFilter(null)}
-                    className="rounded-full"
+             <div className="w-full max-w-sm mx-auto px-4 sm:px-8 pb-4 flex justify-center">
+                <Select
+                    value={activeFilter || 'All Thoughts'}
+                    onValueChange={(value) => {
+                        setActiveFilter(value === 'All Thoughts' ? null : value)
+                    }}
                 >
-                    All Thoughts
-                </Button>
-                {filterableMoods.map((mood) => (
-                    <Button
-                        key={mood.adjective}
-                        size="sm"
-                        variant={activeFilter === mood.adjective ? 'default' : 'outline'}
-                        onClick={() => setActiveFilter(mood.adjective)}
-                        className="rounded-full"
-                    >
-                        {mood.emoji} {mood.adjective}
-                    </Button>
-                ))}
+                    <SelectTrigger className="w-full sm:w-[280px]">
+                        <SelectValue placeholder="Filter by mood..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All Thoughts">All Thoughts</SelectItem>
+                        {filterableMoods.map((mood) => (
+                            <SelectItem key={mood.adjective} value={mood.adjective}>
+                                <div className="flex items-center gap-2">
+                                  <span>{mood.emoji}</span>
+                                  <span>{mood.adjective}</span>
+                                </div>
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
 
             {filteredQuotes.length > 0 ? (
@@ -697,3 +707,6 @@ export default CollectiveThoughtsPage;
 
     
 
+
+
+    
