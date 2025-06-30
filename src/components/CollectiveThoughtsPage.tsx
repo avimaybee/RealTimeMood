@@ -100,8 +100,8 @@ const CollectiveThoughtsPage = () => {
         // This value goes from 0 to 1
         const transitionProgress = (progress - transitionStart) / (1 - transitionStart);
     
-        // We want to interpolate hue from a safe green (120) to a dangerous red (0)
-        const hue = 120 * (1 - transitionProgress);
+        // Interpolate hue from yellow (60) to red (0)
+        const hue = 60 * (1 - transitionProgress);
     
         return { 
             color: `hsl(${hue}, 90%, 55%)`,
@@ -653,6 +653,7 @@ const CollectiveThoughtsPage = () => {
 }
 
 export default CollectiveThoughtsPage;
+    
 
     
 
