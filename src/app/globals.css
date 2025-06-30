@@ -237,3 +237,16 @@
     background-color: hsla(var(--foreground-hsl), 0.5);
   }
 }
+
+@layer utilities {
+  /* Platform-specific input styles to prevent hydration errors */
+  .android .platform-input,
+  .android .platform-textarea {
+    @apply rounded-b-none rounded-t-md border-0 border-b border-input bg-muted/30 transition-colors;
+  }
+
+  .android .platform-input:focus-visible,
+  .android .platform-textarea:focus-visible {
+    @apply border-b-2 border-primary ring-0 ring-offset-0;
+  }
+}
