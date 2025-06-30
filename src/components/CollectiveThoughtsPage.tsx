@@ -111,7 +111,7 @@ const CollectiveThoughtsPage = () => {
 
         }, (err) => {
             console.error("Error fetching quotes: ", err);
-            setError("Could not load thoughts at this time.");
+            setError("The collective consciousness is quiet right now. Please try again later.");
             setIsLoading(false);
         });
 
@@ -214,8 +214,8 @@ const CollectiveThoughtsPage = () => {
             await incrementLike(quoteId);
         } catch (error) {
             toast({
-                title: "Like Failed",
-                description: "Couldn't register your like. Please try again.",
+                title: "Connection Error",
+                description: "Your gesture of appreciation couldn't be saved. Please try again.",
                 variant: "destructive"
             });
             // Rollback UI on failure
@@ -245,8 +245,8 @@ const CollectiveThoughtsPage = () => {
 
         if (!thoughtText || thoughtText.length === 0) {
             toast({
-                title: "Empty Thought",
-                description: "Please share a thought before submitting.",
+                title: "An empty thought?",
+                description: "You can't share silence. Please write something first.",
                 variant: "destructive"
             });
             setIsSubmitting(false);
@@ -277,8 +277,8 @@ const CollectiveThoughtsPage = () => {
         } catch (err) {
             console.error("Error submitting thought: ", err);
             toast({
-                title: "Submission Failed",
-                description: "Could not share your thought. Please try again.",
+                title: "A fleeting thought...",
+                description: "Your thought couldn't be shared right now. Please try again.",
                 variant: "destructive"
             });
         } finally {
@@ -350,7 +350,7 @@ const CollectiveThoughtsPage = () => {
                             layout="position"
                             transition={{ type: "spring", stiffness: 500, damping: 50 }}
                         >
-                            <Card className="rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm flex flex-col">
+                            <Card className="rounded-2xl frosted-glass flex flex-col">
                                 <CardContent className="p-3 flex flex-col flex-grow">
                                     <div className="flex-grow">
                                         <p
@@ -417,7 +417,7 @@ const CollectiveThoughtsPage = () => {
                 "w-[calc(100%-2rem)] max-w-lg",
                 "flex items-center justify-between",
                 "h-12 px-3",
-                "rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm shadow-soft"
+                "frosted-glass rounded-2xl shadow-soft"
               )}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -475,7 +475,7 @@ const CollectiveThoughtsPage = () => {
             >
               <div className="p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-[calc(1rem+env(safe-area-inset-bottom))]">
                   <div className={cn(
-                    "max-w-4xl mx-auto rounded-2xl bg-foreground/5 border border-foreground/10 backdrop-blur-sm relative overflow-hidden shadow-soft transition-all duration-200",
+                    "max-w-4xl mx-auto rounded-2xl frosted-glass relative overflow-hidden shadow-soft transition-all duration-200",
                     isInputActive && "border-primary/50 bg-foreground/10"
                   )}>
                     <form

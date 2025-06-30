@@ -140,7 +140,7 @@ const HistoryPageContent = () => {
       setChartData(fetchedData);
     } catch (err) {
       console.error("Error fetching historical data: ", err);
-      setError("Could not load mood history. Please try again later.");
+      setError("The past is a bit hazy right now. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -192,7 +192,7 @@ const HistoryPageContent = () => {
         return (
             <div className="h-[300px] sm:h-[400px] w-full flex flex-col items-center justify-center text-destructive">
                 <AlertCircle className="h-10 w-10 mb-4" strokeWidth={isIos ? 1.5 : 2} />
-                <p className="font-semibold">An Error Occurred</p>
+                <p className="font-semibold">History Unavailable</p>
                 <p className="text-small">{error}</p>
             </div>
         );

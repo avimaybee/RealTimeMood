@@ -94,8 +94,8 @@ const ShareSnapshotButton: React.FC = () => {
         canvas.toBlob(async (blob) => {
           if (!blob) {
             toast({
-              title: "Error",
-              description: "Could not create image file. Please try again.",
+              title: "Image Error",
+              description: "Could not create the image file. Please try again.",
               variant: "destructive",
             });
             downloadImage(); // Fallback on blob creation failure
@@ -137,8 +137,8 @@ const ShareSnapshotButton: React.FC = () => {
     } catch (error) {
       console.error("Error taking snapshot:", error);
       toast({
-        title: "Error",
-        description: "Could not create snapshot. Please try again.",
+        title: "Snapshot Failed",
+        description: "We couldn't capture the moment. Please try again.",
         variant: "destructive",
       });
     } finally {
