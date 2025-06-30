@@ -22,6 +22,8 @@ import { incrementLike, decrementLike } from '@/lib/thoughts-service';
 import { useMood } from '@/contexts/MoodContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+const MAX_THOUGHT_LENGTH = 300;
+
 const AuthorAvatar = ({ hue, adjective }: { hue?: number; adjective?: string }) => {
   if (hue === undefined || hue === null) {
     // Return a generic placeholder for older thoughts without a hue
@@ -469,6 +471,8 @@ const CollectiveThoughtsPage = () => {
       );
     };
 
+    const charsLeft = MAX_THOUGHT_LENGTH - thoughtValue.length;
+
     return (
         <>
             <div className="vignette-overlay" />
@@ -572,18 +576,19 @@ const CollectiveThoughtsPage = () => {
                               className="flex-grow bg-transparent border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none max-h-32 py-2 px-2 text-base"
                               rows={1}
                               disabled={isSubmitting}
+                              maxLength={MAX_THOUGHT_LENGTH}
                           />
                           <Button 
                               type="submit" 
                               size="icon" 
                               className="rounded-full flex-shrink-0 w-10 h-10 ml-2 interactive-glow" 
-                              disabled={isSubmitting || !thoughtValue.trim()}
+                              disabled={isSubmitting || !thoughtValue.trim() || thoughtValue.length > MAX_THOUGHT_LENGTH}
                           >
                               {isSubmitting ? (
                                   <Loader2 className="w-4 h-4 animate-spin" />
                               ) : (
                                   <motion.div
-                                    animate={{ scale: thoughtValue.trim() ? 1.1 : 1.0 }}
+                                    animate={{ scale: thoughtValue.trim() && (thoughtValue.length <= MAX_THOUGHT_LENGTH) ? 1.1 : 1.0 }}
                                     transition={{ type: 'spring', stiffness: 500, damping: 15 }}
                                   >
                                     <Send className="w-4 h-4" strokeWidth={isClient && isIos ? 1.5 : 2} />
@@ -591,6 +596,24 @@ const CollectiveThoughtsPage = () => {
                               )}
                           </Button>
                       </form>
+                      <AnimatePresence>
+                          {(isInputActive || thoughtValue.length > 0) && (
+                              <motion.div
+                                  className="absolute bottom-2 right-[52px] sm:right-[60px] pointer-events-none"
+                                  initial={{ opacity: 0, y: 5 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: 5 }}
+                                  transition={{ duration: 0.2 }}
+                              >
+                                  <p className={cn(
+                                      "text-xs",
+                                      charsLeft >= 0 ? "text-muted-foreground" : "text-destructive font-medium"
+                                  )}>
+                                      {thoughtValue.length}/{MAX_THOUGHT_LENGTH}
+                                  </p>
+                              </motion.div>
+                          )}
+                      </AnimatePresence>
                   </div>
               </div>
             </motion.footer>
