@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
@@ -86,7 +85,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
     const chargeTimeout = setTimeout(() => {
       try {
         recordContribution(chargeData.mood, null);
-        lastSubmissionTimeRef.current = Date.now();
+        lastSubmissionTimeRef.current = now;
         toast({
           title: "Mood Submitted",
           description: `Your feeling of "${chargeData.mood.adjective}" has been added to the collective.`,
@@ -141,7 +140,12 @@ const OrbButton: React.FC<OrbButtonProps> = ({
     <>
       <motion.div
         data-orb-button-container
-        className={cn("fixed bottom-20 md:bottom-24 z-40 flex items-center justify-center left-1/2 -translate-x-1/2")}
+        className={cn(
+          // pin full-width, bottom-spaced, stacking above content
+          "fixed inset-x-0 bottom-20 md:bottom-24 z-40",
+          // centre children horizontally
+          "flex justify-center items-center"
+        )}
         animate={{ y: isCollectiveShifting ? 8 : 0 }}
         transition={{ type: 'spring', stiffness: 100, damping: 10 }}
       >
