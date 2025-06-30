@@ -558,7 +558,14 @@ const CollectiveThoughtsPage = () => {
               <div className="w-8 h-8">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="interactive-glow rounded-full">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn(
+                        "interactive-glow rounded-full",
+                        activeFilter && "bg-primary/20 text-primary"
+                      )}
+                    >
                       <Filter className="h-5 w-5" />
                        <span className="sr-only">Filter thoughts</span>
                     </Button>
