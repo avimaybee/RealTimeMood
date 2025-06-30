@@ -1,7 +1,7 @@
 
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, BarChart2, MessageSquareQuote, X, Camera, Eye, Info, Loader2, Gavel, Github, Instagram, Share2, Ghost, Lightbulb, CalendarDays } from 'lucide-react';
+import { Menu, BarChart2, MessageSquareQuote, X, Camera, Eye, Info, Loader2, Gavel, Github, Instagram, Share2, Ghost, Lightbulb, CalendarDays, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,9 @@ import { Separator } from '../ui/separator';
 import ShareSnapshotButton from '../features/ShareSnapshotButton';
 import { usePlatform } from '@/contexts/PlatformContext';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { fetchUserProfile } from '@/lib/user-profile-service';
+import type { UserProfile } from '@/types';
 
 interface AppFooterProps {
   isMenuOpen: boolean;
@@ -27,6 +30,24 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
   const { toast } = useToast();
   const countRef = useRef<HTMLSpanElement>(null);
   const prevCountRef = useRef(0); // Ref to store the previous count
+
+  // State and logic for fetching and displaying user streak
+  const { user, isAnonymous, isLoading: isAuthLoading } = useAuth();
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    async function loadProfile() {
+      if (user && !isAnonymous) {
+        const profileData = await fetchUserProfile(user.uid);
+        setUserProfile(profileData);
+      } else {
+        setUserProfile(null); // Clear profile if user logs out or is anonymous
+      }
+    }
+    if (!isAuthLoading) {
+      loadProfile();
+    }
+  }, [user, isAnonymous, isAuthLoading]);
 
   // Effect to reset the loader when the page navigation is complete
   useEffect(() => {
@@ -177,27 +198,44 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                 <span ref={countRef}>0</span> moods shared
                 </div>
                 
-                <Button 
-                data-menu-button="true"
-                variant="ghost" 
-                size="icon" 
-                aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-                className="w-8 h-8 rounded-full interactive-glow"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                >
-                <AnimatePresence initial={false} mode="wait">
-                    <motion.div
-                    key={isMenuOpen ? 'x' : 'menu'}
-                    initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
-                    animate={{ opacity: 1, rotate: 0, scale: 1 }}
-                    exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
-                    transition={{ duration: 0.2 }}
-                    className="flex items-center justify-center"
-                    >
-                    {isMenuOpen ? <X className="w-5 h-5 md:w-6 md:h-6 opacity-90" strokeWidth={isIos ? 1.5 : 2} /> : <Menu className="w-5 h-5 md:w-6 md:h-6 opacity-90" strokeWidth={isIos ? 1.5 : 2} />}
-                    </motion.div>
-                </AnimatePresence>
-                </Button>
+                <div className="flex items-center gap-3">
+                  <AnimatePresence>
+                    {userProfile && userProfile.currentStreak > 0 && (
+                      <motion.div
+                        className="flex items-center gap-1 text-sm text-primary font-medium"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                      >
+                        <Flame className="w-4 h-4" />
+                        <span>{userProfile.currentStreak}</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  
+                  <Button 
+                    data-menu-button="true"
+                    variant="ghost" 
+                    size="icon" 
+                    aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+                    className="w-8 h-8 rounded-full interactive-glow"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  >
+                    <AnimatePresence initial={false} mode="wait">
+                        <motion.div
+                        key={isMenuOpen ? 'x' : 'menu'}
+                        initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
+                        animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                        exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex items-center justify-center"
+                        >
+                        {isMenuOpen ? <X className="w-5 h-5 md:w-6 md:h-6 opacity-90" strokeWidth={isIos ? 1.5 : 2} /> : <Menu className="w-5 h-5 md:w-6 md:h-6 opacity-90" strokeWidth={isIos ? 1.5 : 2} />}
+                        </motion.div>
+                    </AnimatePresence>
+                  </Button>
+                </div>
             </div>
 
             <AnimatePresence>
