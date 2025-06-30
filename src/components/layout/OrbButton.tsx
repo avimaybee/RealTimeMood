@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
@@ -40,9 +39,22 @@ const OrbButton: React.FC<OrbButtonProps> = ({
   const lastSubmissionTimeRef = useRef<number>(0);
   const pressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const barRef = useRef<HTMLDivElement>(null);
+  const orbContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsClient(true);
+  }, []);
+  
+  const getOrbPosition = useCallback(() => {
+    if (orbContainerRef.current) {
+        const rect = orbContainerRef.current.getBoundingClientRect();
+        return {
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2,
+        };
+    }
+    // Fallback to a reasonable default if the ref isn't ready
+    return { x: window.innerWidth / 2, y: window.innerHeight - 120 };
   }, []);
 
   const handlePointerDown = (e: ReactPointerEvent) => {
@@ -94,7 +106,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
 
   const handlePanEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const mood = getMoodFromPosition(info.point.x);
-    recordContribution(mood, { x: window.innerWidth / 2, y: window.innerHeight / 2 });
+    recordContribution(mood, getOrbPosition());
     setInteractionMode('orb');
     setPreviewMood(null);
     if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50);
@@ -132,7 +144,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
     }
     const chargeTimeout = setTimeout(() => {
       try {
-        recordContribution(chargeData.mood, null);
+        recordContribution(chargeData.mood, getOrbPosition());
         lastSubmissionTimeRef.current = now;
         toast({
           title: "Mood Submitted",
@@ -148,7 +160,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
       }
     }, 500);
     return () => clearTimeout(chargeTimeout);
-  }, [isCharging, chargeData, recordContribution, toast, setIsCharging]);
+  }, [isCharging, chargeData, recordContribution, toast, setIsCharging, getOrbPosition]);
 
   const morphTransition = { type: 'spring', stiffness: 350, damping: 35 };
 
@@ -194,6 +206,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
   return (
     <>
       <motion.div
+        ref={orbContainerRef}
         data-orb-button-container
         className={cn(
           "fixed inset-x-0 bottom-20 md:bottom-24 z-40",
