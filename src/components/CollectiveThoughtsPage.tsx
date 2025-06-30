@@ -347,7 +347,7 @@ const CollectiveThoughtsPage = () => {
     const renderContent = () => {
       if (isLoading) {
         return (
-          <div className="w-full max-w-4xl mx-auto px-8 pt-20 pb-32 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="w-full max-w-4xl mx-auto px-4 sm:px-8 pt-20 pb-32 grid grid-cols-1 md:grid-cols-2 gap-6">
             {[...Array(6)].map((_, i) => (
               <Skeleton key={i} className="h-20 w-full rounded-2xl" />
             ))}
@@ -374,7 +374,7 @@ const CollectiveThoughtsPage = () => {
       return (
         <ScrollArea className="h-full" ref={scrollAreaRef}>
             <motion.ul 
-                className="w-full max-w-4xl mx-auto px-8 pt-20 pb-32 grid grid-cols-1 md:grid-cols-2 gap-6"
+                className="w-full max-w-4xl mx-auto px-4 sm:px-8 pt-20 pb-32 grid grid-cols-1 md:grid-cols-2 gap-6"
             >
                 <AnimatePresence initial={false}>
                     {quotes.map((quote) => {
@@ -425,8 +425,30 @@ const CollectiveThoughtsPage = () => {
                                                 onClick={() => handleLikeToggle(quote.id)}
                                                 aria-label="Like thought"
                                             >
-                                                <Heart className={cn("w-4 h-4 transition-colors", likedQuotes.has(quote.id) ? "fill-primary text-primary" : "text-foreground/70", "group-hover:text-primary")} />
-                                                <span className={cn("font-medium tabular-nums", likedQuotes.has(quote.id) ? "text-primary" : "text-foreground/70", "group-hover:text-primary")}>{quote.likes || 0}</span>
+                                                <Heart className={cn(
+                                                    "w-4 h-4 transition-all duration-150",
+                                                    likedQuotes.has(quote.id) ? "fill-primary text-primary" : "text-foreground/70",
+                                                    "group-hover:text-primary group-hover:scale-110",
+                                                    "group-active:scale-125"
+                                                )} />
+                                                <div className="relative h-4 w-4">
+                                                    <AnimatePresence initial={false}>
+                                                        <motion.span
+                                                            key={quote.likes}
+                                                            className={cn(
+                                                                "font-medium tabular-nums absolute inset-0",
+                                                                likedQuotes.has(quote.id) ? "text-primary" : "text-foreground/70",
+                                                                "group-hover:text-primary"
+                                                            )}
+                                                            initial={{ y: 10, opacity: 0 }}
+                                                            animate={{ y: 0, opacity: 1 }}
+                                                            exit={{ y: -10, opacity: 0 }}
+                                                            transition={{ type: 'spring', stiffness: 500, damping: 50, duration: 0.2 }}
+                                                        >
+                                                            {quote.likes || 0}
+                                                        </motion.span>
+                                                    </AnimatePresence>
+                                                </div>
                                             </Button>
                                         </div>
 
@@ -577,3 +599,5 @@ const CollectiveThoughtsPage = () => {
 }
 
 export default CollectiveThoughtsPage;
+
+    
