@@ -37,17 +37,31 @@ export default function Error({
             </div>
 
             <h1 className="text-2xl font-bold text-foreground mb-3">
-                {isAuthDomainError ? "Configuration Required" : "Oops! Something went wrong."}
+                {isAuthDomainError ? "Firebase Domain Not Authorized" : "Oops! Something went wrong."}
             </h1>
             
             {isAuthDomainError ? (
-                <div className="text-base text-foreground/80 mb-6 text-left space-y-2">
+                <div className="text-base text-foreground/80 mb-6 text-left space-y-3">
                     <p>
-                        This is a Firebase configuration issue. The app's current domain is not authorized to perform this action.
+                        Your app's current domain is not authorized for Firebase authentication. This is a configuration issue, not a bug.
                     </p>
                     <p>
-                        To fix this, please follow the instructions in the <code className="bg-black/20 px-1 py-0.5 rounded text-foreground/90">README.md</code> file to add your development domain to the allowlist in the Firebase Console.
+                       To fix this, go to your <strong className="text-foreground">Firebase Console → Authentication → Settings → Authorized domains</strong> and add a new domain.
                     </p>
+                    <ul className="list-disc list-inside space-y-1 text-sm pl-2">
+                        <li>
+                           Add the <strong className="text-foreground">domain name only</strong> (e.g., <code className="bg-black/20 px-1 py-0.5 rounded">my-app.com</code>).
+                        </li>
+                        <li>
+                            Do <strong className="text-foreground">not</strong> include <code className="bg-black/20 px-1 py-0.5 rounded">https://</code> or other protocols.
+                        </li>
+                         <li>
+                           For local development, add <code className="bg-black/20 px-1 py-0.5 rounded">localhost</code>.
+                        </li>
+                        <li>
+                            Double-check for typos.
+                        </li>
+                    </ul>
                 </div>
             ) : (
                 <p className="text-base text-foreground/80 mb-6">
