@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
 import DynamicBackground from '@/components/ui-fx/DynamicBackground';
-import { incrementLike } from '@/lib/thoughts-service';
+import { incrementLike, decrementLike } from '@/lib/thoughts-service';
 
 const CollectiveThoughtsPage = () => {
     const { isIos } = usePlatform();
@@ -192,30 +192,37 @@ const CollectiveThoughtsPage = () => {
         }
     };
 
-    const handleLikeClick = async (quoteId: string) => {
-        if (likedQuotes.has(quoteId)) return;
-
+    const handleLikeToggle = async (quoteId: string) => {
+        const isLiked = likedQuotes.has(quoteId);
         const originalLikedQuotes = new Set(likedQuotes);
         const originalQuotes = [...quotes];
 
         // Optimistic UI update
         const newLikedQuotes = new Set(likedQuotes);
-        newLikedQuotes.add(quoteId);
+        if (isLiked) {
+            newLikedQuotes.delete(quoteId);
+        } else {
+            newLikedQuotes.add(quoteId);
+        }
         setLikedQuotes(newLikedQuotes);
         localStorage.setItem('likedThoughts', JSON.stringify(Array.from(newLikedQuotes)));
 
         setQuotes(currentQuotes =>
             currentQuotes.map(q =>
-                q.id === quoteId ? { ...q, likes: (q.likes || 0) + 1 } : q
+                q.id === quoteId ? { ...q, likes: (q.likes || 0) + (isLiked ? -1 : 1) } : q
             )
         );
 
         try {
-            await incrementLike(quoteId);
+            if (isLiked) {
+                await decrementLike(quoteId);
+            } else {
+                await incrementLike(quoteId);
+            }
         } catch (error) {
             toast({
                 title: "Connection Error",
-                description: "Your gesture of appreciation couldn't be saved. Please try again.",
+                description: "Your gesture couldn't be saved. Please try again.",
                 variant: "destructive"
             });
             // Rollback UI on failure
@@ -379,8 +386,7 @@ const CollectiveThoughtsPage = () => {
                                             variant="ghost"
                                             size="sm"
                                             className="group flex items-center gap-1.5 text-foreground/70 hover:text-primary px-2 -ml-2 hover:bg-primary/10"
-                                            onClick={() => handleLikeClick(quote.id)}
-                                            disabled={likedQuotes.has(quote.id)}
+                                            onClick={() => handleLikeToggle(quote.id)}
                                             aria-label="Like thought"
                                         >
                                             <Heart className={cn("w-4 h-4 transition-colors", likedQuotes.has(quote.id) ? "fill-primary text-primary" : "text-foreground/70", "group-hover:text-primary")} />

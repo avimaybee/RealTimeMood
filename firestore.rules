@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -51,13 +52,14 @@ service cloud.firestore {
         && request.resource.data.submittedAt == request.time;
 
       // update only if:
-      //  • only the `likes` field is being modified
-      //  • likes value is a number >= 0
-      allow update: if request.resource.data.keys().hasAll(resource.data.keys())
-        && resource.data.keys().hasAll(request.resource.data.keys())
+      //  • authenticated
+      //  • all other fields are unchanged
+      //  • likes was incremented or decremented by exactly 1
+      //  • likes count doesn't go below 0
+      allow update: if request.auth != null
         && request.resource.data.text == resource.data.text
         && request.resource.data.submittedAt == resource.data.submittedAt
-        && request.resource.data.likes is int
+        && (request.resource.data.likes == resource.data.likes + 1 || request.resource.data.likes == resource.data.likes - 1)
         && request.resource.data.likes >= 0;
     }
   }
