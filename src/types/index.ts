@@ -104,4 +104,14 @@ export interface UserDailyMoodSummary {
   contributionCount: number;
   moods: SimpleMood[]; // List of all moods contributed on that day
 }
+
+/**
+ * Represents a user's profile, including streak data.
+ * Stored at: /userProfiles/{userId}
+ */
+export interface UserProfile {
+  uid: string;
+  currentStreak: number;
+  lastContributionDate: string; // "YYYY-MM-DD"
+}
     

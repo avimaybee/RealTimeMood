@@ -1,20 +1,22 @@
 
 "use client";
 import Link from 'next/link';
-import { ArrowLeft, Loader2, User } from 'lucide-react';
+import { ArrowLeft, Flame, Loader2, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useDynamicColors } from '@/hooks/useDynamicColors';
-import type { Mood, UserDailyMoodSummary } from '@/types';
+import type { Mood, UserDailyMoodSummary, UserProfile } from '@/types';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
 import { motion } from 'framer-motion';
 import { usePlatform } from '@/contexts/PlatformContext';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import SignInPrompt from '@/components/features/SignInPrompt';
 import MoodCalendar from '@/components/features/MoodCalendar';
 import { fetchUserMoodHistory } from '@/lib/user-mood-service';
+import { fetchUserProfile } from '@/lib/user-profile-service';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,14 +41,19 @@ const MoodCalendarPageContent = () => {
   const { user, isAnonymous, isLoading: isAuthLoading, signOut } = useAuth();
   
   const [moodData, setMoodData] = useState<UserDailyMoodSummary[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       if (user && !isAnonymous) {
         setIsDataLoading(true);
-        const data = await fetchUserMoodHistory(user.uid);
-        setMoodData(data);
+        const [historyData, profileData] = await Promise.all([
+          fetchUserMoodHistory(user.uid),
+          fetchUserProfile(user.uid),
+        ]);
+        setMoodData(historyData);
+        setUserProfile(profileData);
         setIsDataLoading(false);
       }
     }
@@ -54,6 +61,24 @@ const MoodCalendarPageContent = () => {
         loadData();
     }
   }, [user, isAnonymous, isAuthLoading]);
+
+  const renderStreakCard = () => {
+    if (!userProfile || userProfile.currentStreak === 0) return null;
+
+    return (
+      <Card className="frosted-glass rounded-2xl mb-6 w-full max-w-sm mx-auto">
+        <CardContent className="p-4 flex items-center gap-4">
+          <div className="p-3 bg-primary/20 rounded-full">
+            <Flame className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold">{userProfile.currentStreak}-Day Streak</p>
+            <p className="text-muted-foreground text-sm">Keep it going by contributing every day!</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   const renderContent = () => {
     if (isAuthLoading) {
@@ -68,10 +93,14 @@ const MoodCalendarPageContent = () => {
         if (isDataLoading) {
             return <Skeleton className="h-[400px] w-full max-w-4xl mx-auto rounded-2xl" />;
         }
-        return <MoodCalendar data={moodData} />;
+        return (
+          <>
+            {renderStreakCard()}
+            <MoodCalendar data={moodData} />
+          </>
+        );
     }
     
-    // Fallback for non-anonymous user but no data (e.g., error state or just logged in)
     return <SignInPrompt />;
   };
 

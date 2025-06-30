@@ -12,9 +12,10 @@ import {
 import { format } from 'date-fns';
 import type { Mood, SimpleMood, UserDailyMoodSummary } from '@/types';
 import { averageHsl, findClosestMood } from './colorUtils';
+import { updateUserStreak } from './user-profile-service';
 
 /**
- * Records a user's mood contribution to their personal daily summary.
+ * Records a user's mood contribution to their personal daily summary AND updates their streak.
  * This function is transactional to ensure data consistency.
  * @param userId The UID of the user.
  * @param mood The mood object to record.
@@ -32,6 +33,7 @@ export async function recordUserMood(userId: string, mood: Mood): Promise<void> 
 
   try {
     await runTransaction(db, async (transaction) => {
+      // --- Part 1: Update Daily Mood Summary ---
       const dailyDoc = await transaction.get(dailySummaryRef);
 
       if (!dailyDoc.exists()) {
@@ -62,6 +64,9 @@ export async function recordUserMood(userId: string, mood: Mood): Promise<void> 
         };
         transaction.update(dailySummaryRef, newSummary);
       }
+      
+      // --- Part 2: Update User Streak ---
+      await updateUserStreak(transaction, userId);
     });
   } catch (error) {
     console.error(`Failed to record user mood for user ${userId}:`, error);
