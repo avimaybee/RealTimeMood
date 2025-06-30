@@ -81,6 +81,34 @@ const CollectiveThoughtsPage = () => {
     const textRefs = useRef(new Map<string, HTMLParagraphElement | null>());
     const scrollAreaRef = useRef<HTMLDivElement>(null);
 
+    const getCounterColorStyle = (currentLength: number, maxLength: number): React.CSSProperties => {
+        const overLimit = currentLength > maxLength;
+        const progress = Math.min(currentLength / maxLength, 1);
+        
+        if (overLimit) {
+            return { color: 'hsl(var(--destructive))' };
+        }
+    
+        // The point at which the color starts changing from default
+        const transitionStart = 0.8; 
+    
+        if (progress < transitionStart) {
+            return { color: 'hsl(var(--muted-foreground))' };
+        }
+    
+        // The progress within the transition range (from 80% to 100%)
+        // This value goes from 0 to 1
+        const transitionProgress = (progress - transitionStart) / (1 - transitionStart);
+    
+        // We want to interpolate hue from a safe green (120) to a dangerous red (0)
+        const hue = 120 * (1 - transitionProgress);
+    
+        return { 
+            color: `hsl(${hue}, 90%, 55%)`,
+            transition: 'color 0.2s ease-in-out',
+        };
+    };
+
     useEffect(() => {
         setIsClient(true);
     }, []);
@@ -605,10 +633,13 @@ const CollectiveThoughtsPage = () => {
                                   exit={{ opacity: 0, y: 5 }}
                                   transition={{ duration: 0.2 }}
                               >
-                                  <p className={cn(
-                                      "text-xs",
-                                      charsLeft >= 0 ? "text-muted-foreground" : "text-destructive font-medium"
-                                  )}>
+                                  <p
+                                      className={cn(
+                                          "text-xs tabular-nums",
+                                          thoughtValue.length > MAX_THOUGHT_LENGTH && "font-semibold"
+                                      )}
+                                      style={getCounterColorStyle(thoughtValue.length, MAX_THOUGHT_LENGTH)}
+                                  >
                                       {thoughtValue.length}/{MAX_THOUGHT_LENGTH}
                                   </p>
                               </motion.div>
@@ -622,5 +653,7 @@ const CollectiveThoughtsPage = () => {
 }
 
 export default CollectiveThoughtsPage;
+
+    
 
     
