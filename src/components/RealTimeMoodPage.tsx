@@ -18,6 +18,11 @@ const OnboardingOverlay = dynamic(() => import('@/components/features/Onboarding
   ssr: false,
 });
 
+const AddToHomeScreenPrompt = dynamic(() => import('@/components/features/AddToHomeScreenPrompt'), {
+  ssr: false,
+});
+
+
 const PageContent: React.FC = () => {
   const { isCollectiveShifting, setPreviewMood } = useMood();
   const [isEmojiSelectorOpen, setIsEmojiSelectorOpen] = React.useState(false);
@@ -28,6 +33,7 @@ const PageContent: React.FC = () => {
   // State lifted from OrbButton to control page-level effects
   const [interactionMode, setInteractionMode] = useState<'orb' | 'bar'>('orb');
   const [isCharging, setIsCharging] = useState(false);
+  const [showPwaPrompt, setShowPwaPrompt] = useState(false);
 
   useEffect(() => {
     // Register Service Worker for PWA capabilities
@@ -44,6 +50,30 @@ const PageContent: React.FC = () => {
       });
     }
   }, []);
+
+  useEffect(() => {
+    const handleContribution = (event: Event) => {
+        const customEvent = event as CustomEvent<{ count: number }>;
+        if (!customEvent.detail) return;
+        
+        const count = customEvent.detail.count;
+        
+        const PWA_PROMPT_THRESHOLD = 5;
+        const hasBeenPrompted = localStorage.getItem('hasBeenPromptedForPWA') === 'true';
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+        if (count >= PWA_PROMPT_THRESHOLD && !hasBeenPrompted && !isStandalone) {
+            setShowPwaPrompt(true);
+            localStorage.setItem('hasBeenPromptedForPWA', 'true');
+        }
+    };
+    
+    window.addEventListener('userContribution', handleContribution);
+
+    return () => {
+        window.removeEventListener('userContribution', handleContribution);
+    };
+}, []);
 
   // This effect handles adding/removing global classes to the body
   // to prevent scrolling when the emoji selector is open. It's safe
@@ -136,6 +166,7 @@ const PageContent: React.FC = () => {
       />
       
       <OnboardingOverlay />
+      <AddToHomeScreenPrompt open={showPwaPrompt} onOpenChange={setShowPwaPrompt} />
 
     </div>
   );

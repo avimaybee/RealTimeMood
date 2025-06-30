@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { Menu, BarChart2, MessageSquareQuote, X, Camera, Eye, Info, Loader2, Gavel, Github, Instagram, Share2, Ghost, Lightbulb, CalendarDays, Flame } from 'lucide-react';
@@ -125,26 +124,6 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
           variant: "destructive",
         });
       }
-    }
-  };
-
-  const handleResetTutorial = () => {
-    try {
-      localStorage.removeItem('hasVisitedRealTimeMood');
-      toast({
-        title: "Tutorial Reset",
-        description: "The helpful hints for new users will be shown again.",
-      });
-      setIsMenuOpen(false);
-      // Reload the page to ensure the onboarding state is re-evaluated
-      setTimeout(() => window.location.reload(), 500);
-    } catch (error) {
-      console.error("Could not reset tutorial state:", error);
-      toast({
-        title: "Error",
-        description: "Could not reset the tutorial. Please try clearing your site data.",
-        variant: "destructive"
-      });
     }
   };
 
@@ -338,14 +317,6 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                                 )}
                                 Guidelines
                             </Link>
-                        </Button>
-                        <Button 
-                            variant="ghost" 
-                            className="text-base w-full justify-start"
-                            onClick={handleResetTutorial}
-                        >
-                            <Lightbulb className="mr-2 h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />
-                            Reset Tutorial
                         </Button>
 
                         <Separator className="my-1" />

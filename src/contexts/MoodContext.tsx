@@ -1,4 +1,3 @@
-
 "use client";
 import type { ReactNode } from 'react';
 import React, { useRef, useMemo } from 'react';
@@ -142,6 +141,20 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
       setLastUserContribution(mood);
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         navigator.vibrate(50); 
+      }
+      
+      // Track local user contributions for PWA prompt
+      if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+          const currentCount = parseInt(localStorage.getItem('userContributionCount') || '0', 10);
+          const newCount = currentCount + 1;
+          localStorage.setItem('userContributionCount', newCount.toString());
+          
+          // Dispatch event for other components to listen to
+          window.dispatchEvent(new CustomEvent('userContribution', { detail: { count: newCount } }));
+        } catch (e) {
+          console.warn("Could not update user contribution count in localStorage.", e);
+        }
       }
     }
     
