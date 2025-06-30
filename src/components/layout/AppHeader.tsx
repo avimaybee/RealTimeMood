@@ -27,15 +27,19 @@ const AppHeaderLogo: React.FC<{ animationClass: string; isIos: boolean }> = ({ a
 const AppHeader: React.FC = () => {
   const { currentMood, isCollectiveShifting, lastUserContribution } = useMood();
   const { isIos } = usePlatform();
-  const { adjective } = currentMood;
 
+  // The logo animation should always reflect the overall collective mood.
+  const collectiveAdjective = currentMood.adjective;
   const animationClass = 
-    adjective === 'Anxious' ? 'animate-logo-anxious' :
-    (adjective === 'Joyful' || adjective === 'Energetic' || adjective === 'Passionate') ? 'animate-logo-joyful' :
+    collectiveAdjective === 'Anxious' ? 'animate-logo-anxious' :
+    (collectiveAdjective === 'Joyful' || collectiveAdjective === 'Energetic' || collectiveAdjective === 'Passionate') ? 'animate-logo-joyful' :
     'animate-logo-calm';
   
-  const moodForGlow = lastUserContribution || currentMood;
-  const moodColor = moodToHslString(moodForGlow);
+  // The glowing indicator (dot and text) should reflect the user's last contribution,
+  // falling back to the collective mood if the user hasn't contributed yet in this session.
+  const moodForIndicator = lastUserContribution || currentMood;
+  const indicatorAdjective = moodForIndicator.adjective;
+  const indicatorColor = moodToHslString(moodForIndicator);
 
   return (
     <motion.header 
@@ -58,17 +62,17 @@ const AppHeader: React.FC = () => {
       
       <div className="flex items-center gap-2">
         <span className="text-xs text-foreground/70">
-          {currentMood.adjective}
+          {indicatorAdjective}
         </span>
         <motion.div
             className="w-3 h-3 rounded-full"
             style={{ 
-                backgroundColor: moodColor,
-                boxShadow: `0 0 8px 1px ${moodColor}`
+                backgroundColor: indicatorColor,
+                boxShadow: `0 0 8px 1px ${indicatorColor}`
             }}
             animate={{ scale: [1, 1.15, 1] }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            key={moodForGlow.hue} // Re-trigger animation on hue change
+            key={moodForIndicator.hue} // Re-trigger animation on hue change
         />
       </div>
     </motion.header>
