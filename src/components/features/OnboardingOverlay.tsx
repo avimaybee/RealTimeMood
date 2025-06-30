@@ -3,8 +3,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowDown } from 'lucide-react';
-import { usePlatform } from '@/contexts/PlatformContext';
+import { ArrowDown, X } from 'lucide-react';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -30,13 +29,8 @@ const itemVariants = {
 const OnboardingOverlay: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isFirstVisit, setIsFirstVisit] = useState<boolean | null>(null);
-  const autoDismissTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleDismiss = useRef(() => {
-    if (autoDismissTimerRef.current) {
-      clearTimeout(autoDismissTimerRef.current);
-      autoDismissTimerRef.current = null;
-    }
     setIsVisible(false);
     try {
       localStorage.setItem('hasVisitedRealTimeMood', 'true');
@@ -51,17 +45,13 @@ const OnboardingOverlay: React.FC = () => {
       hasVisited = localStorage.getItem('hasVisitedRealTimeMood') || 'false';
     } catch (error) {
       console.warn('Could not access localStorage for onboarding state.', error);
-      hasVisited = 'true';
+      hasVisited = 'true'; // Default to not showing if localStorage fails
     }
 
     if (hasVisited === 'false') {
       setIsFirstVisit(true);
       setIsVisible(true);
 
-      // Auto-dismiss after 10 seconds
-      autoDismissTimerRef.current = setTimeout(handleDismiss.current, 10000);
-      
-      // Dismiss on menu button click
       const menuButton = document.querySelector('[data-menu-button="true"]');
       const dismissHandler = () => handleDismiss.current();
       
@@ -69,11 +59,7 @@ const OnboardingOverlay: React.FC = () => {
         menuButton.addEventListener('click', dismissHandler, { once: true });
       }
 
-      // Cleanup
       return () => {
-        if (autoDismissTimerRef.current) {
-          clearTimeout(autoDismissTimerRef.current);
-        }
         if (menuButton) {
           menuButton.removeEventListener('click', dismissHandler);
         }
@@ -97,8 +83,15 @@ const OnboardingOverlay: React.FC = () => {
           exit="exit"
           className="fixed inset-x-0 bottom-24 z-30 max-w-lg mx-auto flex flex-col items-end justify-center gap-2 pointer-events-none pr-4"
         >
-          <motion.div variants={itemVariants} className="flex items-center gap-2 text-white/90 text-sm md:text-base bg-black/20 px-3 py-1.5 rounded-full shadow-soft">
+          <motion.div 
+            variants={itemVariants} 
+            className="flex items-center gap-2 text-white/90 text-sm md:text-base bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-soft pointer-events-auto"
+          >
             <p>Tap here to explore mood features!</p>
+            <button onClick={handleDismiss.current} className="ml-1 -mr-1 p-1 rounded-full hover:bg-white/20 transition-colors">
+              <X className="w-4 h-4" />
+              <span className="sr-only">Dismiss</span>
+            </button>
           </motion.div>
           <motion.div variants={itemVariants}>
             <ArrowDown className="w-6 h-6 text-white/90" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }} />
