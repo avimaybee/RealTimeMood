@@ -6,6 +6,7 @@ import { createContext, useContext, useState, useCallback, useEffect } from 'rea
 import type { AppState, Mood, CollectiveMoodState } from '@/types';
 import { PREDEFINED_MOODS, moodToHslString, findClosestMood } from '@/lib/colorUtils';
 import { submitMood, updateUserActivity } from '@/lib/mood-service';
+import { recordUserMood } from '@/lib/user-mood-service';
 import { onSnapshot, doc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
@@ -76,7 +77,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
         if (user) {
-            // User is signed in anonymously.
+            // User is signed in.
             sessionIdRef.current = user.uid;
         } else {
             // User is signed out.
@@ -149,15 +150,21 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     setLastContributorMoodColor(moodToHslString(mood));
     setLastContributionPosition(position);
 
-    // Call the backend submission logic
-    if (sessionIdRef.current) {
-      submitMood(mood, sessionIdRef.current).catch(error => {
-        console.error("Submission failed:", error);
+    const userId = auth.currentUser?.uid;
+    if (userId) {
+      // Submit to collective mood service
+      submitMood(mood, userId).catch(error => {
+        console.error("Collective submission failed:", error);
         // Simple rollback for the optimistic update
         setContributionCount(prev => prev - 1);
-        // The OrbButton will show a toast notification to the user about the failure.
       });
+
+      // Also record to the user's personal history
+      if (!options?.isSimulated) {
+          recordUserMood(userId, mood);
+      }
     }
+
 
     // Clear the ripple effect after its animation
     setTimeout(() => {
@@ -175,7 +182,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     const runSimulation = () => {
       // Schedule the next simulation event at a much longer random interval
       // to reduce database writes and visual noise from ripples.
-      const nextEventIn = 8000 + Math.random() * 7000; // 8s to 15s, was 2s to 6s
+      const nextEventIn = 8000 + Math.random() * 7000; // 8s to 15s
       simulationTimeout = setTimeout(runSimulation, nextEventIn);
 
       setUserCount(prev => {
@@ -196,8 +203,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
             newCount = 5;
         }
         
-        // A simulated user "joined" and submitted a mood. This now happens less frequently
-        // because the entire simulation loop is slower.
+        // A simulated user "joined" and submitted a mood.
         if (newCount > prev) {
           if (sessionIdRef.current) {
             const randomX = window.innerWidth * (0.2 + Math.random() * 0.6);

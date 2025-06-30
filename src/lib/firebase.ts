@@ -1,8 +1,17 @@
+
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAnalytics, isSupported, type Analytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { 
+  getAuth, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  linkWithCredential, 
+  onAuthStateChanged,
+  signOut,
+  type User 
+} from "firebase/auth";
 
 // Your web app's Firebase configuration is hardcoded here to resolve
 // an environment-specific issue with loading .env files.
@@ -47,4 +56,14 @@ export function initializeAnalytics() {
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-export { app, db, auth };
+export { 
+  app, 
+  db, 
+  auth, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  linkWithCredential, 
+  onAuthStateChanged,
+  signOut,
+  type User
+};

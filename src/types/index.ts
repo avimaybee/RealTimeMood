@@ -91,4 +91,17 @@ export interface CommunityQuote {
   likes?: number;
 }
 
+/**
+ * Represents a user's aggregated mood data for a single day.
+ * Stored at: /userMoodHistory/{userId}/dailySummaries/{YYYY-MM-DD}
+ */
+export interface UserDailyMoodSummary {
+  date: string; // YYYY-MM-DD
+  averageHue: number;
+  averageSaturation: number;
+  averageLightness: number;
+  dominantAdjective: string;
+  contributionCount: number;
+  moods: SimpleMood[]; // List of all moods contributed on that day
+}
     

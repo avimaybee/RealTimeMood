@@ -1,7 +1,7 @@
 
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, BarChart2, MessageSquareQuote, X, Camera, Eye, Info, Loader2, Gavel, Github, Instagram, Share2, Ghost, Lightbulb } from 'lucide-react';
+import { Menu, BarChart2, MessageSquareQuote, X, Camera, Eye, Info, Loader2, Gavel, Github, Instagram, Share2, Ghost, Lightbulb, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
@@ -216,13 +216,28 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                             className="text-base w-full justify-start"
                             disabled={!!loadingPath}
                         >
+                            <Link href="/calendar" onClick={() => handleLinkClick('/calendar')}>
+                                {loadingPath === '/calendar' ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <CalendarDays className="mr-2 h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />
+                                )}
+                                Mood Calendar
+                            </Link>
+                        </Button>
+                        <Button 
+                            asChild 
+                            variant="ghost" 
+                            className="text-base w-full justify-start"
+                            disabled={!!loadingPath}
+                        >
                             <Link href="/history" onClick={() => handleLinkClick('/history')}>
                                 {loadingPath === '/history' ? (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 ) : (
                                     <BarChart2 className="mr-2 h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />
                                 )}
-                                View Mood History
+                                Collective History
                             </Link>
                         </Button>
                         <Button 
