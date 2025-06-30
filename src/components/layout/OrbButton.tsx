@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
@@ -261,6 +262,18 @@ const OrbButton: React.FC<OrbButtonProps> = ({
                   <div className="w-full h-full rounded-full" style={{
                     background: 'linear-gradient(to right, hsl(0, 80%, 60%), hsl(60, 80%, 60%), hsl(120, 80%, 60%), hsl(180, 80%, 60%), hsl(240, 80%, 60%), hsl(300, 80%, 60%), hsl(360, 80%, 60%))'
                   }} />
+
+                  <motion.div
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0, transition: { delay: 0.3 } }}
+                    exit={{ opacity: 0, y: 5 }}
+                  >
+                    <p className="text-white/80 text-sm font-medium" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
+                      Tap or slide to share your mood
+                    </p>
+                  </motion.div>
+                  
                   {previewMood && (
                     <div className="absolute top-0 left-0 h-full flex items-center" style={{ 
                       transform: `translateX(${((previewMood.hue / 360) * barRef.current!.offsetWidth) - 16}px) translateX(-50%)`,
