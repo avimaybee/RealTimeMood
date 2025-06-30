@@ -28,7 +28,7 @@ const PageContent: React.FC = () => {
   const [isAmbientMode, setIsAmbientMode] = React.useState(false);
   const { isIos } = usePlatform();
   
-  // State lifted from OrbButton to avoid client-side only errors
+  // State lifted from OrbButton to control page-level effects
   const [interactionMode, setInteractionMode] = useState<'orb' | 'bar'>('orb');
   const [isCharging, setIsCharging] = useState(false);
 
@@ -53,7 +53,7 @@ const PageContent: React.FC = () => {
   // because useEffect only runs on the client.
   useEffect(() => {
     const className = 'no-scroll-select';
-    if (isEmojiSelectorOpen) {
+    if (isEmojiSelectorOpen || interactionMode === 'bar') {
       document.body.classList.add(className);
     } else {
       document.body.classList.remove(className);
@@ -61,7 +61,7 @@ const PageContent: React.FC = () => {
     return () => {
       document.body.classList.remove(className);
     };
-  }, [isEmojiSelectorOpen]);
+  }, [isEmojiSelectorOpen, interactionMode]);
 
   const handlePageClick = () => {
     if (isAmbientMode) {
@@ -109,6 +109,8 @@ const PageContent: React.FC = () => {
         setIsEmojiSelectorOpen={setIsEmojiSelectorOpen}
         isCharging={isCharging}
         setIsCharging={setIsCharging}
+        interactionMode={interactionMode}
+        setInteractionMode={setInteractionMode}
       /> 
       
       <AppFooter 

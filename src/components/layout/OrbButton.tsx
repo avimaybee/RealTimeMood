@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
@@ -5,7 +6,7 @@ import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
 import { Plus } from 'lucide-react';
 import { useMood } from '@/contexts/MoodContext';
-import { findClosestMood, moodToHslString } from '@/lib/colorUtils';
+import { findClosestMood, moodToHslString, PREDEFINED_MOODS } from '@/lib/colorUtils';
 import type { Mood } from '@/types';
 import { cn } from '@/lib/utils';
 import { motion, type PanInfo, AnimatePresence } from 'framer-motion';
@@ -19,6 +20,8 @@ interface OrbButtonProps {
   setIsEmojiSelectorOpen: (isOpen: boolean) => void;
   isCharging: boolean;
   setIsCharging: (isCharging: boolean) => void;
+  interactionMode: 'orb' | 'bar';
+  setInteractionMode: (mode: 'orb' | 'bar' | ((prev: 'orb' | 'bar') => 'orb' | 'bar')) => void;
 }
 
 const OrbButton: React.FC<OrbButtonProps> = ({ 
@@ -26,6 +29,8 @@ const OrbButton: React.FC<OrbButtonProps> = ({
   setIsEmojiSelectorOpen,
   isCharging,
   setIsCharging,
+  interactionMode,
+  setInteractionMode,
 }) => {
   const { recordContribution, isCollectiveShifting, setPreviewMood, previewMood } = useMood();
   const { toast } = useToast();
@@ -33,14 +38,32 @@ const OrbButton: React.FC<OrbButtonProps> = ({
   const [chargeData, setChargeData] = useState<{ mood: Mood } | null>(null);
   const [isClient, setIsClient] = useState(false);
   const lastSubmissionTimeRef = useRef<number>(0);
+  const pressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const handleOrbTap = () => {
-    if (isCharging || isEmojiSelectorOpen) return;
-    setIsEmojiSelectorOpen(true);
+  const handlePointerDown = (e: ReactPointerEvent) => {
+    if (interactionMode === 'bar' || isEmojiSelectorOpen || isCharging) return;
+    e.preventDefault();
+    pressTimeoutRef.current = setTimeout(() => {
+      // Long press detected
+      setIsEmojiSelectorOpen(true);
+      pressTimeoutRef.current = null;
+    }, 300); // 300ms threshold for long press
+  };
+
+  const handlePointerUp = () => {
+    if (pressTimeoutRef.current) {
+      // It was a short press (tap)
+      clearTimeout(pressTimeoutRef.current);
+      pressTimeoutRef.current = null;
+      if (!isEmojiSelectorOpen) {
+        setInteractionMode(prev => (prev === 'orb' ? 'bar' : 'orb'));
+      }
+    }
   };
 
   const handleMoodSelection = (mood: Mood) => {
@@ -49,23 +72,48 @@ const OrbButton: React.FC<OrbButtonProps> = ({
     setChargeData({ mood });
     setIsCharging(true);
   };
-
+  
   const handleDismissEmojiSelector = useCallback(() => {
     setIsEmojiSelectorOpen(false);
     setPreviewMood(null);
   }, [setPreviewMood, setIsEmojiSelectorOpen]);
+  
+  const getMoodFromPosition = (x: number): Mood => {
+    if (!barRef.current) return PREDEFINED_MOODS[0];
+    const { left, width } = barRef.current.getBoundingClientRect();
+    const progress = Math.max(0, Math.min(1, (x - left) / width));
+    const hue = progress * 360;
+    const mood = findClosestMood(hue);
+    return { ...mood, hue };
+  };
+
+  const handlePan = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const mood = getMoodFromPosition(info.point.x);
+    setPreviewMood(mood);
+  };
+
+  const handlePanEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const mood = getMoodFromPosition(info.point.x);
+    recordContribution(mood, { x: window.innerWidth / 2, y: window.innerHeight / 2 });
+    setInteractionMode('orb');
+    setPreviewMood(null);
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50);
+  };
+
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (isEmojiSelectorOpen) {
-          handleDismissEmojiSelector();
+        if (isEmojiSelectorOpen) handleDismissEmojiSelector();
+        if (interactionMode === 'bar') {
+          setInteractionMode('orb');
+          setPreviewMood(null);
         }
       }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isEmojiSelectorOpen, handleDismissEmojiSelector]);
+  }, [isEmojiSelectorOpen, handleDismissEmojiSelector, interactionMode, setInteractionMode, setPreviewMood]);
 
   useEffect(() => {
     if (!isCharging || !chargeData) return;
@@ -102,12 +150,18 @@ const OrbButton: React.FC<OrbButtonProps> = ({
     return () => clearTimeout(chargeTimeout);
   }, [isCharging, chargeData, recordContribution, toast, setIsCharging]);
 
-  const morphTransition = { type: 'tween', duration: 0.5, ease: [0.76, 0, 0.24, 1] };
+  const morphTransition = { type: 'spring', stiffness: 350, damping: 35 };
 
   const orbVariants = {
     orb: {
       width: '80px', height: '80px', borderRadius: '9999px',
       background: 'rgba(255, 255, 255, 0.1)', 
+      backdropFilter: 'blur(12px)', scale: 1, opacity: 1,
+      transition: { ...morphTransition }
+    },
+    bar: {
+      width: 'min(90vw, 420px)', height: '64px', borderRadius: '32px',
+      background: 'rgba(255, 255, 255, 0.1)',
       backdropFilter: 'blur(12px)', scale: 1, opacity: 1,
       transition: { ...morphTransition }
     },
@@ -119,11 +173,12 @@ const OrbButton: React.FC<OrbButtonProps> = ({
       scale: 1, opacity: 1,
       transition: { ...morphTransition }
     },
-    hidden: { scale: 0, opacity: 0, transition: { ...morphTransition } }
+    hidden: { scale: 0, opacity: 0, transition: { ...morphTransition, duration: 0.2 } }
   };
 
   const iconVariants = {
     orb: { scale: 1, opacity: 1, rotate: 0, transition: { delay: 0.1, ...morphTransition } },
+    bar: { scale: 0, opacity: 0, rotate: 45, transition: { ...morphTransition, duration: 0.2 } },
     charging: { scale: 0, opacity: 0, transition: morphTransition },
     hidden: { scale: 0, opacity: 0, transition: morphTransition }
   };
@@ -131,7 +186,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
   const getAnimationState = () => {
     if (isEmojiSelectorOpen) return 'hidden';
     if (isCharging) return 'charging';
-    return 'orb';
+    return interactionMode;
   };
 
   const animationState = getAnimationState();
@@ -141,9 +196,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
       <motion.div
         data-orb-button-container
         className={cn(
-          // pin full-width, bottom-spaced, stacking above content
           "fixed inset-x-0 bottom-20 md:bottom-24 z-40",
-          // centre children horizontally
           "flex justify-center items-center"
         )}
         animate={{ y: isCollectiveShifting ? 8 : 0 }}
@@ -167,25 +220,45 @@ const OrbButton: React.FC<OrbButtonProps> = ({
               )}
             </AnimatePresence>
           <motion.div
+            ref={barRef}
             variants={orbVariants}
             initial="orb" 
             animate={animationState}
-            onTap={handleOrbTap}
+            onPointerDown={handlePointerDown}
+            onPointerUp={handlePointerUp}
+            onPan={interactionMode === 'bar' ? handlePan : undefined}
+            onPanEnd={interactionMode === 'bar' ? handlePanEnd : undefined}
             className={cn(
               "relative flex items-center justify-center shadow-soft cursor-pointer",
               (isCharging || isEmojiSelectorOpen) && "pointer-events-none",
             )}
           >
-            <motion.div
-              variants={iconVariants}
-              animate={animationState}
-              className="relative flex items-center justify-center"
-            >
-              <Plus
-                className="w-10 h-10 text-white"
-                strokeWidth={isIos ? 1.5 : 2}
-              />
+            <motion.div variants={iconVariants} animate={animationState}>
+              <Plus className="w-10 h-10 text-white" strokeWidth={isIos ? 1.5 : 2} />
             </motion.div>
+            
+            <AnimatePresence>
+              {interactionMode === 'bar' && (
+                <motion.div 
+                  className="absolute inset-0 p-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1, transition: { delay: 0.2 } }}
+                  exit={{ opacity: 0, transition: { duration: 0.1 } }}
+                >
+                  <div className="w-full h-full rounded-full" style={{
+                    background: 'linear-gradient(to right, hsl(0, 80%, 60%), hsl(60, 80%, 60%), hsl(120, 80%, 60%), hsl(180, 80%, 60%), hsl(240, 80%, 60%), hsl(300, 80%, 60%), hsl(360, 80%, 60%))'
+                  }} />
+                  {previewMood && (
+                    <div className="absolute top-0 left-0 h-full flex items-center" style={{ 
+                      transform: `translateX(${((previewMood.hue / 360) * barRef.current!.offsetWidth) - 16}px) translateX(-50%)`,
+                      left: '16px'
+                    }}>
+                        <div className="w-8 h-8 rounded-full bg-white/80 shadow-lg ring-4 ring-white/30" />
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </div>
       </motion.div>
