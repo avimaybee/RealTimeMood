@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
@@ -16,9 +15,6 @@ import { usePlatform } from '@/contexts/PlatformContext';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const OnboardingOverlay = dynamic(() => import('@/components/features/OnboardingOverlay'), {
-  ssr: false,
-});
-const AddToHomeScreenPrompt = dynamic(() => import('@/components/features/AddToHomeScreenPrompt'), {
   ssr: false,
 });
 
@@ -140,7 +136,6 @@ const PageContent: React.FC = () => {
       />
       
       <OnboardingOverlay />
-      <AddToHomeScreenPrompt />
 
     </div>
   );

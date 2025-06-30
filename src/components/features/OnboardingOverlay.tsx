@@ -1,104 +1,63 @@
-
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowDown, X } from 'lucide-react';
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      delay: 0.5,
-    },
-  },
-  exit: {
-    opacity: 0,
-    transition: {
-      duration: 0.5,
-    }
-  }
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0, transition: { type: 'spring', damping: 15, stiffness: 200, delay: 0.7 } },
-};
+import React, { useState, useEffect } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Button } from '@/components/ui/button';
+import { Sparkles } from 'lucide-react';
 
 const OnboardingOverlay: React.FC = () => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isFirstVisit, setIsFirstVisit] = useState<boolean | null>(null);
-
-  const handleDismiss = useRef(() => {
-    setIsVisible(false);
-    try {
-      localStorage.setItem('hasVisitedRealTimeMood', 'true');
-    } catch (error) {
-      console.warn('Could not access localStorage for onboarding state.', error);
-    }
-  });
+  const [isFirstVisit, setIsFirstVisit] = useState(false);
 
   useEffect(() => {
-    let hasVisited = 'true';
-    try {
-      hasVisited = localStorage.getItem('hasVisitedRealTimeMood') || 'false';
-    } catch (error) {
-      console.warn('Could not access localStorage for onboarding state.', error);
-      hasVisited = 'true'; // Default to not showing if localStorage fails
-    }
-
-    if (hasVisited === 'false') {
+    // We check this on the client-side only
+    if (localStorage.getItem('hasVisitedRealTimeMood') !== 'true') {
       setIsFirstVisit(true);
-      setIsVisible(true);
-
-      const menuButton = document.querySelector('[data-menu-button="true"]');
-      const dismissHandler = () => handleDismiss.current();
-      
-      if (menuButton) {
-        menuButton.addEventListener('click', dismissHandler, { once: true });
-      }
-
-      return () => {
-        if (menuButton) {
-          menuButton.removeEventListener('click', dismissHandler);
-        }
-      };
-    } else {
-      setIsFirstVisit(false);
     }
   }, []);
+
+  const handleDismiss = () => {
+    localStorage.setItem('hasVisitedRealTimeMood', 'true');
+    setIsFirstVisit(false);
+  };
 
   if (!isFirstVisit) {
     return null;
   }
-  
+
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-          className="fixed inset-x-0 bottom-24 z-50 max-w-lg mx-auto flex flex-col items-end justify-center gap-2 pointer-events-none pr-4"
+    <Dialog open={isFirstVisit} onOpenChange={handleDismiss}>
+        <DialogContent 
+            className="sm:max-w-md" 
+            data-prevent-snapshot
+            onEscapeKeyDown={handleDismiss}
+            // Prevent closing by clicking outside, so the user has to click the button
+            onInteractOutside={(e) => e.preventDefault()}
         >
-          <motion.div 
-            variants={itemVariants} 
-            className="flex items-center gap-2 text-white/90 text-sm md:text-base bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-soft pointer-events-auto"
-          >
-            <p>Tap here to explore mood features!</p>
-            <button onClick={handleDismiss.current} className="ml-1 -mr-1 p-1 rounded-full hover:bg-white/20 transition-colors">
-              <X className="w-4 h-4" />
-              <span className="sr-only">Dismiss</span>
-            </button>
-          </motion.div>
-          <motion.div variants={itemVariants}>
-            <ArrowDown className="w-6 h-6 text-white/90" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }} />
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+                <Sparkles className="w-5 h-5 text-primary" />
+                Welcome to RealTimeMood
+            </DialogTitle>
+            <DialogDescription className="pt-2 text-base text-foreground/80">
+              This is a living canvas painted by the feelings of people around the world. Your contributions shape the collective mood in real-time.
+              <br /><br />
+              Tap the menu to see our collective history, read anonymous thoughts, or just be with the color of now.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-start">
+            <Button type="button" onClick={handleDismiss} className="interactive-glow w-full sm:w-auto">
+              Explore
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+    </Dialog>
   );
 };
 
