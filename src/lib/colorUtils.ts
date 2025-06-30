@@ -9,24 +9,17 @@ export function moodToHslValues(mood: Mood): string {
   return `${mood.hue} ${mood.saturation}% ${mood.lightness}%`;
 }
 
+// A curated list of 8 moods for the button grid, with more distinct hue values
+// to prevent incorrect mapping from the gradient bar.
 export const PREDEFINED_MOODS: Mood[] = [
-  // Positive - High Energy
   { hue: 54, saturation: 95, lightness: 65, name: "Joyful Yellow", adjective: "Joyful", emoji: "😊" },
   { hue: 30, saturation: 100, lightness: 60, name: "Energetic Orange", adjective: "Energetic", emoji: "🔥" },
   { hue: 0, saturation: 90, lightness: 60, name: "Passionate Red", adjective: "Passionate", emoji: "❤️" },
   { hue: 335, saturation: 100, lightness: 75, name: "Loved Pink", adjective: "Loved", emoji: "🥰" },
-  
-  // Positive - Low Energy / Content
   { hue: 210, saturation: 100, lightness: 70, name: "Calm Blue", adjective: "Calm", emoji: "😌" },
   { hue: 130, saturation: 70, lightness: 60, name: "Peaceful Green", adjective: "Peaceful", emoji: "🧘" },
-  { hue: 180, saturation: 75, lightness: 60, name: "Hopeful Cyan", adjective: "Hopeful", emoji: "✨" },
   { hue: 300, saturation: 80, lightness: 65, name: "Creative Purple", adjective: "Creative", emoji: "💡" },
-
-  // Negative / Other
-  { hue: 240, saturation: 60, lightness: 70, name: "Focused Indigo", adjective: "Focused", emoji: "🎯" },
   { hue: 260, saturation: 50, lightness: 55, name: "Anxious Indigo", adjective: "Anxious", emoji: "😰" },
-  { hue: 220, saturation: 30, lightness: 60, name: "Sad Blue", adjective: "Sad", emoji: "😢" },
-  { hue: 240, saturation: 20, lightness: 50, name: "Tired Grey", adjective: "Tired", emoji: "😴" },
 ];
 
 
