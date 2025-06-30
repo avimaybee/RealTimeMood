@@ -93,6 +93,7 @@ const PageContent: React.FC = () => {
       <div className="vignette-overlay" />
       <div className="noise-overlay" />
       <DynamicBackground />
+      <LivingParticles />
 
       <AnimatePresence>
         {isBarModeActive && (
