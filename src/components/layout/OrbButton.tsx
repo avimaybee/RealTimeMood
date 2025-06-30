@@ -97,7 +97,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
       }
     }, 500);
     return () => clearTimeout(chargeTimeout);
-  }, [isCharging, chargeData, recordContribution, toast, setIsCharging]);
+  }, [isCharging, chargeData, recordContribution, toast]);
 
   const morphTransition = { type: 'tween', duration: 0.5, ease: [0.76, 0, 0.24, 1] };
 
