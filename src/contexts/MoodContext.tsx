@@ -150,18 +150,18 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     setLastContributorMoodColor(moodToHslString(mood));
     setLastContributionPosition(position);
 
-    const userId = auth.currentUser?.uid;
-    if (userId) {
-      // Submit to collective mood service
-      submitMood(mood, userId).catch(error => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      // Submit to collective mood service (for all users)
+      submitMood(mood, currentUser.uid).catch(error => {
         console.error("Collective submission failed:", error);
         // Simple rollback for the optimistic update
         setContributionCount(prev => prev - 1);
       });
 
-      // Also record to the user's personal history
-      if (!options?.isSimulated) {
-          recordUserMood(userId, mood);
+      // Record to personal history ONLY if user is NOT anonymous
+      if (!options?.isSimulated && !currentUser.isAnonymous) {
+          recordUserMood(currentUser.uid, mood);
       }
     }
 
