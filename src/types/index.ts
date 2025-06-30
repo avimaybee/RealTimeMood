@@ -89,6 +89,8 @@ export interface CommunityQuote {
   status: 'pending' | 'approved' | 'rejected';
   displayCount?: number;
   likes?: number;
+  authorHue?: number;
+  authorAdjective?: string;
 }
 
 /**

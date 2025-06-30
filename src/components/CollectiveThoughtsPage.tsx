@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { Mood, CommunityQuote } from '@/types';
+import type { CommunityQuote } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
@@ -19,10 +19,42 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
 import DynamicBackground from '@/components/ui-fx/DynamicBackground';
 import { incrementLike, decrementLike } from '@/lib/thoughts-service';
+import { useMood } from '@/contexts/MoodContext';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+const AuthorAvatar = ({ hue, adjective }: { hue?: number; adjective?: string }) => {
+  if (hue === undefined || hue === null) {
+    // Return a generic placeholder for older thoughts without a hue
+    return (
+      <div className="w-6 h-6 rounded-full bg-muted/30 flex-shrink-0" />
+    );
+  }
+  const color = `hsl(${hue}, 80%, 65%)`;
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            className="w-6 h-6 rounded-full flex-shrink-0"
+            style={{ 
+              backgroundColor: color,
+              boxShadow: `0 0 6px hsla(${hue}, 80%, 65%, 0.7)` 
+            }}
+          />
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Author's mood: <span style={{color: `hsl(${hue}, 80%, 65%)`}}>{adjective || 'Unknown'}</span></p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
+
 
 const CollectiveThoughtsPage = () => {
     const { isIos } = usePlatform();
     const { toast } = useToast();
+    const { currentMood } = useMood();
     const [quotes, setQuotes] = useState<(CommunityQuote & { id: string })[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -265,6 +297,8 @@ const CollectiveThoughtsPage = () => {
                 text: thoughtText,
                 submittedAt: serverTimestamp(),
                 likes: 0,
+                authorHue: currentMood.hue,
+                authorAdjective: currentMood.adjective,
             });
             
             lastSubmissionTimeRef.current = now;
@@ -382,16 +416,19 @@ const CollectiveThoughtsPage = () => {
                                         )}
                                     </div>
                                     <div className="flex justify-between items-center mt-2 pt-2 border-t border-foreground/10">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="group flex items-center gap-1.5 text-foreground/70 hover:text-primary px-2 -ml-2 hover:bg-primary/10"
-                                            onClick={() => handleLikeToggle(quote.id)}
-                                            aria-label="Like thought"
-                                        >
-                                            <Heart className={cn("w-4 h-4 transition-colors", likedQuotes.has(quote.id) ? "fill-primary text-primary" : "text-foreground/70", "group-hover:text-primary")} />
-                                            <span className={cn("font-medium tabular-nums", likedQuotes.has(quote.id) ? "text-primary" : "text-foreground/70", "group-hover:text-primary")}>{quote.likes || 0}</span>
-                                        </Button>
+                                        <div className="flex items-center gap-3">
+                                            <AuthorAvatar hue={quote.authorHue} adjective={quote.authorAdjective} />
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="group flex items-center gap-1.5 text-foreground/70 hover:text-primary px-2 hover:bg-primary/10 -ml-2"
+                                                onClick={() => handleLikeToggle(quote.id)}
+                                                aria-label="Like thought"
+                                            >
+                                                <Heart className={cn("w-4 h-4 transition-colors", likedQuotes.has(quote.id) ? "fill-primary text-primary" : "text-foreground/70", "group-hover:text-primary")} />
+                                                <span className={cn("font-medium tabular-nums", likedQuotes.has(quote.id) ? "text-primary" : "text-foreground/70", "group-hover:text-primary")}>{quote.likes || 0}</span>
+                                            </Button>
+                                        </div>
 
                                         {quote.submittedAt && (
                                             <p className="text-small text-foreground/60">
