@@ -139,12 +139,16 @@
     transform: scale(1.05); /* slightly less pop */
   }
 
-  /* When the emoji selector is active, fade out the main UI elements */
+  /* When the emoji selector or gradient bar is active, recede the page content */
   .emoji-selector-active-page > header,
   .emoji-selector-active-page > main,
-  .emoji-selector-active-page > footer {
-    transition: opacity 0.4s ease-in-out;
+  .emoji-selector-active-page > footer,
+  .bar-mode-active-page > header,
+  .bar-mode-active-page > main,
+  .bar-mode-active-page > footer {
+    transition: opacity 0.4s ease-in-out, filter 0.4s ease-in-out;
     opacity: 0.2;
+    filter: blur(8px);
     pointer-events: none;
   }
 
@@ -167,16 +171,6 @@
     opacity: 0.1;
     filter: blur(16px);
     transform: scale(0.92);
-    pointer-events: none;
-  }
-
-  /* When the gradient bar is active, recede the page content */
-  .bar-mode-active-page > header,
-  .bar-mode-active-page > main,
-  .bar-mode-active-page > footer {
-    transition: opacity 0.4s ease-in-out, filter 0.4s ease-in-out;
-    opacity: 0.2;
-    filter: blur(8px);
     pointer-events: none;
   }
   
