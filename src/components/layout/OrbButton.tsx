@@ -211,11 +211,25 @@ const OrbButton: React.FC<OrbButtonProps> = ({
         data-orb-button-container
         className={cn(
           "fixed inset-x-0 bottom-20 md:bottom-24 z-40",
-          "flex justify-center items-center"
+          "flex flex-col items-center justify-center gap-2"
         )}
         animate={{ y: isCollectiveShifting ? 8 : 0 }}
         transition={{ type: 'spring', stiffness: 100, damping: 10 }}
       >
+        <AnimatePresence>
+          {interactionMode === 'bar' && (
+            <motion.div
+              className="text-white/80 text-sm font-medium pointer-events-none"
+              style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0, transition: { delay: 0.3 } }}
+              exit={{ opacity: 0, y: 5, transition: { duration: 0.1 } }}
+            >
+              <p>Tap or slide to share your mood</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="relative flex items-center justify-center">
             <AnimatePresence>
               {isClient && animationState === 'orb' && (
@@ -262,17 +276,6 @@ const OrbButton: React.FC<OrbButtonProps> = ({
                   <div className="w-full h-full rounded-full" style={{
                     background: 'linear-gradient(to right, hsl(0, 80%, 60%), hsl(60, 80%, 60%), hsl(120, 80%, 60%), hsl(180, 80%, 60%), hsl(240, 80%, 60%), hsl(300, 80%, 60%), hsl(360, 80%, 60%))'
                   }} />
-
-                  <motion.div
-                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0, transition: { delay: 0.3 } }}
-                    exit={{ opacity: 0, y: 5 }}
-                  >
-                    <p className="text-white/80 text-sm font-medium" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
-                      Tap or slide to share your mood
-                    </p>
-                  </motion.div>
                   
                   {previewMood && (
                     <div className="absolute top-0 left-0 h-full flex items-center" style={{ 

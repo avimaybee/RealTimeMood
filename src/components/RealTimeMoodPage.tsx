@@ -13,6 +13,7 @@ import AppFooter from '@/components/layout/AppFooter';
 import MainPromptDisplay from '@/components/layout/MainPromptDisplay';
 import { cn } from '@/lib/utils';
 import { usePlatform } from '@/contexts/PlatformContext';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const OnboardingOverlay = dynamic(() => import('@/components/features/OnboardingOverlay'), {
   ssr: false,
@@ -22,7 +23,7 @@ const AddToHomeScreenPrompt = dynamic(() => import('@/components/features/AddToH
 });
 
 const PageContent: React.FC = () => {
-  const { isCollectiveShifting } = useMood();
+  const { isCollectiveShifting, setPreviewMood } = useMood();
   const [isEmojiSelectorOpen, setIsEmojiSelectorOpen] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isAmbientMode, setIsAmbientMode] = React.useState(false);
@@ -70,6 +71,13 @@ const PageContent: React.FC = () => {
   };
 
   const isBarModeActive = interactionMode === 'bar' && !isCharging;
+  
+  const handleDismissBarMode = () => {
+    if (isBarModeActive) {
+      setInteractionMode('orb');
+      setPreviewMood(null);
+    }
+  };
 
   return (
     <div 
@@ -85,7 +93,18 @@ const PageContent: React.FC = () => {
       <div className="vignette-overlay" />
       <div className="noise-overlay" />
       <DynamicBackground />
-      <LivingParticles />
+
+      <AnimatePresence>
+        {isBarModeActive && (
+          <motion.div
+            className="fixed inset-0 z-30" // z-index lower than orb (40) but above other UI
+            onClick={handleDismissBarMode}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Suppress global effects during focused mood selection */}
       {!isEmojiSelectorOpen && !isBarModeActive && (
