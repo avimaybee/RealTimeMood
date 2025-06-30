@@ -73,8 +73,9 @@ const OrbButton: React.FC<OrbButtonProps> = ({
       // It was a short press (tap)
       clearTimeout(pressTimeoutRef.current);
       pressTimeoutRef.current = null;
-      if (!isEmojiSelectorOpen) {
-        setInteractionMode(prev => (prev === 'orb' ? 'bar' : 'orb'));
+      // Only expand the orb into the bar. Let taps on the bar be handled by onTap.
+      if (!isEmojiSelectorOpen && interactionMode === 'orb') {
+        setInteractionMode('bar');
       }
     }
   };
@@ -98,6 +99,17 @@ const OrbButton: React.FC<OrbButtonProps> = ({
     const hue = progress * 360;
     const mood = findClosestMood(hue);
     return { ...mood, hue };
+  };
+
+  const handleTap = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (interactionMode !== 'bar') return;
+    const mood = getMoodFromPosition(info.point.x);
+    recordContribution(mood, getOrbPosition());
+    setInteractionMode('orb');
+    setPreviewMood(null);
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(50);
+    }
   };
 
   const handlePan = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -254,6 +266,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
             animate={animationState}
             onPointerDown={handlePointerDown}
             onPointerUp={handlePointerUp}
+            onTap={handleTap}
             onPan={interactionMode === 'bar' ? handlePan : undefined}
             onPanEnd={interactionMode === 'bar' ? handlePanEnd : undefined}
             className={cn(
