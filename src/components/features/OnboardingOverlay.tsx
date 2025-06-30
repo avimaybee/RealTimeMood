@@ -81,7 +81,7 @@ const OnboardingOverlay: React.FC = () => {
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="fixed inset-x-0 bottom-24 z-30 max-w-lg mx-auto flex flex-col items-end justify-center gap-2 pointer-events-none pr-4"
+          className="fixed inset-x-0 bottom-24 z-50 max-w-lg mx-auto flex flex-col items-end justify-center gap-2 pointer-events-none pr-4"
         >
           <motion.div 
             variants={itemVariants} 
