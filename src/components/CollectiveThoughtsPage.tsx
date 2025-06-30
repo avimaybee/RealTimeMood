@@ -1,7 +1,7 @@
 
 "use client";
 import Link from 'next/link';
-import { ArrowLeft, Send, Loader2, Heart, ArrowDown } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, Heart, ArrowDown, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -23,12 +23,14 @@ import { useMood } from '@/contexts/MoodContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PREDEFINED_MOODS } from '@/lib/colorUtils';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 
 const MAX_THOUGHT_LENGTH = 300;
@@ -419,30 +421,6 @@ const CollectiveThoughtsPage = () => {
   
       return (
         <div className="h-full flex flex-col pt-20">
-             <div className="w-full max-w-sm mx-auto px-4 sm:px-8 pb-4 flex justify-center">
-                <Select
-                    value={activeFilter || 'All Thoughts'}
-                    onValueChange={(value) => {
-                        setActiveFilter(value === 'All Thoughts' ? null : value)
-                    }}
-                >
-                    <SelectTrigger className="w-full sm:w-[280px]">
-                        <SelectValue placeholder="Filter by mood..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="All Thoughts">All Thoughts</SelectItem>
-                        {filterableMoods.map((mood) => (
-                            <SelectItem key={mood.adjective} value={mood.adjective}>
-                                <div className="flex items-center gap-2">
-                                  <span>{mood.emoji}</span>
-                                  <span>{mood.adjective}</span>
-                                </div>
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-
             {filteredQuotes.length > 0 ? (
                 <ScrollArea className="flex-grow" ref={scrollAreaRef}>
                     <motion.ul 
@@ -577,7 +555,33 @@ const CollectiveThoughtsPage = () => {
               <h1 className="text-base font-medium text-center truncate px-2">
                 Collective Thoughts
               </h1>
-              <div className="w-8 h-8" />
+              <div className="w-8 h-8">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="interactive-glow rounded-full">
+                      <Filter className="h-5 w-5" />
+                       <span className="sr-only">Filter thoughts</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Filter by mood</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuRadioGroup 
+                        value={activeFilter || 'All Thoughts'} 
+                        onValueChange={(value) => setActiveFilter(value === 'All Thoughts' ? null : value)}>
+                      <DropdownMenuRadioItem value="All Thoughts">All Thoughts</DropdownMenuRadioItem>
+                      {filterableMoods.map((mood) => (
+                        <DropdownMenuRadioItem key={mood.adjective} value={mood.adjective}>
+                           <div className="flex items-center gap-2">
+                             <span>{mood.emoji}</span>
+                             <span>{mood.adjective}</span>
+                           </div>
+                        </DropdownMenuRadioItem>
+                      ))}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </motion.header>
             
             <main className="h-full w-full flex flex-col relative z-10">
