@@ -9,6 +9,9 @@ service cloud.firestore {
     }
 
     // collective mood (public read, auth write)
+    // This rule is permissive because the update logic within the transaction
+    // is too complex to validate securely within Firestore rules.
+    // This assumes the client-side transaction logic is trusted.
     match /appState/{docId} {
       allow read:  if true;
       allow write: if request.auth != null;
@@ -27,8 +30,10 @@ service cloud.firestore {
         && request.auth.uid == userId;
     }
 
-    // per-user mood history (auth-only, own-subcollection)
-    match /userMoodHistory/{userId}/{docId} {
+    // This rule uses a recursive wildcard {documents=**} to allow a user to
+    // read/write to any document within their own mood history, including
+    // documents in subcollections like 'dailySummaries'.
+    match /userMoodHistory/{userId}/{documents=**} {
       allow read, write:
         if request.auth != null
         && request.auth.uid == userId;
@@ -51,16 +56,13 @@ service cloud.firestore {
         && request.resource.data.likes      == 0
         && request.resource.data.submittedAt == request.time;
 
-      // update only if:
-      //  • authenticated
-      //  • all other fields are unchanged
-      //  • likes was incremented or decremented by exactly 1
-      //  • likes count doesn't go below 0
+      // update only for liking/unliking
       allow update: if request.auth != null
-        && request.resource.data.text == resource.data.text
-        && request.resource.data.submittedAt == resource.data.submittedAt
-        && (request.resource.data.likes == resource.data.likes + 1 || request.resource.data.likes == resource.data.likes - 1)
-        && request.resource.data.likes >= 0;
+        // Ensure only 'likes' field is changed
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly(['likes'])
+        // Ensure 'likes' is either incremented or decremented by 1
+        && (request.resource.data.likes == resource.data.likes + 1 ||
+            request.resource.data.likes == resource.data.likes - 1);
     }
   }
 }
