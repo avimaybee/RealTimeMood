@@ -107,8 +107,6 @@ const PageContent: React.FC = () => {
       <OrbButton 
         isEmojiSelectorOpen={isEmojiSelectorOpen}
         setIsEmojiSelectorOpen={setIsEmojiSelectorOpen}
-        interactionMode={interactionMode}
-        setInteractionMode={setInteractionMode}
         isCharging={isCharging}
         setIsCharging={setIsCharging}
       /> 

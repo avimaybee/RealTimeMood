@@ -17,16 +17,19 @@ const MoodSelectionButtons = dynamic(() => import('@/components/features/MoodSel
 interface OrbButtonProps {
   isEmojiSelectorOpen: boolean;
   setIsEmojiSelectorOpen: (isOpen: boolean) => void;
+  isCharging: boolean;
+  setIsCharging: (isCharging: boolean) => void;
 }
 
 const OrbButton: React.FC<OrbButtonProps> = ({ 
   isEmojiSelectorOpen, 
   setIsEmojiSelectorOpen,
+  isCharging,
+  setIsCharging,
 }) => {
   const { recordContribution, isCollectiveShifting, setPreviewMood, previewMood } = useMood();
   const { toast } = useToast();
   const { isIos } = usePlatform();
-  const [isCharging, setIsCharging] = useState(false);
   const [chargeData, setChargeData] = useState<{ mood: Mood } | null>(null);
   const [isClient, setIsClient] = useState(false);
   const lastSubmissionTimeRef = useRef<number>(0);
@@ -97,7 +100,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
       }
     }, 500);
     return () => clearTimeout(chargeTimeout);
-  }, [isCharging, chargeData, recordContribution, toast]);
+  }, [isCharging, chargeData, recordContribution, toast, setIsCharging]);
 
   const morphTransition = { type: 'tween', duration: 0.5, ease: [0.76, 0, 0.24, 1] };
 
