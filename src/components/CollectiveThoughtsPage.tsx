@@ -31,6 +31,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useAuth } from '@/hooks/useAuth';
 
 
 const MAX_THOUGHT_LENGTH = 300;
@@ -71,6 +72,7 @@ const CollectiveThoughtsPage = () => {
     const { isIos } = usePlatform();
     const { toast } = useToast();
     const { currentMood } = useMood();
+    const { user, isAnonymous } = useAuth();
     const [quotes, setQuotes] = useState<(CommunityQuote & { id: string })[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -345,6 +347,7 @@ const CollectiveThoughtsPage = () => {
                 likes: 0,
                 authorHue: currentMood.hue,
                 authorAdjective: currentMood.adjective,
+                authorId: user && !isAnonymous ? user.uid : null,
             });
             
             lastSubmissionTimeRef.current = now;
@@ -428,6 +431,7 @@ const CollectiveThoughtsPage = () => {
                     >
                         <AnimatePresence initial={false}>
                             {filteredQuotes.map((quote) => {
+                                const isAuthor = user && !isAnonymous && quote.authorId === user.uid;
                                 const isExpanded = expandedQuotes.has(quote.id);
                                 const isClamped = clampedQuotes.has(quote.id);
                                 return (
@@ -441,7 +445,10 @@ const CollectiveThoughtsPage = () => {
                                     layout="position"
                                     transition={{ type: "spring", stiffness: 500, damping: 50 }}
                                 >
-                                    <Card className="rounded-2xl frosted-glass flex flex-col">
+                                    <Card className={cn(
+                                        "rounded-2xl frosted-glass flex flex-col",
+                                        isAuthor && "ring-2 ring-primary/40"
+                                    )}>
                                         <CardContent className="p-3 flex flex-col flex-grow">
                                             <div className="flex-grow">
                                                 <p

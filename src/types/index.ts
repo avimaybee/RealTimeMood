@@ -91,6 +91,7 @@ export interface CommunityQuote {
   likes?: number;
   authorHue?: number;
   authorAdjective?: string;
+  authorId?: string;
 }
 
 /**
