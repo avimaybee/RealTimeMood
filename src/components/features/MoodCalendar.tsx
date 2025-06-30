@@ -103,16 +103,4 @@ const MoodCalendar: React.FC<MoodCalendarProps> = ({ data }) => {
     );
 };
 
-// Add a new definition for grid-cols-53
-const style = document.createElement('style');
-style.innerHTML = `
-    .grid-cols-53 {
-        grid-template-columns: repeat(53, minmax(0, 1fr));
-    }
-`;
-if (typeof window !== 'undefined') {
-    document.head.appendChild(style);
-}
-
-
 export default MoodCalendar;
