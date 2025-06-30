@@ -41,6 +41,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
   const pressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const orbContainerRef = useRef<HTMLDivElement>(null);
+  const justToggledRef = useRef(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -73,9 +74,11 @@ const OrbButton: React.FC<OrbButtonProps> = ({
       // It was a short press (tap)
       clearTimeout(pressTimeoutRef.current);
       pressTimeoutRef.current = null;
-      // Only expand the orb into the bar. Let taps on the bar be handled by onTap.
+
       if (!isEmojiSelectorOpen && interactionMode === 'orb') {
         setInteractionMode('bar');
+        // Flag that we just handled this tap by opening the bar
+        justToggledRef.current = true;
       }
     }
   };
@@ -102,13 +105,22 @@ const OrbButton: React.FC<OrbButtonProps> = ({
   };
 
   const handleTap = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (interactionMode !== 'bar') return;
-    const mood = getMoodFromPosition(info.point.x);
-    recordContribution(mood, getOrbPosition());
-    setInteractionMode('orb');
-    setPreviewMood(null);
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(50);
+    // If the bar was just opened, this tap event is the one that triggered it.
+    // Reset the flag and ignore the event to prevent an instant submission.
+    if (justToggledRef.current) {
+      justToggledRef.current = false;
+      return;
+    }
+
+    // If the tap happens on the gradient bar, submit the mood.
+    if (interactionMode === 'bar') {
+      const mood = getMoodFromPosition(info.point.x);
+      recordContribution(mood, getOrbPosition());
+      setInteractionMode('orb');
+      setPreviewMood(null);
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(50);
+      }
     }
   };
 
