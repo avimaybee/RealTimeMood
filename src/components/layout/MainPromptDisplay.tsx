@@ -1,12 +1,13 @@
-
 "use client";
 import React from 'react';
 import { useMood } from '@/contexts/MoodContext';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { moodToHslString } from '@/lib/colorUtils';
 
 const MainPromptDisplay: React.FC = () => {
   const { currentMood, userCount, isCollectiveShifting } = useMood();
+  const moodColor = moodToHslString(currentMood);
 
   return (
     <motion.div 
@@ -25,7 +26,19 @@ const MainPromptDisplay: React.FC = () => {
       <p className={cn(
         "text-body transition-opacity opacity-90"
       )}>
-        The Collective Mood: <span className="font-semibold">{currentMood.adjective}</span>
+        The Collective Mood:{" "}
+        <motion.span 
+          key={currentMood.hue} // Re-trigger animation on mood change
+          className="font-semibold"
+          style={{
+            textShadow: `0 0 12px ${moodColor}`
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
+          {currentMood.adjective}
+        </motion.span>
       </p>
       <p className="text-small opacity-80">
         <motion.span
