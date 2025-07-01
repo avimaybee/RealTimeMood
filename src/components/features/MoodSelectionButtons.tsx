@@ -55,7 +55,7 @@ const MoodSelectionButtons: React.FC<MoodSelectionButtonsProps> = ({ onSelect })
     >
       <div
         className={cn(
-          "grid grid-cols-4 gap-4 p-4 rounded-3xl shadow-lifted",
+          "grid grid-cols-4 gap-x-4 gap-y-2 p-4 rounded-3xl shadow-lifted",
           "frosted-glass"
         )}
       >
@@ -64,7 +64,7 @@ const MoodSelectionButtons: React.FC<MoodSelectionButtonsProps> = ({ onSelect })
             key={mood.name}
             variants={itemVariants}
             onTap={() => handleSelect(mood)}
-            className="cursor-pointer"
+            className="cursor-pointer flex flex-col items-center gap-1 text-center"
           >
             <div
               className={cn(
@@ -74,6 +74,7 @@ const MoodSelectionButtons: React.FC<MoodSelectionButtonsProps> = ({ onSelect })
             >
               {mood.emoji}
             </div>
+            <p className="text-xs font-medium text-foreground/80">{mood.adjective}</p>
           </motion.div>
         ))}
       </div>
