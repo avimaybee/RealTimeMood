@@ -1,3 +1,4 @@
+
 "use client";
 import type { ReactNode } from 'react';
 import React, { useRef, useMemo } from 'react';
@@ -37,6 +38,7 @@ type MoodContextType = {
   isCollectiveShifting: boolean;
   lastUserContribution: Mood | null;
   celebratedMilestones: number[];
+  isInitialized: boolean;
 };
 
 const MoodContext = createContext<MoodContextType | undefined>(undefined);
@@ -50,6 +52,7 @@ export const useMood = () => {
 };
 
 export const MoodProvider = ({ children, isLivePage = false }: { children: ReactNode; isLivePage?: boolean; }) => {
+  const [isInitialized, setIsInitialized] = useState(false);
   const [currentMood, setCurrentMood] = useState<Mood>(initialState.currentMood);
   const [userCount, setUserCount] = useState<number>(initialState.userCount);
   const [contributionCount, setContributionCount] = useState<number>(initialState.contributionCount);
@@ -72,6 +75,10 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     currentMoodRef.current = currentMood;
   }, [currentMood]);
 
+  useEffect(() => {
+    // This effect runs only on the client, after the component has mounted.
+    setIsInitialized(true);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
@@ -307,6 +314,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     triggerCollectiveShift,
     isCollectiveShifting,
     lastUserContribution,
+    isInitialized,
   }), [
     currentMood,
     userCount,
@@ -322,6 +330,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     triggerCollectiveShift,
     isCollectiveShifting,
     lastUserContribution,
+    isInitialized,
   ]);
 
   return (

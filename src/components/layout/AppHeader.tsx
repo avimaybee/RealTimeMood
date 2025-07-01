@@ -1,5 +1,6 @@
+
 "use client";
-import React, { useState, useEffect } from 'react'; // Import useState and useEffect
+import React from 'react';
 import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -24,14 +25,8 @@ const AppHeaderLogo: React.FC<{ animationClass: string; isIos: boolean }> = ({ a
 );
 
 const AppHeader: React.FC = () => {
-  const { currentMood, isCollectiveShifting, lastUserContribution } = useMood();
+  const { currentMood, isCollectiveShifting, lastUserContribution, isInitialized } = useMood();
   const { isIos } = usePlatform();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    // This effect runs only on the client, after the initial render.
-    setIsClient(true);
-  }, []);
 
   // Use default static values for server-rendering and initial client render.
   const moodForIndicator = lastUserContribution || currentMood || PREDEFINED_MOODS[0];
@@ -56,7 +51,7 @@ const AppHeader: React.FC = () => {
     >
       <a href="/" className="flex items-center group">
           {/* The logo animation relies on the mood, so we also need to ensure it's client-side */}
-          {isClient ? (
+          {isInitialized ? (
             <AppHeaderLogo animationClass={animationClass} isIos={isIos} />
           ) : (
             // Render a static version on the server
@@ -69,7 +64,7 @@ const AppHeader: React.FC = () => {
       
       <div className="flex items-center gap-2 h-4"> {/* Set a fixed height to prevent layout shift */}
         <AnimatePresence>
-            {isClient && (
+            {isInitialized && (
                 <motion.div
                     className="flex items-center gap-2"
                     initial={{ opacity: 0 }}
@@ -92,7 +87,7 @@ const AppHeader: React.FC = () => {
                     />
                 </motion.div>
             )}
-        </AnimatePresence>
+        </AnatePresence>
       </div>
     </motion.header>
   );

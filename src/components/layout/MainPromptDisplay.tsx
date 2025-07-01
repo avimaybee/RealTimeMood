@@ -1,18 +1,13 @@
+
 "use client";
-import React, { useState, useEffect } from 'react'; // Import useState and useEffect
+import React from 'react';
 import { useMood } from '@/contexts/MoodContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { moodToHslString, PREDEFINED_MOODS } from '@/lib/colorUtils';
 
 const MainPromptDisplay: React.FC = () => {
-  const { currentMood, userCount, isCollectiveShifting } = useMood();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    // This effect runs only on the client, after the initial render.
-    setIsClient(true);
-  }, []);
+  const { currentMood, userCount, isCollectiveShifting, isInitialized } = useMood();
   
   // Use a default mood for server-rendering
   const moodToDisplay = currentMood || PREDEFINED_MOODS[0];
@@ -36,7 +31,7 @@ const MainPromptDisplay: React.FC = () => {
       {/* Use a fixed height container to prevent layout shift */}
       <div className="h-12 flex flex-col justify-center">
         <AnimatePresence>
-            {isClient ? (
+            {isInitialized ? (
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
