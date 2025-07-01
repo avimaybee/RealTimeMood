@@ -1,9 +1,9 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, BarChart2, MessageSquareQuote, X, Camera, Eye, Info, Loader2, Gavel, Github, Instagram, Share2, Ghost, Lightbulb, CalendarDays, Flame } from 'lucide-react';
+import { Menu, BarChart2, MessageSquareQuote, X, Camera, Eye, Info, Loader2, Gavel, Github, Instagram, Share2, Ghost, Lightbulb, CalendarDays, Flame, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMood } from '@/contexts/MoodContext';
-import { cn } from '@/lib/utils';
+import { cn, urlBase64ToUint8Array } from '@/lib/utils';
 import { motion, AnimatePresence, animate } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -124,6 +124,79 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
           variant: "destructive",
         });
       }
+    }
+  };
+
+  const handleEnableNotifications = async () => {
+    // IMPORTANT: These keys are for demonstration only.
+    // You should generate your own VAPID keys and store them securely in environment variables.
+    const VAPID_PUBLIC_KEY = "BCjoLGA09RL6f3s69FjIe00JkPqu3oYgExoGau5UnSQ5gN6x46BqAYBHCiHQinCsxteL9ZdSp24zOaNvf2n_Fqo";
+
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        toast({
+            title: "Not Supported",
+            description: "Push notifications are not supported by your browser.",
+            variant: "destructive",
+        });
+        return;
+    }
+
+    if (Notification.permission === 'denied') {
+        toast({
+            title: "Permission Denied",
+            description: "Please enable notifications for this site in your browser settings.",
+            variant: "destructive",
+        });
+        return;
+    }
+
+    setLoadingPath('notifications'); // Use loading state to disable buttons
+
+    try {
+        if (Notification.permission === 'default') {
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+                toast({
+                    title: "Permission Not Granted",
+                    description: "You won't receive mood check-in reminders.",
+                });
+                setLoadingPath(null);
+                return;
+            }
+        }
+        
+        const registration = await navigator.serviceWorker.ready;
+        let subscription = await registration.pushManager.getSubscription();
+        
+        if (subscription) {
+           toast({
+                title: "Already Subscribed",
+                description: "You are already set up to receive reminders.",
+            });
+        } else {
+             subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+            });
+
+            // In a real app, you would send this subscription object to your backend.
+            // For example: await fetch('/api/save-subscription', { method: 'POST', ... });
+            console.log("Push Subscription Object: ", JSON.stringify(subscription));
+
+            toast({
+                title: "Reminders Enabled!",
+                description: "We'll remind you to check in. (Subscription details logged to console).",
+            });
+        }
+    } catch (error) {
+        console.error("Failed to subscribe to push notifications:", error);
+        toast({
+            title: "Subscription Failed",
+            description: "Could not enable notifications. Please try again.",
+            variant: "destructive",
+        });
+    } finally {
+        setLoadingPath(null);
     }
   };
 
@@ -275,6 +348,19 @@ const AppFooter: React.FC<AppFooterProps> = ({ isMenuOpen, setIsMenuOpen, setIsA
                         
                         <Separator className="my-1" />
 
+                        <Button
+                            variant="ghost"
+                            className="text-base w-full justify-start"
+                            onClick={handleEnableNotifications}
+                            disabled={!!loadingPath}
+                        >
+                            {loadingPath === 'notifications' ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <Bell className="mr-2 h-4 w-4" strokeWidth={isIos ? 1.5 : 2} />
+                            )}
+                            Enable Reminders
+                        </Button>
                         <ShareSnapshotButton />
                         <Button 
                             variant="ghost" 

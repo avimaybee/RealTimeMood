@@ -1,68 +1,30 @@
-const CACHE_NAME = 'realtime-mood-cache-v1';
-const urlsToCache = [
-  '/',
-  '/about',
-  '/history',
-  '/thoughts',
-  '/manifest.json',
-  '/icon.svg',
-  // Next.js handles its own JS/CSS chunking, but caching the main routes and assets ensures a fast, offline-first experience.
-];
+'use strict';
 
-// Install a service worker
-self.addEventListener('install', event => {
-  // Perform install steps
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(function(cache) {
-        console.log('Service Worker: Caching app shell');
-        return cache.addAll(urlsToCache);
-      })
-  );
+self.addEventListener('push', (event) => {
+  const data = event.data ? event.data.json() : {};
+  const title = data.title || 'RealTimeMood';
+  const options = {
+    body: data.body || 'How are you feeling right now?',
+    // Note: You can add 'icon' and 'badge' properties if you have assets in /public
+    // icon: '/icon-192x192.png',
+    // badge: '/badge-72x72.png',
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
-// Cache and return requests
-self.addEventListener('fetch', event => {
-  // We only want to cache GET requests.
-  if (event.request.method !== 'GET') {
-    return;
-  }
-
-  event.respondWith(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.match(event.request).then(response => {
-        // Return response from cache, or fetch from network and cache it.
-        const fetchPromise = fetch(event.request).then(networkResponse => {
-          // Check if we received a valid response
-          if(!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-            return networkResponse;
-          }
-          
-          const responseToCache = networkResponse.clone();
-          cache.put(event.request, responseToCache);
-          return networkResponse;
-        });
-
-        return response || fetchPromise;
-      });
-    })
-  );
-});
-
-
-// Update a service worker
-self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  // This focuses the existing app window or opens a new one
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            console.log('Service Worker: Deleting old cache', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url === '/' && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow('/');
+      }
     })
   );
 });
