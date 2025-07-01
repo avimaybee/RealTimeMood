@@ -1,13 +1,22 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react'; // Import useState and useEffect
 import { useMood } from '@/contexts/MoodContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { moodToHslString } from '@/lib/colorUtils';
+import { moodToHslString, PREDEFINED_MOODS } from '@/lib/colorUtils';
 
 const MainPromptDisplay: React.FC = () => {
   const { currentMood, userCount, isCollectiveShifting } = useMood();
-  const moodColor = moodToHslString(currentMood);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    // This effect runs only on the client, after the initial render.
+    setIsClient(true);
+  }, []);
+  
+  // Use a default mood for server-rendering
+  const moodToDisplay = currentMood || PREDEFINED_MOODS[0];
+  const moodColor = moodToHslString(moodToDisplay);
 
   return (
     <motion.div 
@@ -23,35 +32,54 @@ const MainPromptDisplay: React.FC = () => {
         )}>
         How are you feeling right now?
       </h1>
-      <p className={cn(
-        "text-body transition-opacity opacity-90"
-      )}>
-        The Collective Mood:{" "}
-        <motion.span 
-          key={currentMood.hue} // Re-trigger animation on mood change
-          className="font-semibold"
-          style={{
-            textShadow: `0 0 12px ${moodColor}`
-          }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
-          {currentMood.adjective}
-        </motion.span>
-      </p>
-      <p className="text-body opacity-90">
-        <motion.span
-          key={Math.round(userCount)}
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-          className="inline-block font-semibold"
-        >
-          {Math.round(userCount).toLocaleString()}
-        </motion.span>
-        {' '}minds connected
-      </p>
+        
+      {/* Use a fixed height container to prevent layout shift */}
+      <div className="h-12 flex flex-col justify-center">
+        <AnimatePresence>
+            {isClient ? (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <p className={cn("text-body transition-opacity opacity-90")}>
+                        The Collective Mood:{" "}
+                        <motion.span 
+                          key={moodToDisplay.hue} // Re-trigger animation on mood change
+                          className="font-semibold"
+                          style={{
+                            textShadow: `0 0 12px ${moodColor}`
+                          }}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.8, ease: "easeOut" }}
+                        >
+                          {moodToDisplay.adjective}
+                        </motion.span>
+                    </p>
+                    <p className="text-body opacity-90">
+                        <motion.span
+                          key={Math.round(userCount)}
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                          className="inline-block font-semibold"
+                        >
+                          {Math.round(userCount).toLocaleString()}
+                        </motion.span>
+                        {' '}minds connected
+                    </p>
+                </motion.div>
+            ) : (
+                // Render a placeholder on the server and for the initial client render
+                <div>
+                     <p className="text-body opacity-90">Loading collective mood...</p>
+                     <p className="text-body opacity-90 invisible">placeholder to prevent shift</p>
+                </div>
+            )}
+        </AnimatePresence>
+      </div>
     </motion.div>
   );
 };

@@ -1,11 +1,10 @@
-
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react'; // Import useState and useEffect
 import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { usePlatform } from '@/contexts/PlatformContext';
-import { moodToHslString } from '@/lib/colorUtils';
+import { moodToHslString, PREDEFINED_MOODS } from '@/lib/colorUtils';
 
 const AppHeaderLogo: React.FC<{ animationClass: string; isIos: boolean }> = ({ animationClass, isIos }) => (
   <svg
@@ -27,19 +26,21 @@ const AppHeaderLogo: React.FC<{ animationClass: string; isIos: boolean }> = ({ a
 const AppHeader: React.FC = () => {
   const { currentMood, isCollectiveShifting, lastUserContribution } = useMood();
   const { isIos } = usePlatform();
+  const [isClient, setIsClient] = useState(false);
 
-  // The logo animation should always reflect the overall collective mood.
-  const collectiveAdjective = currentMood.adjective;
-  const animationClass = 
-    collectiveAdjective === 'Anxious' ? 'animate-logo-anxious' :
-    (collectiveAdjective === 'Joyful' || collectiveAdjective === 'Energetic' || collectiveAdjective === 'Passionate') ? 'animate-logo-joyful' :
-    'animate-logo-calm';
-  
-  // The glowing indicator (dot and text) should reflect the user's last contribution,
-  // falling back to the collective mood if the user hasn't contributed yet in this session.
-  const moodForIndicator = lastUserContribution || currentMood;
+  useEffect(() => {
+    // This effect runs only on the client, after the initial render.
+    setIsClient(true);
+  }, []);
+
+  // Use default static values for server-rendering and initial client render.
+  const moodForIndicator = lastUserContribution || currentMood || PREDEFINED_MOODS[0];
   const indicatorAdjective = moodForIndicator.adjective;
   const indicatorColor = moodToHslString(moodForIndicator);
+  const animationClass = 
+    indicatorAdjective === 'Anxious' ? 'animate-logo-anxious' :
+    (indicatorAdjective === 'Joyful' || indicatorAdjective === 'Energetic' || indicatorAdjective === 'Passionate') ? 'animate-logo-joyful' :
+    'animate-logo-calm';
 
   return (
     <motion.header 
@@ -54,26 +55,44 @@ const AppHeader: React.FC = () => {
       transition={{ type: 'spring', stiffness: 100, damping: 10, delay: 0.1 }}
     >
       <a href="/" className="flex items-center group">
-          <AppHeaderLogo animationClass={animationClass} isIos={isIos} />
+          {/* The logo animation relies on the mood, so we also need to ensure it's client-side */}
+          {isClient ? (
+            <AppHeaderLogo animationClass={animationClass} isIos={isIos} />
+          ) : (
+            // Render a static version on the server
+            <AppHeaderLogo animationClass="" isIos={isIos} />
+          )}
           <span className="ml-2 text-base md:text-lg font-medium text-foreground opacity-90 transition-opacity group-hover:opacity-100">
               RealTimeMood
           </span>
       </a>
       
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-foreground/70">
-          {indicatorAdjective}
-        </span>
-        <motion.div
-            className="w-3 h-3 rounded-full"
-            style={{ 
-                backgroundColor: indicatorColor,
-                boxShadow: `0 0 8px 1px ${indicatorColor}`
-            }}
-            animate={{ scale: [1, 1.15, 1] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            key={moodForIndicator.hue} // Re-trigger animation on hue change
-        />
+      <div className="flex items-center gap-2 h-4"> {/* Set a fixed height to prevent layout shift */}
+        <AnimatePresence>
+            {isClient && (
+                <motion.div
+                    className="flex items-center gap-2"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <span className="text-xs text-foreground/70">
+                      {indicatorAdjective}
+                    </span>
+                    <motion.div
+                        className="w-3 h-3 rounded-full"
+                        style={{ 
+                            backgroundColor: indicatorColor,
+                            boxShadow: `0 0 8px 1px ${indicatorColor}`
+                        }}
+                        animate={{ scale: [1, 1.15, 1] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                        key={moodForIndicator.hue} // Re-trigger animation on hue change
+                    />
+                </motion.div>
+            )}
+        </AnimatePresence>
       </div>
     </motion.header>
   );
