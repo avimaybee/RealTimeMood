@@ -1,25 +1,9 @@
 {
   "name": "RealTimeMood",
   "short_name": "RealTimeMood",
+  "description": "Experience the collective global mood, dynamically visualized.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1F1F1F",
-  "theme_color": "#1F1F1F",
-  "description": "Experience the collective global mood, dynamically visualized.",
-  "icons": [
-    {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Share Your Mood",
-      "short_name": "Mood",
-      "description": "Open the app to share your current mood",
-      "url": "/",
-      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
-    }
-  ]
+  "theme_color": "#1F1F1F"
 }

@@ -2,7 +2,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAnalytics, isSupported, type Analytics } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
 import { 
   getAuth, 
   GoogleAuthProvider, 
@@ -37,6 +37,24 @@ if (!getApps().length) {
 }
 
 let analytics: Analytics | undefined;
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// Enable Firestore offline persistence
+if (typeof window !== 'undefined') {
+  try {
+    enableIndexedDbPersistence(db)
+      .catch((err) => {
+        if (err.code == 'failed-precondition') {
+          console.warn('Firestore persistence failed: Multiple tabs open, persistence can only be enabled in one tab at a time.');
+        } else if (err.code == 'unimplemented') {
+          console.warn('Firestore persistence is not available in this browser.');
+        }
+      });
+  } catch(e) {
+    console.error("Error enabling firestore persistence", e);
+  }
+}
 
 /**
  * Initializes Firebase Analytics if it hasn't been already and is supported.
@@ -52,9 +70,6 @@ export function initializeAnalytics() {
     });
   }
 }
-
-const db = getFirestore(app);
-const auth = getAuth(app);
 
 export { 
   app, 
