@@ -115,7 +115,28 @@ const OrbButton: React.FC<OrbButtonProps> = ({
     // If the tap happens on the gradient bar, submit the mood.
     if (interactionMode === 'bar') {
       const mood = getMoodFromPosition(info.point.x);
+      
+      const now = Date.now();
+      const SUBMISSION_COOLDOWN = 10000;
+      if (now - lastSubmissionTimeRef.current < SUBMISSION_COOLDOWN) {
+        const secondsRemaining = Math.ceil((SUBMISSION_COOLDOWN - (now - lastSubmissionTimeRef.current)) / 1000);
+        toast({
+            title: "A moment of reflection...",
+            description: `Please wait ${secondsRemaining} more second${secondsRemaining > 1 ? 's' : ''} before sharing again.`,
+            variant: "destructive",
+            duration: 3000,
+        });
+        return;
+      }
+      
       recordContribution(mood, getOrbPosition());
+      lastSubmissionTimeRef.current = now;
+      toast({
+        title: "Mood Submitted",
+        description: `Your feeling of "${mood.adjective}" has been added to the collective.`,
+        duration: 4000,
+      });
+
       setInteractionMode('orb');
       setPreviewMood(null);
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -131,7 +152,28 @@ const OrbButton: React.FC<OrbButtonProps> = ({
 
   const handlePanEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const mood = getMoodFromPosition(info.point.x);
+    
+    const now = Date.now();
+    const SUBMISSION_COOLDOWN = 10000;
+    if (now - lastSubmissionTimeRef.current < SUBMISSION_COOLDOWN) {
+      const secondsRemaining = Math.ceil((SUBMISSION_COOLDOWN - (now - lastSubmissionTimeRef.current)) / 1000);
+      toast({
+          title: "A moment of reflection...",
+          description: `Please wait ${secondsRemaining} more second${secondsRemaining > 1 ? 's' : ''} before sharing again.`,
+          variant: "destructive",
+          duration: 3000,
+      });
+      return;
+    }
+
     recordContribution(mood, getOrbPosition());
+    lastSubmissionTimeRef.current = now;
+    toast({
+      title: "Mood Submitted",
+      description: `Your feeling of "${mood.adjective}" has been added to the collective.`,
+      duration: 4000,
+    });
+    
     setInteractionMode('orb');
     setPreviewMood(null);
     if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50);
@@ -155,13 +197,14 @@ const OrbButton: React.FC<OrbButtonProps> = ({
   useEffect(() => {
     if (!isCharging || !chargeData) return;
     const now = Date.now();
-    const SUBMISSION_COOLDOWN = 5000;
+    const SUBMISSION_COOLDOWN = 10000; // 10 seconds
     if (now - lastSubmissionTimeRef.current < SUBMISSION_COOLDOWN) {
+      const secondsRemaining = Math.ceil((SUBMISSION_COOLDOWN - (now - lastSubmissionTimeRef.current)) / 1000);
       toast({
         title: "A moment of reflection...",
-        description: "Please wait a few seconds before sharing again.",
+        description: `Please wait ${secondsRemaining} more second${secondsRemaining > 1 ? 's' : ''} before sharing again.`,
         variant: "destructive",
-        duration: 4000,
+        duration: 3000,
       });
       setIsCharging(false);
       setChargeData(null);
