@@ -1,3 +1,4 @@
+
 "use client";
 import React from 'react';
 import { useMood } from '@/contexts/MoodContext';
@@ -27,13 +28,14 @@ const AppHeader: React.FC = () => {
   const { currentMood, isCollectiveShifting, lastUserContribution, isInitialized } = useMood();
   const { isIos } = usePlatform();
 
-  const moodForIndicator = lastUserContribution || currentMood || PREDEFINED_MOODS[0];
-  const indicatorAdjective = moodForIndicator.adjective;
-  const indicatorColor = moodToHslString(moodForIndicator);
-  const animationClass = 
-    indicatorAdjective === 'Anxious' ? 'animate-logo-anxious' :
-    (indicatorAdjective === 'Joyful' || indicatorAdjective === 'Energetic' || indicatorAdjective === 'Passionate') ? 'animate-logo-joyful' :
-    'animate-logo-calm';
+  // We only calculate dynamic values when we're initialized on the client.
+  // Otherwise, we use safe, static defaults.
+  const moodForIndicator = isInitialized ? (lastUserContribution || currentMood || PREDEFINED_MOODS[0]) : PREDEFINED_MOODS[0];
+  const animationClass = isInitialized ? (
+    moodForIndicator.adjective === 'Anxious' ? 'animate-logo-anxious' :
+    (moodForIndicator.adjective === 'Joyful' || moodForIndicator.adjective === 'Energetic' || moodForIndicator.adjective === 'Passionate') ? 'animate-logo-joyful' :
+    'animate-logo-calm'
+  ) : "";
 
   return (
     <motion.header 
@@ -48,11 +50,7 @@ const AppHeader: React.FC = () => {
       transition={{ type: 'spring', stiffness: 100, damping: 10, delay: 0.1 }}
     >
       <a href="/" className="flex items-center group">
-          {isInitialized ? (
-            <AppHeaderLogo animationClass={animationClass} isIos={isIos} />
-          ) : (
-            <AppHeaderLogo animationClass="" isIos={isIos} />
-          )}
+          <AppHeaderLogo animationClass={animationClass} isIos={isIos} />
           <span className="ml-2 text-base md:text-lg font-medium text-foreground opacity-90 transition-opacity group-hover:opacity-100">
               RealTimeMood
           </span>
@@ -69,13 +67,13 @@ const AppHeader: React.FC = () => {
                     transition={{ duration: 0.5 }}
                 >
                     <span className="text-xs text-foreground/70">
-                      {indicatorAdjective}
+                      {moodForIndicator.adjective}
                     </span>
                     <motion.div
                         className="w-3 h-3 rounded-full"
                         style={{ 
-                            backgroundColor: indicatorColor,
-                            boxShadow: `0 0 8px 1px ${indicatorColor}`
+                            backgroundColor: moodToHslString(moodForIndicator),
+                            boxShadow: `0 0 8px 1px ${moodToHslString(moodForIndicator)}`
                         }}
                         animate={{ scale: [1, 1.15, 1] }}
                         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
