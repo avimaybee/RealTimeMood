@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
@@ -22,6 +23,10 @@ const AddToHomeScreenPrompt = dynamic(() => import('@/components/features/AddToH
   ssr: false,
 });
 
+const NotificationPrompt = dynamic(() => import('@/components/features/NotificationPrompt'), {
+  ssr: false,
+});
+
 
 const PageContent: React.FC = () => {
   const { isCollectiveShifting, setPreviewMood } = useMood();
@@ -34,6 +39,7 @@ const PageContent: React.FC = () => {
   const [interactionMode, setInteractionMode] = useState<'orb' | 'bar'>('orb');
   const [isCharging, setIsCharging] = useState(false);
   const [showPwaPrompt, setShowPwaPrompt] = useState(false);
+  const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
 
   useEffect(() => {
     // Register Service Worker for PWA capabilities
@@ -58,13 +64,30 @@ const PageContent: React.FC = () => {
         
         const count = customEvent.detail.count;
         
+        // --- PWA Prompt Logic ---
         const PWA_PROMPT_THRESHOLD = 5;
-        const hasBeenPrompted = localStorage.getItem('hasBeenPromptedForPWA') === 'true';
+        const hasBeenPromptedForPWA = localStorage.getItem('hasBeenPromptedForPWA') === 'true';
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
-        if (count >= PWA_PROMPT_THRESHOLD && !hasBeenPrompted && !isStandalone) {
+        if (count >= PWA_PROMPT_THRESHOLD && !hasBeenPromptedForPWA && !isStandalone) {
             setShowPwaPrompt(true);
             localStorage.setItem('hasBeenPromptedForPWA', 'true');
+        }
+
+        // --- Notification Prompt Logic ---
+        const NOTIFICATION_PROMPT_THRESHOLD = 3;
+        const hasBeenPromptedForNotifications = localStorage.getItem('hasBeenPromptedForNotifications') === 'true';
+        const notificationsSupported = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+        const notificationPermission = notificationsSupported ? Notification.permission : 'denied';
+
+        if (
+            count >= NOTIFICATION_PROMPT_THRESHOLD && 
+            !hasBeenPromptedForNotifications && 
+            notificationsSupported &&
+            notificationPermission === 'default'
+        ) {
+            setShowNotificationPrompt(true);
+            localStorage.setItem('hasBeenPromptedForNotifications', 'true');
         }
     };
     
@@ -73,7 +96,7 @@ const PageContent: React.FC = () => {
     return () => {
         window.removeEventListener('userContribution', handleContribution);
     };
-}, []);
+  }, []);
 
   // This effect handles adding/removing global classes to the body
   // to prevent scrolling when the emoji selector is open. It's safe
@@ -167,6 +190,7 @@ const PageContent: React.FC = () => {
       
       <OnboardingOverlay />
       <AddToHomeScreenPrompt open={showPwaPrompt} onOpenChange={setShowPwaPrompt} />
+      <NotificationPrompt open={showNotificationPrompt} onOpenChange={setShowNotificationPrompt} />
 
     </div>
   );
