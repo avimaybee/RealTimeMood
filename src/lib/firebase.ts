@@ -13,10 +13,8 @@ import {
   type User 
 } from "firebase/auth";
 
-// Your web app's Firebase configuration is hardcoded here to resolve
-// an environment-specific issue with loading .env files.
-// For production deployments, it is highly recommended to move these
-// back into environment variables.
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyA19PhoRcoQq8QaNl-qiqwEextRP31AOzU",
   authDomain: "realtimemood.firebaseapp.com",
