@@ -40,13 +40,13 @@ const MainPromptDisplay: React.FC = () => {
           {currentMood.adjective}
         </motion.span>
       </p>
-      <p className="text-small opacity-80">
+      <p className="text-body opacity-90">
         <motion.span
           key={Math.round(userCount)}
-          initial={{ scale: 0.9 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 300, damping: 10 }}
-          className="inline-block"
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+          className="inline-block font-semibold"
         >
           {Math.round(userCount).toLocaleString()}
         </motion.span>
