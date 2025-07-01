@@ -36,8 +36,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 const MAX_THOUGHT_LENGTH = 300;
 
-const FILTER_MOODS = ['Happy', 'Calm', 'Passionate', 'Compassionate', 'Peaceful', 'Imaginative'];
-const filterableMoods = PREDEFINED_MOODS.filter(m => FILTER_MOODS.includes(m.adjective));
+const filterableMoods = PREDEFINED_MOODS;
 
 const AuthorAvatar = ({ hue, adjective }: { hue?: number; adjective?: string }) => {
   if (hue === undefined || hue === null) {
@@ -101,7 +100,6 @@ const CollectiveThoughtsPage = () => {
 
     const getCounterColorStyle = (currentLength: number, maxLength: number): React.CSSProperties => {
         const overLimit = currentLength > maxLength;
-        const progress = Math.min(currentLength / maxLength, 1);
         
         if (overLimit) {
             return { color: 'hsl(var(--destructive))' };
@@ -109,6 +107,7 @@ const CollectiveThoughtsPage = () => {
     
         // The point at which the color starts changing from default
         const transitionStart = 0.8; 
+        const progress = Math.min(currentLength / maxLength, 1);
     
         if (progress < transitionStart) {
             return { color: 'hsl(var(--muted-foreground))' };
