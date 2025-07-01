@@ -1,80 +1,52 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // --- DEFAULT RULE ---
-    // Block all access by default. Specific rules below will grant access.
-    match /{document=**} {
-      allow read, write: if false;
-    }
+    
+    // --- Publicly Readable Data ---
 
-    // --- APP STATE ---
-    // The single document holding the live collective mood.
-    // Anyone can read it to see the current color.
-    // Any authenticated user (including anonymous) can write to it by submitting a mood.
+    // The main app state can be read by anyone.
+    // Writes are done via transaction from authenticated clients.
     match /appState/{docId} {
-      allow read:  if true;
+      allow read: if true;
       allow write: if request.auth != null;
     }
 
-    // --- MOOD SNAPSHOTS (HISTORY) ---
-    // The collection of historical mood data points.
-    // Anyone can read this for the history chart.
-    // Only authenticated users can trigger the creation of a new snapshot.
+    // Historical data and quotes are public.
     match /moodSnapshots/{snapshotId} {
-      allow read:   if true;
-      allow create: if request.auth != null;
-    }
-
-    // --- USER ACTIVITY (HEARTBEAT) ---
-    // Tracks active users for the "minds connected" count.
-    // Users can only read and write their own activity document.
-    match /userActivity/{userId} {
-      allow read, write:
-        if request.auth != null
-        && request.auth.uid == userId;
-    }
-
-    // --- USER PROFILES (STREAKS) ---
-    // Stores user-specific data like mood streaks.
-    // Users can only read and write their own profile.
-    match /userProfiles/{userId} {
-      allow read, write:
-        if request.auth != null
-        && request.auth.uid == userId;
-    }
-
-    // --- USER MOOD HISTORY (CALENDAR) ---
-    // Stores a user's personal mood contributions for their calendar.
-    // Users can only access documents within their own history subcollection.
-    match /userMoodHistory/{userId}/{documents=**} {
-      allow read, write:
-        if request.auth != null
-        && request.auth.uid == userId;
-    }
-
-    // --- COMMUNITY THOUGHTS ---
-    // The collection for anonymous shared thoughts.
-    match /communityQuotes/{quoteId} {
-      // Anyone can read the quotes.
       allow read: if true;
+      allow create: if request.auth != null; // Allow clients to trigger archiving
+    }
 
-      // Allow creation only if the user is authenticated and the data is valid.
-      allow create: if request.auth != null
-        && request.resource.data.text is string
-        && request.resource.data.text.size() > 0
-        && request.resource.data.text.size() < 1000
-        && request.resource.data.likes == 0
-        && request.resource.data.submittedAt == request.time;
+    match /communityQuotes/{quoteId} {
+      allow read: if true;
+      // Allow authenticated users to create and like posts.
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']);
+    }
+    
+    // Anyone can see who is typing.
+    match /typingUsers/{userId} {
+      allow read: if true;
+      // Only the user can update their own typing status.
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // --- User-Specific Data (Private) ---
 
-      // Allow updates only for the 'likes' field, and only by +1 or -1.
-      allow update: if request.auth != null
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes'])
-        && request.resource.data.likes is int
-        && (request.resource.data.likes == resource.data.likes + 1 ||
-            request.resource.data.likes == resource.data.likes - 1);
+    // Users can only access their own profile and mood history.
+    match /userProfiles/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    match /userMoodHistory/{userId}/{documents=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Users can only update their own activity heartbeat.
+    match /userActivity/{userId} {
+       allow write: if request.auth != null && request.auth.uid == userId;
+       allow read: if false; // No one needs to read this
     }
   }
 }
