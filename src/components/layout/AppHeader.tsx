@@ -1,4 +1,3 @@
-
 "use client";
 import React from 'react';
 import { useMood } from '@/contexts/MoodContext';
@@ -28,7 +27,6 @@ const AppHeader: React.FC = () => {
   const { currentMood, isCollectiveShifting, lastUserContribution, isInitialized } = useMood();
   const { isIos } = usePlatform();
 
-  // Use default static values for server-rendering and initial client render.
   const moodForIndicator = lastUserContribution || currentMood || PREDEFINED_MOODS[0];
   const indicatorAdjective = moodForIndicator.adjective;
   const indicatorColor = moodToHslString(moodForIndicator);
@@ -50,11 +48,9 @@ const AppHeader: React.FC = () => {
       transition={{ type: 'spring', stiffness: 100, damping: 10, delay: 0.1 }}
     >
       <a href="/" className="flex items-center group">
-          {/* The logo animation relies on the mood, so we also need to ensure it's client-side */}
           {isInitialized ? (
             <AppHeaderLogo animationClass={animationClass} isIos={isIos} />
           ) : (
-            // Render a static version on the server
             <AppHeaderLogo animationClass="" isIos={isIos} />
           )}
           <span className="ml-2 text-base md:text-lg font-medium text-foreground opacity-90 transition-opacity group-hover:opacity-100">
@@ -62,7 +58,7 @@ const AppHeader: React.FC = () => {
           </span>
       </a>
       
-      <div className="flex items-center gap-2 h-4"> {/* Set a fixed height to prevent layout shift */}
+      <div className="flex items-center gap-2 h-4">
         <AnimatePresence>
             {isInitialized && (
                 <motion.div
@@ -83,11 +79,11 @@ const AppHeader: React.FC = () => {
                         }}
                         animate={{ scale: [1, 1.15, 1] }}
                         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                        key={moodForIndicator.hue} // Re-trigger animation on hue change
+                        key={moodForIndicator.hue}
                     />
                 </motion.div>
             )}
-        </AnatePresence>
+        </AnimatePresence>
       </div>
     </motion.header>
   );
