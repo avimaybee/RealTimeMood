@@ -163,6 +163,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
           variant: "destructive",
           duration: 3000,
       });
+      setPreviewMood(null); // Clear preview even if submission is blocked
       return;
     }
 
@@ -286,13 +287,23 @@ const OrbButton: React.FC<OrbButtonProps> = ({
         <AnimatePresence>
           {interactionMode === 'bar' && (
             <motion.div
-              className="text-white/80 text-sm font-medium pointer-events-none"
+              className="text-white/80 text-sm font-medium pointer-events-none h-5" // Fixed height to prevent layout shifts
               style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0, transition: { delay: 0.3 } }}
               exit={{ opacity: 0, y: 5, transition: { duration: 0.1 } }}
             >
-              <p>Tap or slide to share your mood</p>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={previewMood ? previewMood.adjective : 'default'}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  {previewMood ? previewMood.adjective : 'Tap or slide to share your mood'}
+                </motion.p>
+              </AnimatePresence>
             </motion.div>
           )}
         </AnimatePresence>
