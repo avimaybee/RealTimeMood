@@ -38,6 +38,17 @@ const MAX_THOUGHT_LENGTH = 300;
 
 const filterableMoods = PREDEFINED_MOODS;
 
+const thoughtPrompts = [
+    "What made you smile today?",
+    "Share a hope you have for tomorrow.",
+    "What's one small thing you're grateful for?",
+    "Describe a color that matches your current feeling.",
+    "What's a sound that brings you comfort?",
+    "Share a moment of peace from your day.",
+    "What's a simple pleasure you enjoyed recently?",
+    "What's on your mind?",
+];
+
 const AuthorAvatar = ({ hue, adjective }: { hue?: number; adjective?: string }) => {
   if (hue === undefined || hue === null) {
     // Return a generic placeholder for older thoughts without a hue
@@ -102,6 +113,13 @@ const CollectiveThoughtsPage = () => {
     const [typingUserCount, setTypingUserCount] = useState(0);
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const isCurrentlyTypingRef = useRef(false);
+
+    // State for placeholder text
+    const [placeholder, setPlaceholder] = useState("Share a thought...");
+
+    useEffect(() => {
+        setPlaceholder(thoughtPrompts[Math.floor(Math.random() * thoughtPrompts.length)]);
+    }, []);
 
     // Listener for who is typing
     useEffect(() => {
@@ -727,7 +745,7 @@ const CollectiveThoughtsPage = () => {
                           <Textarea
                               ref={textareaRef}
                               name="thought"
-                              placeholder="Share a thought..."
+                              placeholder={placeholder}
                               value={thoughtValue}
                               onFocus={() => setIsInputActive(true)}
                               onBlur={() => setIsInputActive(false)}
