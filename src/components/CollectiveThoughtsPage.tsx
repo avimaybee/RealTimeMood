@@ -71,7 +71,7 @@ const CollectiveThoughtsPage = () => {
     const { isIos } = usePlatform();
     const { toast } = useToast();
     const { currentMood } = useMood();
-    const { user, isAnonymous } = useAuth();
+    const { user } = useAuth();
     const [quotes, setQuotes] = useState<(CommunityQuote & { id: string })[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -346,7 +346,7 @@ const CollectiveThoughtsPage = () => {
                 likes: 0,
                 authorHue: currentMood.hue,
                 authorAdjective: currentMood.adjective,
-                authorId: user && !isAnonymous ? user.uid : null,
+                authorId: user ? user.uid : null,
             });
             
             lastSubmissionTimeRef.current = now;
@@ -430,7 +430,7 @@ const CollectiveThoughtsPage = () => {
                     >
                         <AnimatePresence initial={false}>
                             {filteredQuotes.map((quote) => {
-                                const isAuthor = user && !isAnonymous && quote.authorId === user.uid;
+                                const isAuthor = user && quote.authorId === user.uid;
                                 const isExpanded = expandedQuotes.has(quote.id);
                                 const isClamped = clampedQuotes.has(quote.id);
                                 return (
