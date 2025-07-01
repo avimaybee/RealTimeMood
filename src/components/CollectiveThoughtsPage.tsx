@@ -1,10 +1,10 @@
 
 "use client";
 import Link from 'next/link';
-import { ArrowLeft, Send, Loader2, Heart, ArrowDown, Filter } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, Heart, ArrowDown, Filter, Edit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { CommunityQuote } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,13 +12,13 @@ import { Textarea } from '@/components/ui/textarea';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
 import { usePlatform } from '@/contexts/PlatformContext';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, Timestamp, limitToLast } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, Timestamp, limitToLast, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
 import DynamicBackground from '@/components/ui-fx/DynamicBackground';
-import { incrementLike, decrementLike } from '@/lib/thoughts-service';
+import { incrementLike, decrementLike, setTypingStatus, clearTypingStatus } from '@/lib/thoughts-service';
 import { useMood } from '@/contexts/MoodContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PREDEFINED_MOODS } from '@/lib/colorUtils';
@@ -97,6 +97,66 @@ const CollectiveThoughtsPage = () => {
     const scrollAreaRef = useRef<HTMLDivElement>(null);
     
     const [activeFilter, setActiveFilter] = useState<string | null>(null);
+
+    // State and refs for typing indicator
+    const [typingUserCount, setTypingUserCount] = useState(0);
+    const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const isCurrentlyTypingRef = useRef(false);
+
+    // Listener for who is typing
+    useEffect(() => {
+        if (!user) return;
+
+        const TYPING_TIMEOUT_MS = 5000; // Consider users stale after 5 seconds
+        const q = query(
+            collection(db, 'typingUsers'),
+            where('lastTyped', '>', new Date(Date.now() - TYPING_TIMEOUT_MS))
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const typingIds = snapshot.docs.map(doc => doc.id);
+            // Exclude the current user from the count
+            const otherTypingUsersCount = typingIds.filter(id => id !== user.uid).length;
+            setTypingUserCount(otherTypingUsersCount);
+        });
+        
+        // When the component unmounts, make sure to clear the user's typing status
+        return () => {
+            unsubscribe();
+            if (user.uid) {
+                clearTypingStatus(user.uid);
+            }
+        };
+    }, [user]);
+    
+    const handleThoughtChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setThoughtValue(e.target.value);
+
+        // Auto-resize logic
+        const textarea = e.currentTarget;
+        textarea.style.height = 'auto';
+        textarea.style.height = `${Math.min(textarea.scrollHeight, 128)}px`;
+
+        if (!user?.uid) return;
+
+        // Set typing status immediately, but only send the doc write once per "session" of typing
+        if (!isCurrentlyTypingRef.current) {
+            setTypingStatus(user.uid);
+            isCurrentlyTypingRef.current = true;
+        }
+
+        // Debounce clearing the status
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+
+        typingTimeoutRef.current = setTimeout(() => {
+            if (user.uid) {
+                clearTypingStatus(user.uid);
+                isCurrentlyTypingRef.current = false;
+            }
+        }, 3000); // Consider user stopped typing after 3s of inactivity
+    };
 
     const getCounterColorStyle = (currentLength: number, maxLength: number): React.CSSProperties => {
         const overLimit = currentLength > maxLength;
@@ -527,6 +587,24 @@ const CollectiveThoughtsPage = () => {
                     <p className="text-foreground/70">No thoughts found for "{activeFilter}".</p>
                 </div>
             )}
+             <AnimatePresence>
+                {typingUserCount > 0 && (
+                    <motion.div
+                        className="w-full max-w-4xl mx-auto px-4 sm:px-8 -mt-28 flex justify-start pointer-events-none"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <div className="text-xs text-muted-foreground flex items-center gap-1.5 mb-1 px-2 py-1 rounded-full bg-card/60 backdrop-blur-sm">
+                            <Edit2 className="w-3 h-3 animate-pulse text-primary" />
+                            <span>
+                                {typingUserCount === 1 ? "Someone is sharing a thought..." : `${typingUserCount} people are sharing...`}
+                            </span>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
       );
     };
@@ -653,13 +731,7 @@ const CollectiveThoughtsPage = () => {
                               value={thoughtValue}
                               onFocus={() => setIsInputActive(true)}
                               onBlur={() => setIsInputActive(false)}
-                              onChange={(e) => {
-                                  setThoughtValue(e.target.value);
-                                  const textarea = e.currentTarget;
-                                  // Auto-resize logic with a max-height
-                                  textarea.style.height = 'auto';
-                                  textarea.style.height = `${Math.min(textarea.scrollHeight, 128)}px`; // Cap height at 128px (max-h-32)
-                              }}
+                              onChange={handleThoughtChange}
                               onKeyDown={(e) => {
                                   if (e.key === 'Enter' && !e.shiftKey) {
                                       e.preventDefault();
