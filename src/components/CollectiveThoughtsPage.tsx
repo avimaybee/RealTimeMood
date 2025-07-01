@@ -531,8 +531,6 @@ const CollectiveThoughtsPage = () => {
       );
     };
 
-    const charsLeft = MAX_THOUGHT_LENGTH - thoughtValue.length;
-
     return (
         <>
             <div className="vignette-overlay" />
