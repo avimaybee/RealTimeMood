@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { motion, type PanInfo, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { usePlatform } from '@/contexts/PlatformContext';
+import { getMoodSuggestion } from '@/ai/flows/mood-suggestion-flow';
 
 const MoodSelectionButtons = dynamic(() => import('@/components/features/MoodSelectionButtons'), { ssr: false });
 
@@ -134,11 +135,22 @@ const OrbButton: React.FC<OrbButtonProps> = ({
       
       recordContribution(mood, getOrbPosition());
       lastSubmissionTimeRef.current = now;
-      toast({
+      
+      const { id: toastId, update: updateToast } = toast({
         title: "Mood Submitted",
         description: `Your feeling of "${mood.adjective}" has been added to the collective.`,
         duration: 4000,
       });
+
+      getMoodSuggestion({ moodAdjective: mood.adjective })
+        .then(suggestion => {
+          updateToast({ id: toastId, title: suggestion.title, description: suggestion.suggestion, duration: 10000 });
+        })
+        .catch(err => {
+          if (err.message !== 'Suggestion not needed for positive mood.') {
+            console.warn("Could not get mood suggestion:", err);
+          }
+        });
 
       setInteractionMode('orb');
       setPreviewMood(null);
@@ -175,11 +187,22 @@ const OrbButton: React.FC<OrbButtonProps> = ({
 
     recordContribution(mood, getOrbPosition());
     lastSubmissionTimeRef.current = now;
-    toast({
+
+    const { id: toastId, update: updateToast } = toast({
       title: "Mood Submitted",
       description: `Your feeling of "${mood.adjective}" has been added to the collective.`,
       duration: 4000,
     });
+
+    getMoodSuggestion({ moodAdjective: mood.adjective })
+      .then(suggestion => {
+        updateToast({ id: toastId, title: suggestion.title, description: suggestion.suggestion, duration: 10000 });
+      })
+      .catch(err => {
+        if (err.message !== 'Suggestion not needed for positive mood.') {
+          console.warn("Could not get mood suggestion:", err);
+        }
+      });
     
     setInteractionMode('orb');
     setPreviewMood(null);
@@ -221,11 +244,23 @@ const OrbButton: React.FC<OrbButtonProps> = ({
       try {
         recordContribution(chargeData.mood, getOrbPosition());
         lastSubmissionTimeRef.current = now;
-        toast({
+        
+        const { id: toastId, update: updateToast } = toast({
           title: "Mood Submitted",
           description: `Your feeling of "${chargeData.mood.adjective}" has been added to the collective.`,
           duration: 4000,
         });
+
+        getMoodSuggestion({ moodAdjective: chargeData.mood.adjective })
+          .then(suggestion => {
+            updateToast({ id: toastId, title: suggestion.title, description: suggestion.suggestion, duration: 10000 });
+          })
+          .catch(err => {
+            if (err.message !== 'Suggestion not needed for positive mood.') {
+              console.warn("Could not get mood suggestion:", err);
+            }
+          });
+
       } catch (error) {
         console.error('Error during charging sequence:', error);
         toast({ title: "Feeling Lost", description: "Your mood couldn't be submitted to the collective. Please try again.", variant: "destructive" });
