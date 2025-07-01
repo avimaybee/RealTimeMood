@@ -9,23 +9,25 @@ export function moodToHslValues(mood: Mood): string {
   return `${mood.hue} ${mood.saturation}% ${mood.lightness}%`;
 }
 
-// A curated list of 8 moods for the button grid, representing a balanced spectrum of emotions.
+// A curated list of 12 moods for the button grid, representing a balanced spectrum of emotions.
 export const PREDEFINED_MOODS: Mood[] = [
-  // Positive / Energetic
-  { hue: 54, saturation: 95, lightness: 60, name: "Happy Yellow", adjective: "Happy", emoji: "😊" },
+  // --- Row 1: High Energy / Joyful ---
   { hue: 35, saturation: 100, lightness: 55, name: "Enthusiastic Orange", adjective: "Enthusiastic", emoji: "🔥" },
+  { hue: 54, saturation: 95, lightness: 60, name: "Happy Yellow", adjective: "Happy", emoji: "😊" },
   { hue: 0, saturation: 90, lightness: 58, name: "Passionate Red", adjective: "Passionate", emoji: "❤️" },
+  { hue: 15, saturation: 100, lightness: 50, name: "Stressed Red-Orange", adjective: "Stressed", emoji: "😫" },
   
-  // Calm / Peaceful
+  // --- Row 2: Calm / Peaceful ---
   { hue: 130, saturation: 70, lightness: 55, name: "Peaceful Green", adjective: "Peaceful", emoji: "🧘" },
   { hue: 215, saturation: 85, lightness: 65, name: "Calm Blue", adjective: "Calm", emoji: "😌" },
-
-  // Reflective / Negative
-  { hue: 230, saturation: 40, lightness: 50, name: "Sad Blue", adjective: "Sad", emoji: "😢" },
-  { hue: 260, saturation: 50, lightness: 45, name: "Anxious Indigo", adjective: "Anxious", emoji: "😰" },
-  
-  // Creative
   { hue: 300, saturation: 80, lightness: 60, name: "Imaginative Purple", adjective: "Imaginative", emoji: "💡" },
+  { hue: 220, saturation: 15, lightness: 60, name: "Reflective Gray-Blue", adjective: "Reflective", emoji: "🤔" },
+
+  // --- Row 3: Sad / Anxious ---
+  { hue: 230, saturation: 40, lightness: 50, name: "Sad Blue", adjective: "Sad", emoji: "😢" },
+  { hue: 340, saturation: 60, lightness: 50, name: "Hurt Magenta", adjective: "Hurt", emoji: "💔" },
+  { hue: 260, saturation: 50, lightness: 45, name: "Anxious Indigo", adjective: "Anxious", emoji: "😰" },
+  { hue: 240, saturation: 20, lightness: 40, name: "Tired Dark Blue", adjective: "Tired", emoji: "😴" },
 ];
 
 
