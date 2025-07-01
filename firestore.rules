@@ -3,53 +3,57 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // PUBLIC: Collective Mood State
-    // Anyone can read the global mood.
-    // Only authenticated users can trigger an update via the submitMood transaction.
+    // The single document holding the collective mood state
     match /appState/collectiveMood {
+      // Anyone can read the current collective mood.
       allow read: if true;
+      // Only authenticated users can write to update the mood.
       allow write: if request.auth != null;
     }
 
-    // PUBLIC: Historical Snapshots
-    // Anyone can read the mood history.
-    // Snapshots are created by a trusted server process (or in this app's case, by any user triggering the check).
-    match /moodSnapshots/{snapshotId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-    }
-    
-    // USER-SPECIFIC: Mood History & Profile
-    // Users can only read and write to their own data paths.
+    // User-specific data, like personal mood history
     match /userMoodHistory/{userId}/{document=**} {
+      // A user can only read and write to their own history path.
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+
+    // User profiles, including streak data
     match /userProfiles/{userId} {
-       allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // PUBLIC: Community Thoughts
-    // Allow authenticated users to create new thoughts.
-    // Allow any user (even anonymous) to read thoughts.
-    // Allow authenticated users to update (e.g., like) a thought.
-    match /communityQuotes/{quoteId} {
-      allow read: if true;
-      allow create: if request.auth != null && request.resource.data.text is string && request.resource.data.text.size() < 301;
-      allow update: if request.auth != null;
+      // A user can only read and write their own profile.
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // PUBLIC: Typing Indicators
-    // Allow authenticated users to create/delete their own typing indicator.
-    // Allow any user to read who is typing.
-    match /typingUsers/{userId} {
-       allow read: if true;
-       allow write: if request.auth != null && request.auth.uid == userId;
+    // Anonymous thoughts submitted by users
+    match /communityQuotes/{quoteId} {
+      // Anyone can read the thoughts.
+      allow read: if true;
+      // Authenticated users can create new thoughts.
+      allow create: if request.auth != null;
+      // Authenticated users can update documents, but only to increment likes.
+      allow update: if request.auth != null &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']);
+    }
+
+    // Historical data for the trend chart
+    match /moodSnapshots/{snapshotId} {
+      // Anyone can read the historical data.
+      allow read: if true;
+      // Any authenticated user can trigger an archive process (create a snapshot).
+      allow create: if request.auth != null;
+    }
+
+    // Tracks which users are currently active
+    match /userActivity/{userId} {
+      // Authenticated users can update their own activity status.
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // DENY ALL ELSE
-    // Default-deny all other collections to prevent unintended access.
-    match /{document=**} {
-      allow read, write: if false;
+    // Tracks which users are currently typing a thought
+    match /typingUsers/{userId} {
+      // Anyone can see who is typing.
+      allow read: if true;
+      // Authenticated users can set/delete their own typing status.
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
