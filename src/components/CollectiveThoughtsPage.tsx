@@ -36,7 +36,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 const MAX_THOUGHT_LENGTH = 300;
 
-const FILTER_MOODS = ['Joyful', 'Calm', 'Passionate', 'Creative', 'Anxious', 'Peaceful'];
+const FILTER_MOODS = ['Happy', 'Calm', 'Passionate', 'Compassionate', 'Peaceful', 'Imaginative'];
 const filterableMoods = PREDEFINED_MOODS.filter(m => FILTER_MOODS.includes(m.adjective));
 
 const AuthorAvatar = ({ hue, adjective }: { hue?: number; adjective?: string }) => {

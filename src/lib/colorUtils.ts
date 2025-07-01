@@ -9,17 +9,17 @@ export function moodToHslValues(mood: Mood): string {
   return `${mood.hue} ${mood.saturation}% ${mood.lightness}%`;
 }
 
-// A curated list of 8 moods for the button grid, with more distinct hue values
-// to prevent incorrect mapping from the gradient bar.
+// A curated list of 8 moods for the button grid, based on user feedback for
+// clearer emotional representation.
 export const PREDEFINED_MOODS: Mood[] = [
-  { hue: 54, saturation: 95, lightness: 65, name: "Joyful Yellow", adjective: "Joyful", emoji: "😊" },
-  { hue: 30, saturation: 100, lightness: 60, name: "Energetic Orange", adjective: "Energetic", emoji: "🔥" },
-  { hue: 0, saturation: 90, lightness: 60, name: "Passionate Red", adjective: "Passionate", emoji: "❤️" },
-  { hue: 335, saturation: 100, lightness: 75, name: "Loved Pink", adjective: "Loved", emoji: "🥰" },
-  { hue: 210, saturation: 100, lightness: 70, name: "Calm Blue", adjective: "Calm", emoji: "😌" },
-  { hue: 130, saturation: 70, lightness: 60, name: "Peaceful Green", adjective: "Peaceful", emoji: "🧘" },
-  { hue: 300, saturation: 80, lightness: 65, name: "Creative Purple", adjective: "Creative", emoji: "💡" },
-  { hue: 260, saturation: 50, lightness: 55, name: "Anxious Indigo", adjective: "Anxious", emoji: "😰" },
+  { hue: 54, saturation: 95, lightness: 60, name: "Happy Yellow", adjective: "Happy", emoji: "😊" },
+  { hue: 35, saturation: 100, lightness: 55, name: "Enthusiastic Orange", adjective: "Enthusiastic", emoji: "🔥" },
+  { hue: 0, saturation: 90, lightness: 58, name: "Passionate Red", adjective: "Passionate", emoji: "❤️" },
+  { hue: 340, saturation: 100, lightness: 70, name: "Compassionate Pink", adjective: "Compassionate", emoji: "🥰" },
+  { hue: 215, saturation: 85, lightness: 65, name: "Calm Blue", adjective: "Calm", emoji: "😌" },
+  { hue: 130, saturation: 70, lightness: 55, name: "Peaceful Green", adjective: "Peaceful", emoji: "🧘" },
+  { hue: 280, saturation: 80, lightness: 60, name: "Imaginative Purple", adjective: "Imaginative", emoji: "💡" },
+  { hue: 220, saturation: 10, lightness: 50, name: "Reflective Gray", adjective: "Reflective", emoji: "🌫️" },
 ];
 
 
@@ -31,7 +31,7 @@ const shortestAngleDiff = (a: number, b: number): number => {
 export function findClosestMood(hue: number): Mood {
     if (!PREDEFINED_MOODS.length) {
       // Return a fallback mood if the array is empty
-      return { hue: 54, saturation: 95, lightness: 65, name: "Joyful Yellow", adjective: "Joyful", emoji: "😊" };
+      return { hue: 54, saturation: 95, lightness: 65, name: "Happy Yellow", adjective: "Happy", emoji: "😊" };
     }
   
     return PREDEFINED_MOODS.reduce((prev, curr) => {
