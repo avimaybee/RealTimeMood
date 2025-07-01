@@ -1,6 +1,6 @@
 
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { MoodProvider, useMood } from '@/contexts/MoodContext';
 import DynamicBackground from '@/components/ui-fx/DynamicBackground';
@@ -14,6 +14,7 @@ import MainPromptDisplay from '@/components/layout/MainPromptDisplay';
 import { cn } from '@/lib/utils';
 import { usePlatform } from '@/contexts/PlatformContext';
 import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowDown, Loader2 } from 'lucide-react';
 
 const OnboardingOverlay = dynamic(() => import('@/components/features/OnboardingOverlay'), {
   ssr: false,
@@ -40,6 +41,54 @@ const PageContent: React.FC = () => {
   const [isCharging, setIsCharging] = useState(false);
   const [showPwaPrompt, setShowPwaPrompt] = useState(false);
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
+
+  // --- Pull-to-refresh state and logic ---
+  const [pullState, setPullState] = useState<'idle' | 'pulling' | 'refreshing'>('idle');
+  const [pullDistance, setPullDistance] = useState(0);
+  const touchStartY = useRef(0);
+  const PULL_THRESHOLD = 100; // pixels to pull down to trigger refresh
+  const isRefreshing = pullState === 'refreshing';
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // Only start tracking if not already refreshing and user is at the top of the page.
+    if (isRefreshing || window.scrollY !== 0) return;
+    touchStartY.current = e.targetTouches[0].clientY;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (isRefreshing || touchStartY.current === 0) return;
+
+    const touchY = e.targetTouches[0].clientY;
+    const distance = touchY - touchStartY.current;
+
+    if (distance > 0) {
+      // User is pulling down from the top.
+      e.preventDefault(); // This is important to prevent the browser's default refresh actions.
+      setPullState('pulling');
+      // Use a damping function to make the pull feel more "stretchy" and prevent it from going too far.
+      setPullDistance(Math.pow(distance, 0.85));
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (isRefreshing || touchStartY.current === 0) return;
+    touchStartY.current = 0; // Reset start position on release
+
+    if (pullState === 'pulling') {
+      if (pullDistance > PULL_THRESHOLD) {
+        setPullState('refreshing');
+        // Add a small delay so user can see the spinner, then reload.
+        setTimeout(() => {
+          window.location.reload();
+        }, 600);
+      } else {
+        // Not pulled far enough, animate back to idle.
+        setPullState('idle');
+        setPullDistance(0);
+      }
+    }
+  };
+  // --- End pull-to-refresh logic ---
 
   useEffect(() => {
     // Register Service Worker for PWA capabilities
@@ -138,7 +187,45 @@ const PageContent: React.FC = () => {
         isBarModeActive ? 'bar-mode-active-page' : ''
       )}
       onClick={handlePageClick}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
+      <div className="fixed top-6 inset-x-0 z-50 flex justify-center pointer-events-none">
+        <motion.div
+            className="w-10 h-10 rounded-full flex items-center justify-center frosted-glass shadow-soft"
+            initial={false}
+            animate={{ 
+                y: pullState === 'idle' ? -60 : (pullState === 'refreshing' ? 40 : pullDistance),
+                opacity: pullState === 'idle' ? 0 : 1,
+            }}
+            transition={{ y: { type: 'spring', stiffness: 500, damping: 50 }, opacity: { duration: 0.2 } }}
+        >
+            <AnimatePresence mode="wait" initial={false}>
+                {isRefreshing ? (
+                    <motion.div
+                        key="loader"
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="arrow"
+                        initial={false}
+                        animate={{ rotate: pullDistance > PULL_THRESHOLD ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <ArrowDown className="w-5 h-5 text-foreground/70" />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
+      </div>
+      
       <div className="vignette-overlay" />
       <div className="noise-overlay" />
       <DynamicBackground />
