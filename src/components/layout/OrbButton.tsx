@@ -42,6 +42,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
   const barRef = useRef<HTMLDivElement>(null);
   const orbContainerRef = useRef<HTMLDivElement>(null);
   const justToggledRef = useRef(false);
+  const panActionOccurred = useRef(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -105,6 +106,8 @@ const OrbButton: React.FC<OrbButtonProps> = ({
   };
 
   const handleTap = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (panActionOccurred.current) return;
+    
     // If the bar was just opened, this tap event is the one that triggered it.
     // Reset the flag and ignore the event to prevent an instant submission.
     if (justToggledRef.current) {
@@ -151,6 +154,9 @@ const OrbButton: React.FC<OrbButtonProps> = ({
   };
 
   const handlePanEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    panActionOccurred.current = true;
+    setTimeout(() => { panActionOccurred.current = false; }, 50);
+
     const mood = getMoodFromPosition(info.point.x);
     
     const now = Date.now();
