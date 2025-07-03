@@ -4,53 +4,67 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Global app state, readable by all, writable by authenticated users via server functions.
+    // Document containing the global, collective mood state.
     match /appState/collectiveMood {
-      allow read: if true;
+      // Anyone can read the collective mood.
+      allow read;
+      // Only authenticated users can contribute to the mood (via a transaction).
       allow write: if request.auth != null;
     }
 
-    // Historical mood data for the history chart. Readable by all.
-    // Creates are handled by a server function, allow authenticated users to trigger it.
+    // Historical snapshots of the collective mood for the history chart.
     match /moodSnapshots/{snapshotId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update, delete: if false; // Snapshots are immutable
+      // Anyone can read the historical data.
+      allow read;
+      // Writes are handled by a server-side function, triggered by an authenticated user.
+      allow write: if request.auth != null;
     }
 
-    // User-submitted thoughts. Readable by all.
-    // Authenticated users can create new thoughts and update likes.
+    // Collection for user-submitted anonymous thoughts.
     match /communityQuotes/{quoteId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null; // For liking thoughts
-      allow delete: if false; // Users cannot delete thoughts
+      // Anyone can read the quotes.
+      allow read;
+
+      // Rules for creating and updating quotes.
+      allow create: if request.auth.uid == request.resource.data.authorId
+                    && request.resource.data.text is string
+                    && request.resource.data.text.size() > 0
+                    && request.resource.data.text.size() <= 300
+                    && request.resource.data.likes == 0;
+      
+      // Allow a user to update their own quote, OR any authenticated user to update ONLY the like count.
+      allow update: if (request.auth.uid == resource.data.authorId) ||
+                       (request.auth != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']));
     }
     
-    // Tracks which users are currently typing in the thoughts page.
-    // Authenticated users can read the list and write to their own document.
+    // NEW: Rules for the real-time typing indicator on the thoughts page.
     match /typingUsers/{userId} {
+      // Any authenticated user can read the list of who is typing.
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      
+      // A user can only create, update, or delete their own typing status document.
+      allow write: if request.auth.uid == userId;
+    }
+
+    // Tracks the last active time for a given user session to estimate active user counts.
+    match /userActivity/{userId} {
+      // Users can only write to their own activity document. No one needs to read this collection directly.
+      allow read: if false;
+      allow write: if request.auth.uid == userId;
+    }
+
+    // Nested collection for a user's personal mood history.
+    match /userMoodHistory/{userId} {
+      // A user can only access their own mood history documents.
+      match /dailySummaries/{summaryId} {
+        allow read, write: if request.auth.uid == userId;
+      }
     }
     
-    // Tracks a user's presence/activity.
-    // Authenticated users can write to their own document, no one can read.
-    match /userActivity/{userId} {
-        allow write: if request.auth != null && request.auth.uid == userId;
-        allow read: if false;
-    }
-
-    // Stores personal mood history for the calendar view.
-    // Users can only access their own data.
-    match /userMoodHistory/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Stores user profile data like streaks.
-    // Users can only access their own profile.
+    // User profile information, like their mood contribution streak.
     match /userProfiles/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // A user can only read or write to their own profile.
+      allow read, write: if request.auth.uid == userId;
     }
   }
 }
