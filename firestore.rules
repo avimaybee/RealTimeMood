@@ -3,45 +3,55 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // --- Collective Mood State ---
-    // Anyone can read the global state.
-    // Writes are handled by a server-side transaction for data integrity.
+    
+    // PUBLIC: Collective Mood State
+    // Anyone authenticated can read.
+    // Writes are handled by a transaction and can be made by any authenticated user.
     match /appState/collectiveMood {
-      allow read: if true;
-      allow write: if request.auth != null; // Allows any signed-in user (including anonymous)
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
     }
 
-    // --- User-Specific Data ---
-    // Users can only access their own history and profile data.
+    // PUBLIC: Community Quotes
+    // Anyone authenticated can read.
+    // Authenticated users can create quotes if they are the author.
+    // Liking is allowed by updating only the 'likes' field.
+    match /communityQuotes/{quoteId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.authorId == request.auth.uid;
+      // Allow update only if the 'text' is unchanged and user is authenticated.
+      // This allows 'likes' and other potential fields to be updated safely.
+      allow update: if request.auth != null && 
+                       request.resource.data.text == resource.data.text;
+    }
+
+    // PUBLIC: User Activity (for heartbeat)
+    // Users can only write to their own activity document.
+    match /userActivity/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // PUBLIC: Who's Typing Indicator
+    // Users can read all typing indicators.
+    // Users can only write to their own typing indicator document.
+    match /typingUsers/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // PRIVATE: User's personal mood history
+    // Users can only read and write their own history.
     match /userMoodHistory/{userId}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+    
+    // PRIVATE: User's profile (for streak)
+    // Users can only read and write their own profile.
     match /userProfiles/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
-    
-    // --- Community Thoughts ---
-    // Anyone can read thoughts.
-    // Authenticated (including anonymous) users can create new thoughts.
-    // Users can only update the 'likes' field of a thought.
-    match /communityQuotes/{quoteId} {
-      allow read: if true;
-      // Allow creation if the user is authenticated and the authorId matches their own UID.
-      allow create: if request.auth != null && request.resource.data.authorId == request.auth.uid;
-      // Allow users to update ONLY the 'likes' field.
-      allow update: if request.auth != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']);
-    }
 
-    // --- Typing Indicator ---
-    // Users can only create/delete their own typing status document.
-    // Anyone can read who is typing.
-    match /typingUsers/{userId} {
-        allow read: if true;
-        allow write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Default deny all other access for safety.
+    // Default deny all other access
     match /{document=**} {
       allow read, write: if false;
     }

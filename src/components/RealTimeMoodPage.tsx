@@ -91,22 +91,6 @@ const PageContent: React.FC = () => {
   // --- End pull-to-refresh logic ---
 
   useEffect(() => {
-    // Register Service Worker for PWA capabilities
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker
-          .register('/sw.js')
-          .then((registration) => {
-            console.log('PWA Service Worker registered with scope:', registration.scope);
-          })
-          .catch((error) => {
-            console.error('PWA Service Worker registration failed:', error);
-          });
-      });
-    }
-  }, []);
-
-  useEffect(() => {
     const handleContribution = (event: Event) => {
         const customEvent = event as CustomEvent<{ count: number }>;
         if (!customEvent.detail) return;
