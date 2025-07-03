@@ -1,69 +1,58 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Document containing the global, collective mood state.
+    // --- App State ---
+    // Collective mood is world-readable. It can be updated by any authenticated
+    // user via the `submitMood` server action, which contains the business logic.
     match /appState/collectiveMood {
-      // Anyone can read the collective mood.
-      allow read;
-      // Only authenticated users can contribute to the mood (via a transaction).
-      allow write: if request.auth != null;
+      allow read: if true;
+      allow write: if request.auth != null; // Allow transactions from authenticated users.
     }
 
-    // Historical snapshots of the collective mood for the history chart.
-    match /moodSnapshots/{snapshotId} {
-      // Anyone can read the historical data.
-      allow read;
-      // Writes are handled by a server-side function, triggered by an authenticated user.
-      allow write: if request.auth != null;
-    }
-
-    // Collection for user-submitted anonymous thoughts.
-    match /communityQuotes/{quoteId} {
-      // Anyone can read the quotes.
-      allow read;
-
-      // Rules for creating and updating quotes.
-      allow create: if request.auth.uid == request.resource.data.authorId
-                    && request.resource.data.text is string
-                    && request.resource.data.text.size() > 0
-                    && request.resource.data.text.size() <= 300
-                    && request.resource.data.likes == 0;
-      
-      // Allow a user to update their own quote, OR any authenticated user to update ONLY the like count.
-      allow update: if (request.auth.uid == resource.data.authorId) ||
-                       (request.auth != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']));
-    }
-    
-    // NEW: Rules for the real-time typing indicator on the thoughts page.
-    match /typingUsers/{userId} {
-      // Any authenticated user can read the list of who is typing.
-      allow read: if request.auth != null;
-      
-      // A user can only create, update, or delete their own typing status document.
-      allow write: if request.auth.uid == userId;
-    }
-
-    // Tracks the last active time for a given user session to estimate active user counts.
+    // --- User Activity ---
+    // Anyone can see who is active, but users can only update their own heartbeat.
     match /userActivity/{userId} {
-      // Users can only write to their own activity document. No one needs to read this collection directly.
-      allow read: if false;
+      allow read: if true;
       allow write: if request.auth.uid == userId;
     }
 
-    // Nested collection for a user's personal mood history.
-    match /userMoodHistory/{userId} {
-      // A user can only access their own mood history documents.
-      match /dailySummaries/{summaryId} {
-        allow read, write: if request.auth.uid == userId;
-      }
+    // --- Typing Indicators ---
+    // Anyone can see who is typing. Users can only create/delete their own indicator.
+    match /typingUsers/{userId} {
+      allow read: if true;
+      allow create, delete: if request.auth.uid == userId;
+      allow update: if false; // No updates allowed, only create/delete.
     }
-    
-    // User profile information, like their mood contribution streak.
+
+    // --- Mood Snapshots (History) ---
+    // Snapshots are world-readable, but only writable from a trusted server process.
+    match /moodSnapshots/{snapshotId} {
+      allow read: if true;
+      allow write: if false; // Protects against direct client writes.
+    }
+
+    // --- Community Quotes (Thoughts) ---
+    match /communityQuotes/{quoteId} {
+      allow read: if true;
+
+      // Any authenticated user can create a quote.
+      allow create: if request.auth != null;
+
+      // Any authenticated user can update a quote, but ONLY to modify the 'likes' count.
+      // This prevents users from editing the text or other fields of a submitted quote.
+      allow update: if request.auth != null
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']);
+    }
+
+    // --- User-Specific Data ---
+    // Users can only access their own history and profile data.
+    match /userMoodHistory/{userId}/{document=**} {
+      allow read, write: if request.auth.uid == userId;
+    }
+
     match /userProfiles/{userId} {
-      // A user can only read or write to their own profile.
       allow read, write: if request.auth.uid == userId;
     }
   }
