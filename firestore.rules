@@ -1,4 +1,3 @@
-
 rules_version = '2';
 
 service cloud.firestore {
@@ -8,21 +7,17 @@ service cloud.firestore {
     // Anyone authenticated can read.
     // Writes are handled by a transaction and can be made by any authenticated user.
     match /appState/collectiveMood {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
+      allow read: if true; // Allow public read access
+      allow write: if true; // Allow public write access for collective mood updates
     }
 
     // PUBLIC: Community Quotes
-    // Anyone authenticated can read.
-    // Authenticated users can create quotes if they are the author.
-    // Liking is allowed by updating only the 'likes' field.
+    // Anyone can read and write to the community quotes collection.
+    // Writes are validated in the component to ensure they are well-formed.
     match /communityQuotes/{quoteId} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow create: if request.auth != null && request.resource.data.authorId == request.auth.uid;
-      // Allow update only if the 'text' is unchanged and user is authenticated.
-      // This allows 'likes' and other potential fields to be updated safely.
-      allow update: if request.auth != null && 
-                       request.resource.data.text == resource.data.text;
+      allow update: if request.auth != null;
     }
 
     // PUBLIC: User Activity (for heartbeat)

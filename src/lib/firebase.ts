@@ -40,6 +40,18 @@ let analytics: Analytics | undefined;
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+// A function to get the initialized DB instance. This is safer for server-side components.
+export const getDb = () => {
+    if (!app) {
+        if (!getApps().length) {
+            app = initializeApp(firebaseConfig);
+        } else {
+            app = getApp();
+        }
+    }
+    return getFirestore(app);
+}
+
 // Enable Firestore offline persistence
 if (typeof window !== 'undefined') {
   try {
