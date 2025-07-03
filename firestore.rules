@@ -11,6 +11,12 @@ service cloud.firestore {
       allow write: if true; // Allow public write access for collective mood updates
     }
 
+    // PUBLIC: Historical Snapshots
+    // Anyone can read the historical mood snapshots.
+    match /moodSnapshots/{snapshotId} {
+      allow read: if true;
+    }
+
     // PUBLIC: Community Quotes
     // Anyone can read and write to the community quotes collection.
     // Writes are validated in the component to ensure they are well-formed.
