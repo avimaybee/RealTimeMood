@@ -23,7 +23,7 @@ service cloud.firestore {
     match /communityQuotes/{quoteId} {
       allow read: if true;
       allow create: if request.auth != null && request.resource.data.authorId == request.auth.uid;
-      allow update: if request.auth != null && request.resource.data.diff(request.resource.data).affectedKeys().hasOnly(['likes']);
+      allow update: if request.resource.data.diff(request.resource.data).affectedKeys().hasOnly(['likes']);
       allow update: if request.auth != null && request.resource.data.authorId == request.auth.uid;
     }
 

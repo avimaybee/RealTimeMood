@@ -350,15 +350,6 @@ const CollectiveThoughtsPage = () => {
     };
 
     const handleLikeToggle = async (quoteId: string) => {
-        if (!user) {
-            toast({
-                title: "Join the Conversation",
-                description: "You need to be signed in to like thoughts.",
-                variant: "default",
-            });
-            return;
-        }
-
         const isLiked = likedQuotes.has(quoteId);
         const originalLikedQuotes = new Set(likedQuotes);
         const originalQuotes = [...quotes];
