@@ -1,3 +1,4 @@
+
 'use server';
 
 import { db } from '@/lib/firebase';
@@ -22,50 +23,44 @@ export async function submitMood(mood: Mood, sessionId: string): Promise<void> {
     await runTransaction(db, async (transaction) => {
       const collectiveMoodDoc = await transaction.get(collectiveMoodRef);
 
-      // 1. Determine the starting state (either existing data or a fresh initial state)
-      let oldState: Partial<CollectiveMoodState>;
+      // 1. Define a complete, default initial state to guard against malformed data.
+      const initialMood = PREDEFINED_MOODS[0];
+      const defaultState: CollectiveMoodState = {
+        h: initialMood.hue,
+        s: initialMood.saturation,
+        l: initialMood.lightness,
+        moodAdjective: initialMood.adjective,
+        totalContributions: 0,
+        lastMoods: [],
+        isBigBoomActive: false,
+        celebratedMilestones: [],
+        lastUpdated: null,
+      };
 
-      if (collectiveMoodDoc.exists()) {
-        oldState = collectiveMoodDoc.data();
-      } else {
-        // If the document doesn't exist, create a default initial state.
-        const initialMood = PREDEFINED_MOODS[0];
-        oldState = {
-          h: initialMood.hue,
-          s: initialMood.saturation,
-          l: initialMood.lightness,
-          moodAdjective: initialMood.adjective,
-          totalContributions: 0,
-          lastMoods: [], // Start with an empty array
-          isBigBoomActive: false,
-          celebratedMilestones: [],
-          lastUpdated: null, // No previous update
-        };
-      }
-      
-      // 2. Perform all calculations based on the old state and the new mood
-      const newTotalContributions = (oldState.totalContributions || 0) + 1;
-      
+      // 2. Create a safe 'oldState' by merging the fetched data over the defaults.
+      // This ensures all properties exist, preventing runtime errors.
+      const oldState: CollectiveMoodState = {
+        ...defaultState,
+        ...(collectiveMoodDoc.exists() ? collectiveMoodDoc.data() : {}),
+      };
+
+      // 3. Perform calculations on the safe oldState.
+      const newTotalContributions = oldState.totalContributions + 1;
       const newSimpleMood: SimpleMood = { h: mood.hue, s: mood.saturation, l: mood.lightness };
-
-      // Ensure lastMoods is an array before spreading
-      const safeLastMoods = Array.isArray(oldState.lastMoods) ? oldState.lastMoods : [];
-      const recentMoods = [newSimpleMood, ...safeLastMoods].slice(0, MAX_RECENT_MOODS);
-      
+      const recentMoods = [newSimpleMood, ...oldState.lastMoods].slice(0, MAX_RECENT_MOODS);
       const { h, s, l } = averageHsl(recentMoods);
       const newAdjective = findClosestMood(h).adjective;
 
-      // Ensure celebratedMilestones is an array before spreading
-      const newCelebratedMilestones = [...(Array.isArray(oldState.celebratedMilestones) ? oldState.celebratedMilestones : [])];
+      const newCelebratedMilestones = [...oldState.celebratedMilestones];
       const milestoneCrossed = MILESTONES.find(m => newTotalContributions === m);
 
-      // Add the new milestone if it was crossed and not already celebrated
       if (milestoneCrossed && !newCelebratedMilestones.includes(milestoneCrossed)) {
         newCelebratedMilestones.push(milestoneCrossed);
       }
-
-      // 3. Construct the complete new state object to be written
+      
+      // 4. Construct the complete new state object to be written.
       const newState: CollectiveMoodState = {
+        ...oldState, // Carry over any unmodified fields
         h,
         s,
         l,
@@ -73,11 +68,10 @@ export async function submitMood(mood: Mood, sessionId: string): Promise<void> {
         totalContributions: newTotalContributions,
         lastMoods: recentMoods,
         lastUpdated: serverTimestamp(),
-        isBigBoomActive: false, // Reset or implement logic as needed
         celebratedMilestones: newCelebratedMilestones,
       };
 
-      // 4. Write the entire new state back using .set(). This works for both creating and overwriting.
+      // 5. Write the new state. This works for both creating and overwriting.
       transaction.set(collectiveMoodRef, newState);
     });
   } catch (error) {
