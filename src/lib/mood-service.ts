@@ -1,3 +1,4 @@
+'use server';
 
 import { db } from '@/lib/firebase';
 import { doc, runTransaction, serverTimestamp, setDoc, type Timestamp } from 'firebase/firestore';
