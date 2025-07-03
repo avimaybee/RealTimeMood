@@ -72,6 +72,11 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     currentMoodRef.current = currentMood;
   }, [currentMood]);
 
+  const userCountRef = useRef(userCount);
+  useEffect(() => {
+    userCountRef.current = userCount;
+  }, [userCount]);
+
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
@@ -193,45 +198,44 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     let simulationTimeout: NodeJS.Timeout;
 
     const runSimulation = () => {
-      // Schedule the next simulation event at a much longer random interval
-      // to reduce database writes and visual noise from ripples.
+      // Schedule the next simulation event
       const nextEventIn = 8000 + Math.random() * 7000; // 8s to 15s
       simulationTimeout = setTimeout(runSimulation, nextEventIn);
 
-      setUserCount(prev => {
-        let newCount;
-        const chance = Math.random();
+      // Use a ref to get the latest user count without creating a dependency
+      const currentCount = userCountRef.current;
+      let newCount;
+      const chance = Math.random();
 
-        // If we are at the upper bound, always decrease.
-        if (prev >= 15) { // Increased upper bound from 11
-          newCount = prev - 1;
-        } 
-        // Otherwise, 50/50 chance to increase or decrease.
-        else {
-          newCount = chance < 0.5 ? prev + 1 : prev - 1;
-        }
+      // Determine the new count
+      if (currentCount >= 15) {
+        newCount = currentCount - 1;
+      } else {
+        newCount = chance < 0.5 ? currentCount + 1 : currentCount - 1;
+      }
 
-        // Clamp the value to a more reasonable minimum.
-        if (newCount < 5) { // Increased lower bound from 1
-            newCount = 5;
+      // Clamp the value to a minimum
+      if (newCount < 5) {
+        newCount = 5;
+      }
+
+      // If the count increased, trigger the contribution side-effect
+      if (newCount > currentCount) {
+        if (sessionIdRef.current) {
+          const randomX = window.innerWidth * (0.2 + Math.random() * 0.6);
+          const randomY = window.innerHeight * (0.2 + Math.random() * 0.6);
+          const randomMood = PREDEFINED_MOODS[Math.floor(Math.random() * PREDEFINED_MOODS.length)];
+          
+          // The side-effect is now called safely outside of a state updater
+          recordContribution(randomMood, { x: randomX, y: randomY }, { isSimulated: true });
         }
-        
-        // A simulated user "joined" and submitted a mood.
-        if (newCount > prev) {
-          if (sessionIdRef.current) {
-            const randomX = window.innerWidth * (0.2 + Math.random() * 0.6);
-            const randomY = window.innerHeight * (0.2 + Math.random() * 0.6);
-            const randomMood = PREDEFINED_MOODS[Math.floor(Math.random() * PREDEFINED_MOODS.length)];
-            
-            recordContribution(randomMood, { x: randomX, y: randomY }, { isSimulated: true });
-          }
-        }
-        
-        return newCount;
-      });
+      }
+      
+      // Finally, update the state for the UI
+      setUserCount(newCount);
     };
 
-    // Start the simulation loop with a small delay
+    // Start the simulation loop
     simulationTimeout = setTimeout(runSimulation, 1000);
 
     return () => clearTimeout(simulationTimeout);
