@@ -23,28 +23,35 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     isIos: false,
     isAndroid: false,
   });
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // Defer analytics initialization to run client-side after initial render.
-    initializeAnalytics();
-
-    // The rest of this effect only needs to run once on the client.
-    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
-
-    // Check for iOS devices
-    const isIos = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
-    // Check for Android devices
-    const isAndroid = /android/i.test(userAgent);
-
-    setPlatform({ isIos, isAndroid });
-
-    // Apply class to body for global styling hooks
-    if (isIos) {
-      document.body.classList.add('ios');
-    } else if (isAndroid) {
-      document.body.classList.add('android');
-    }
+    setIsClient(true);
   }, []);
+
+  useEffect(() => {
+    if (isClient) {
+      // Defer analytics initialization to run client-side after initial render.
+      initializeAnalytics();
+
+      // The rest of this effect only needs to run once on the client.
+      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+
+      // Check for iOS devices
+      const isIos = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
+      // Check for Android devices
+      const isAndroid = /android/i.test(userAgent);
+
+      setPlatform({ isIos, isAndroid });
+
+      // Apply class to body for global styling hooks
+      if (isIos) {
+        document.body.classList.add('ios');
+      } else if (isAndroid) {
+        document.body.classList.add('android');
+      }
+    }
+  }, [isClient]);
 
   return (
     <PlatformContext.Provider value={platform}>
