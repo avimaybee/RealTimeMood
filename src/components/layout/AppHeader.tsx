@@ -24,6 +24,11 @@ const AppHeaderLogo: React.FC<{ animationClass: string }> = ({ animationClass })
 
 const AppHeader: React.FC = () => {
   const { isCollectiveShifting, lastUserContribution } = useMood();
+  const [isClient, setIsClient] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Using a single, default animation class to prevent hydration errors.
   const animationClass = 'animate-logo-calm';
@@ -49,28 +54,30 @@ const AppHeader: React.FC = () => {
       </a>
 
       {/* Mood indicator on the right */}
-      <AnimatePresence>
-        {lastUserContribution && (
-          <motion.div
-            className="flex items-center gap-2"
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 10 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          >
-            <div
-              className="w-2.5 h-2.5 rounded-full"
-              style={{
-                backgroundColor: moodToHslString(lastUserContribution),
-                boxShadow: `0 0 8px ${moodToHslString(lastUserContribution)}`,
-              }}
-            />
-            <span className="text-sm font-medium text-foreground/80">
-              {lastUserContribution.adjective}
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {isClient && (
+        <AnimatePresence>
+          {lastUserContribution && (
+            <motion.div
+              className="flex items-center gap-2"
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 10 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            >
+              <div
+                className="w-2.5 h-2.5 rounded-full"
+                style={{
+                  backgroundColor: moodToHslString(lastUserContribution),
+                  boxShadow: `0 0 8px ${moodToHslString(lastUserContribution)}`,
+                }}
+              />
+              <span className="text-sm font-medium text-foreground/80">
+                {lastUserContribution.adjective}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
     </motion.header>
   );
 };
