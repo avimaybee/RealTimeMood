@@ -1,3 +1,4 @@
+
 "use client";
 import type { ReactNode } from 'react';
 import React, { useRef, useMemo } from 'react';
@@ -222,12 +223,15 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
       // If the count increased, trigger the contribution side-effect
       if (newCount > currentCount) {
         if (sessionIdRef.current) {
-          const randomX = window.innerWidth * (0.2 + Math.random() * 0.6);
-          const randomY = window.innerHeight * (0.2 + Math.random() * 0.6);
-          const randomMood = PREDEFINED_MOODS[Math.floor(Math.random() * PREDEFINED_MOODS.length)];
-          
-          // The side-effect is now called safely outside of a state updater
-          recordContribution(randomMood, { x: randomX, y: randomY }, { isSimulated: true });
+          // Defer this call to the next event loop tick to guarantee it doesn't
+          // interfere with an ongoing React render cycle.
+          setTimeout(() => {
+            const randomX = window.innerWidth * (0.2 + Math.random() * 0.6);
+            const randomY = window.innerHeight * (0.2 + Math.random() * 0.6);
+            const randomMood = PREDEFINED_MOODS[Math.floor(Math.random() * PREDEFINED_MOODS.length)];
+            
+            recordContribution(randomMood, { x: randomX, y: randomY }, { isSimulated: true });
+          }, 0);
         }
       }
       
