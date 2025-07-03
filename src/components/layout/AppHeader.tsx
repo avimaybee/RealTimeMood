@@ -1,6 +1,6 @@
 
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -26,6 +26,11 @@ const AppHeaderLogo: React.FC<{ animationClass: string }> = ({ animationClass })
 
 const AppHeader: React.FC = () => {
   const { isCollectiveShifting } = useMood();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Using a single, default animation class to prevent hydration errors.
   const animationClass = 'animate-logo-calm';
@@ -39,7 +44,7 @@ const AppHeader: React.FC = () => {
         "h-12 px-3",
         "frosted-glass rounded-2xl shadow-soft"
       )}
-      animate={{ y: isCollectiveShifting ? -8 : 0 }}
+      animate={{ y: isMounted && isCollectiveShifting ? -8 : 0 }}
       transition={{ type: 'spring', stiffness: 100, damping: 10, delay: 0.1 }}
     >
       <a href="/" className="flex items-center group">
