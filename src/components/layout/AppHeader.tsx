@@ -1,9 +1,9 @@
-
 "use client";
 import React from 'react';
 import { useMood } from '@/contexts/MoodContext';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { moodToHslString } from '@/lib/colorUtils';
 
 const AppHeaderLogo: React.FC<{ animationClass: string }> = ({ animationClass }) => (
   <svg
@@ -23,7 +23,7 @@ const AppHeaderLogo: React.FC<{ animationClass: string }> = ({ animationClass })
 );
 
 const AppHeader: React.FC = () => {
-  const { isCollectiveShifting } = useMood();
+  const { isCollectiveShifting, lastUserContribution } = useMood();
 
   // Using a single, default animation class to prevent hydration errors.
   const animationClass = 'animate-logo-calm';
@@ -33,19 +33,44 @@ const AppHeader: React.FC = () => {
       className={cn(
         "fixed top-4 inset-x-0 mx-auto z-30",
         "w-[calc(100%-2rem)] max-w-lg",
-        "flex items-center justify-center",
+        "flex items-center justify-between",
         "h-12 px-3",
         "frosted-glass rounded-2xl shadow-soft"
       )}
       animate={{ y: isCollectiveShifting ? -8 : 0 }}
       transition={{ type: 'spring', stiffness: 100, damping: 10, delay: 0.1 }}
     >
+      {/* Logo on the left */}
       <a href="/" className="flex items-center group">
           <AppHeaderLogo animationClass={animationClass} />
           <span className="ml-2 text-base md:text-lg font-medium text-foreground opacity-90 transition-opacity group-hover:opacity-100">
               RealTimeMood
           </span>
       </a>
+
+      {/* Mood indicator on the right */}
+      <AnimatePresence>
+        {lastUserContribution && (
+          <motion.div
+            className="flex items-center gap-2"
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 10 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          >
+            <div
+              className="w-2.5 h-2.5 rounded-full"
+              style={{
+                backgroundColor: moodToHslString(lastUserContribution),
+                boxShadow: `0 0 8px ${moodToHslString(lastUserContribution)}`,
+              }}
+            />
+            <span className="text-sm font-medium text-foreground/80">
+              {lastUserContribution.adjective}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.header>
   );
 };
