@@ -1,3 +1,4 @@
+
 'use server';
 
 import { db } from '@/lib/firebase';
@@ -52,7 +53,8 @@ export async function recordUserMood(userId: string, mood: Mood): Promise<void> 
       } else {
         // This user has already contributed today, update the summary.
         const oldSummary = dailyDoc.data() as UserDailyMoodSummary;
-        const newMoods = [...oldSummary.moods, newSimpleMood];
+        // Add fallback to empty array to prevent crash on malformed data
+        const newMoods = [...(oldSummary.moods || []), newSimpleMood];
         const newAvgHsl = averageHsl(newMoods);
 
         const newSummary: Partial<UserDailyMoodSummary> = {
@@ -60,7 +62,7 @@ export async function recordUserMood(userId: string, mood: Mood): Promise<void> 
           averageSaturation: newAvgHsl.s,
           averageLightness: newAvgHsl.l,
           dominantAdjective: findClosestMood(newAvgHsl.h).adjective,
-          contributionCount: oldSummary.contributionCount + 1,
+          contributionCount: (oldSummary.contributionCount || 0) + 1,
           moods: newMoods,
         };
         transaction.update(dailySummaryRef, newSummary);

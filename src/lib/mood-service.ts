@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from '@/lib/firebase';
-import { doc, runTransaction, serverTimestamp, setDoc, type Timestamp } from 'firebase/firestore';
+import { doc, runTransaction, serverTimestamp, type Timestamp } from 'firebase/firestore';
 import type { Mood, CollectiveMoodState, SimpleMood } from '@/types';
 import { averageHsl, findClosestMood, PREDEFINED_MOODS } from './colorUtils';
 
@@ -47,11 +47,14 @@ export async function submitMood(mood: Mood, sessionId: string): Promise<void> {
       // 3. Perform calculations on the safe oldState.
       const newTotalContributions = oldState.totalContributions + 1;
       const newSimpleMood: SimpleMood = { h: mood.hue, s: mood.saturation, l: mood.lightness };
-      const recentMoods = [newSimpleMood, ...oldState.lastMoods].slice(0, MAX_RECENT_MOODS);
+      
+      // Add a fallback to an empty array to prevent crashes if `lastMoods` is not an array.
+      const recentMoods = [newSimpleMood, ...(oldState.lastMoods || [])].slice(0, MAX_RECENT_MOODS);
       const { h, s, l } = averageHsl(recentMoods);
       const newAdjective = findClosestMood(h).adjective;
 
-      const newCelebratedMilestones = [...oldState.celebratedMilestones];
+      // Add a fallback to an empty array for `celebratedMilestones` as well.
+      const newCelebratedMilestones = [...(oldState.celebratedMilestones || [])];
       const milestoneCrossed = MILESTONES.find(m => newTotalContributions === m);
 
       if (milestoneCrossed && !newCelebratedMilestones.includes(milestoneCrossed)) {
