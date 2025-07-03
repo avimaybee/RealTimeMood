@@ -25,14 +25,10 @@ const AppHeaderLogo: React.FC<{ animationClass: string }> = ({ animationClass })
 );
 
 const AppHeader: React.FC = () => {
-  const { currentMood, isCollectiveShifting } = useMood();
-  // Removed usePlatform to prevent hydration errors.
+  const { isCollectiveShifting } = useMood();
 
-  const collectiveAdjective = currentMood.adjective;
-  const animationClass = 
-    collectiveAdjective === 'Anxious' ? 'animate-logo-anxious' :
-    (collectiveAdjective === 'Joyful' || collectiveAdjective === 'Energetic' || collectiveAdjective === 'Passionate') ? 'animate-logo-joyful' :
-    'animate-logo-calm';
+  // Using a single, default animation class to prevent hydration errors.
+  const animationClass = 'animate-logo-calm';
 
   return (
     <motion.header 
