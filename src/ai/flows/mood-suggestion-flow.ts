@@ -9,12 +9,12 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const MoodSuggestionInputSchema = z.object({
+const MoodSuggestionInputSchema = z.object({
   moodAdjective: z.string().describe("The primary adjective describing the user's current mood (e.g., 'Sad', 'Anxious', 'Happy')."),
 });
 export type MoodSuggestionInput = z.infer<typeof MoodSuggestionInputSchema>;
 
-export const MoodSuggestionOutputSchema = z.object({
+const MoodSuggestionOutputSchema = z.object({
   title: z.string().describe("A short, encouraging title for the suggestion, like 'A Moment of Calm' or 'A Quick Reset'."),
   suggestion: z.string().describe("A single, simple, safe, and actionable micro-suggestion (1-2 sentences). This should NOT be professional medical or psychological advice."),
 });
