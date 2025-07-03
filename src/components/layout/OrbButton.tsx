@@ -78,7 +78,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
       pressTimeoutRef.current = null;
 
       if (!isEmojiSelectorOpen && interactionMode === 'orb') {
-        setInteractionMode('bar');
+        setInteractionMode(() => 'bar');
         // Flag that we just handled this tap by opening the bar
         justToggledRef.current = true;
       }
@@ -129,7 +129,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
       });
 
     if (interactionMode === 'bar') {
-        setInteractionMode('orb');
+        setInteractionMode(() => 'orb');
         setPreviewMood(null);
     }
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -188,7 +188,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
       if (e.key === 'Escape') {
         if (isEmojiSelectorOpen) handleDismissEmojiSelector();
         if (interactionMode === 'bar') {
-          setInteractionMode('orb');
+          setInteractionMode(() => 'orb');
           setPreviewMood(null);
         }
       }
