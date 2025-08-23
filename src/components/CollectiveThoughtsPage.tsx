@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { CommunityQuote } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
 import { Skeleton } from '@/components/ui/skeleton';
 import DynamicBackground from '@/components/ui-fx/DynamicBackground';
