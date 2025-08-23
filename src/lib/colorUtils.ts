@@ -56,7 +56,12 @@ export function findClosestMood(hue: number): Mood {
  * @returns A single {h, s, l} object representing the average color.
  */
 export function averageHsl(moods: SimpleMood[]): SimpleMood {
-  if (moods.length === 0) {
+  // Filter out any invalid mood entries to prevent runtime errors.
+  const validMoods = (moods || []).filter(mood => 
+    mood && typeof mood.h === 'number' && typeof mood.s === 'number' && typeof mood.l === 'number'
+  );
+
+  if (validMoods.length === 0) {
     return { h: 210, s: 100, l: 70 }; // Default to 'Calm'
   }
   
@@ -65,7 +70,7 @@ export function averageHsl(moods: SimpleMood[]): SimpleMood {
   let sumS = 0;
   let sumL = 0;
 
-  for (const mood of moods) {
+  for (const mood of validMoods) {
     const angle = (mood.h * Math.PI) / 180;
     sumX += Math.cos(angle);
     sumY += Math.sin(angle);
@@ -73,15 +78,15 @@ export function averageHsl(moods: SimpleMood[]): SimpleMood {
     sumL += mood.l;
   }
 
-  const avgX = sumX / moods.length;
-  const avgY = sumY / moods.length;
+  const avgX = sumX / validMoods.length;
+  const avgY = sumY / validMoods.length;
   
   const avgAngle = Math.atan2(avgY, avgX);
   const avgHue = (avgAngle * 180) / Math.PI;
 
   return {
     h: (avgHue + 360) % 360,
-    s: sumS / moods.length,
-    l: sumL / moods.length,
+    s: sumS / validMoods.length,
+    l: sumL / validMoods.length,
   };
 }

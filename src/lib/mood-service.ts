@@ -1,4 +1,3 @@
-
 import type { Mood, CollectiveMoodState, SimpleMood } from '@/types';
 import { averageHsl, findClosestMood, PREDEFINED_MOODS } from './colorUtils';
 
@@ -7,6 +6,19 @@ const MILESTONES = [25, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
 
 // Mock collective mood state stored in localStorage
 const getStoredCollectiveMood = (): CollectiveMoodState => {
+  if (typeof window === 'undefined') {
+    return {
+      h: PREDEFINED_MOODS[0].hue,
+      s: PREDEFINED_MOODS[0].saturation,
+      l: PREDEFINED_MOODS[0].lightness,
+      moodAdjective: PREDEFINED_MOODS[0].adjective,
+      totalContributions: 0,
+      lastMoods: [],
+      celebratedMilestones: [],
+      isBigBoomActive: false,
+      lastUpdated: new Date()
+    };
+  }
   const stored = localStorage.getItem('mockCollectiveMood');
   if (stored) {
     return JSON.parse(stored);
@@ -25,7 +37,9 @@ const getStoredCollectiveMood = (): CollectiveMoodState => {
 };
 
 const saveCollectiveMood = (state: CollectiveMoodState) => {
-  localStorage.setItem('mockCollectiveMood', JSON.stringify(state));
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('mockCollectiveMood', JSON.stringify(state));
+  }
 };
 
 /**
@@ -80,6 +94,8 @@ export async function submitMood(mood: Mood, sessionId: string): Promise<void> {
  * @param sessionId - The anonymous identifier for the user's session.
  */
 export async function updateUserActivity(sessionId: string): Promise<void> {
-  // Mock user activity - just store timestamp
-  localStorage.setItem('lastUserActivity', Date.now().toString());
+  if (typeof window !== 'undefined') {
+    // Mock user activity - just store timestamp
+    localStorage.setItem('lastUserActivity', Date.now().toString());
+  }
 }

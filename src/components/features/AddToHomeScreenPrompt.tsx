@@ -1,9 +1,10 @@
+
 "use client";
 
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ArrowUpFromBracket, MoreVertical, SquarePlus } from 'lucide-react';
+import { Share, MoreVertical, SquarePlus } from 'lucide-react';
 import { usePlatform } from '@/contexts/PlatformContext';
 import { cn } from '@/lib/utils';
 
@@ -28,7 +29,7 @@ const AddToHomeScreenPrompt: React.FC<AddToHomeScreenPromptProps> = ({ open, onO
         To get the best experience, add RealTimeMood to your Home Screen for easy access.
       </p>
       <ol className="list-decimal list-inside space-y-1.5 pl-1">
-        <li>Tap the <span className="font-semibold text-primary">Share</span> icon <ArrowUpFromBracket className="inline-block align-text-bottom h-4 w-4" /> in Safari's toolbar.</li>
+        <li>Tap the <span className="font-semibold text-primary">Share</span> icon <Share className="inline-block align-text-bottom h-4 w-4" /> in Safari's toolbar.</li>
         <li>Scroll down and tap <span className="font-semibold text-primary">"Add to Home Screen"</span>.</li>
       </ol>
     </DialogDescription>

@@ -1,14 +1,13 @@
-
 // Mock Firebase configuration for frontend-only mode
 export const db = null; // Not used in frontend-only mode
 export const auth = {
-  currentUser: { uid: crypto.randomUUID(), isAnonymous: true }
+  currentUser: { uid: 'mock-user-id', isAnonymous: true }
 };
 
 // Mock functions that return promises for compatibility
-export const signInAnonymously = async () => ({ user: { uid: crypto.randomUUID(), isAnonymous: true } });
+export const signInAnonymously = async () => ({ user: { uid: 'mock-user-id', isAnonymous: true } });
 export const onAuthStateChanged = (callback: (user: any) => void) => {
-  callback({ uid: crypto.randomUUID(), isAnonymous: true });
+  callback({ uid: 'mock-user-id', isAnonymous: true });
   return () => {}; // unsubscribe function
 };
 

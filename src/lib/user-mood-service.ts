@@ -1,4 +1,3 @@
-
 import { format } from 'date-fns';
 import type { Mood, SimpleMood, UserDailyMoodSummary } from '@/types';
 import { averageHsl, findClosestMood } from './colorUtils';
@@ -9,6 +8,9 @@ import { averageHsl, findClosestMood } from './colorUtils';
  * @param mood The mood object to record.
  */
 export async function recordUserMood(userId: string, mood: Mood): Promise<void> {
+  if (typeof window === 'undefined') {
+    return;
+  }
   if (!userId) {
     console.warn('Cannot record user mood without a userId.');
     return;
@@ -63,6 +65,9 @@ export async function recordUserMood(userId: string, mood: Mood): Promise<void> 
  * @returns A promise that resolves to an array of daily summary objects.
  */
 export async function fetchUserMoodHistory(userId: string): Promise<UserDailyMoodSummary[]> {
+  if (typeof window === 'undefined') {
+    return [];
+  }
   if (!userId) return [];
 
   try {

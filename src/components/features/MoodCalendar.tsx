@@ -1,26 +1,40 @@
 
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { UserDailyMoodSummary } from '@/types';
 import { getCalendarGridDates, formatDateKey } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface MoodCalendarProps {
     data: UserDailyMoodSummary[];
 }
 
-const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const MoodCalendar: React.FC<MoodCalendarProps> = ({ data }) => {
-    const calendarDays = getCalendarGridDates();
-    
+    const [calendarDays, setCalendarDays] = useState<{ date: Date | null }[]>([]);
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+        setCalendarDays(getCalendarGridDates());
+    }, []);
+
     const dataMap = new Map<string, UserDailyMoodSummary>();
     data.forEach(day => dataMap.set(day.date, day));
 
     let lastMonth = -1;
+
+    if (!isClient) {
+        return (
+             <div className="flex justify-center p-4 frosted-glass rounded-2xl">
+                <Skeleton className="w-full h-[150px]" />
+             </div>
+        );
+    }
 
     return (
         <TooltipProvider delayDuration={100}>

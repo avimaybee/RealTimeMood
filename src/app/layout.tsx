@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="manifest" href="/manifest.json" />
+        
         <meta name="theme-color" content="#1F1F1F" />
       </head>
       <body className={cn("antialiased font-sans", manrope.variable)}>

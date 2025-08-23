@@ -1,3 +1,4 @@
+'use server';
 
 import type { CollectiveMoodState, HistoricalMoodSnapshot } from '@/types';
 

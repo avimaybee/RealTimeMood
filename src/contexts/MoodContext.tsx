@@ -36,7 +36,6 @@ type MoodContextType = {
   isCollectiveShifting: boolean;
   lastUserContribution: Mood | null;
   celebratedMilestones: number[];
-  isInitialized: boolean;
 };
 
 const MoodContext = createContext<MoodContextType | undefined>(undefined);
@@ -50,7 +49,6 @@ export const useMood = () => {
 };
 
 export const MoodProvider = ({ children, isLivePage = false }: { children: ReactNode; isLivePage?: boolean; }) => {
-  const [isInitialized, setIsInitialized] = useState(false);
   const [currentMood, setCurrentMood] = useState<Mood>(initialState.currentMood);
   const [userCount, setUserCount] = useState<number>(initialState.userCount);
   const [contributionCount, setContributionCount] = useState<number>(initialState.contributionCount);
@@ -73,10 +71,11 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     currentMoodRef.current = currentMood;
   }, [currentMood]);
 
+  const userCountRef = useRef(userCount);
   useEffect(() => {
-    // This effect runs only on the client, after the component has mounted.
-    setIsInitialized(true);
-  }, []);
+    userCountRef.current = userCount;
+  }, [userCount]);
+
 
   useEffect(() => {
     // Generate mock session ID for frontend-only mode
@@ -187,45 +186,47 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     let simulationTimeout: NodeJS.Timeout;
 
     const runSimulation = () => {
-      // Schedule the next simulation event at a much longer random interval
-      // to reduce database writes and visual noise from ripples.
+      // Schedule the next simulation event
       const nextEventIn = 8000 + Math.random() * 7000; // 8s to 15s
       simulationTimeout = setTimeout(runSimulation, nextEventIn);
 
-      setUserCount(prev => {
-        let newCount;
-        const chance = Math.random();
+      // Use a ref to get the latest user count without creating a dependency
+      const currentCount = userCountRef.current;
+      let newCount;
+      const chance = Math.random();
 
-        // If we are at the upper bound, always decrease.
-        if (prev >= 15) { // Increased upper bound from 11
-          newCount = prev - 1;
-        } 
-        // Otherwise, 50/50 chance to increase or decrease.
-        else {
-          newCount = chance < 0.5 ? prev + 1 : prev - 1;
-        }
+      // Determine the new count
+      if (currentCount >= 15) {
+        newCount = currentCount - 1;
+      } else {
+        newCount = chance < 0.5 ? currentCount + 1 : currentCount - 1;
+      }
 
-        // Clamp the value to a more reasonable minimum.
-        if (newCount < 5) { // Increased lower bound from 1
-            newCount = 5;
-        }
-        
-        // A simulated user "joined" and submitted a mood.
-        if (newCount > prev) {
-          if (sessionIdRef.current) {
+      // Clamp the value to a minimum
+      if (newCount < 5) {
+        newCount = 5;
+      }
+
+      // If the count increased, trigger the contribution side-effect
+      if (newCount > currentCount) {
+        if (sessionIdRef.current) {
+          // Defer this call to the next event loop tick to guarantee it doesn't
+          // interfere with an ongoing React render cycle.
+          setTimeout(() => {
             const randomX = window.innerWidth * (0.2 + Math.random() * 0.6);
             const randomY = window.innerHeight * (0.2 + Math.random() * 0.6);
             const randomMood = PREDEFINED_MOODS[Math.floor(Math.random() * PREDEFINED_MOODS.length)];
             
             recordContribution(randomMood, { x: randomX, y: randomY }, { isSimulated: true });
-          }
+          }, 0);
         }
-        
-        return newCount;
-      });
+      }
+      
+      // Finally, update the state for the UI
+      setUserCount(newCount);
     };
 
-    // Start the simulation loop with a small delay
+    // Start the simulation loop
     simulationTimeout = setTimeout(runSimulation, 1000);
 
     return () => clearTimeout(simulationTimeout);
@@ -305,7 +306,6 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     triggerCollectiveShift,
     isCollectiveShifting,
     lastUserContribution,
-    isInitialized,
   }), [
     currentMood,
     userCount,
@@ -321,7 +321,6 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     triggerCollectiveShift,
     isCollectiveShifting,
     lastUserContribution,
-    isInitialized,
   ]);
 
   return (

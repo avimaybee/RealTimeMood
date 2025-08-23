@@ -105,7 +105,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
       pressTimeoutRef.current = null;
 
       if (!isEmojiSelectorOpen && interactionMode === 'orb') {
-        setInteractionMode('bar');
+        setInteractionMode(() => 'bar');
         // Flag that we just handled this tap by opening the bar
         justToggledRef.current = true;
       }
@@ -118,6 +118,51 @@ const OrbButton: React.FC<OrbButtonProps> = ({
     setChargeData({ mood });
     setIsCharging(true);
   };
+
+  const submitUserMood = useCallback((mood: Mood, position: { x: number, y: number } | null) => {
+    const now = Date.now();
+    const SUBMISSION_COOLDOWN = 10000; // 10 seconds
+
+    // Allow the first submission (when ref is 0), then enforce cooldown.
+    if (lastSubmissionTimeRef.current !== 0 && (now - lastSubmissionTimeRef.current < SUBMISSION_COOLDOWN)) {
+      const secondsRemaining = Math.ceil((SUBMISSION_COOLDOWN - (now - lastSubmissionTimeRef.current)) / 1000);
+      toast({
+        title: "A moment of reflection...",
+        description: `Please wait ${secondsRemaining} more second${secondsRemaining > 1 ? 's' : ''} before sharing again.`,
+        variant: "destructive",
+        duration: 3000,
+      });
+      return; // Abort submission
+    }
+
+    // Proceed with submission
+    recordContribution(mood, position);
+    lastSubmissionTimeRef.current = now;
+
+    const { id: toastId, update: updateToast } = toast({
+      title: "Mood Submitted",
+      description: `Your feeling of "${mood.adjective}" has been added to the collective.`,
+      duration: 4000,
+    });
+
+    getMoodSuggestion({ moodAdjective: mood.adjective })
+      .then(suggestion => {
+        updateToast({ id: toastId, title: suggestion.title, description: suggestion.suggestion, duration: 10000 });
+      })
+      .catch(err => {
+        if (err.message !== 'Suggestion not needed for positive mood.') {
+          console.warn("Could not get mood suggestion:", err);
+        }
+      });
+
+    if (interactionMode === 'bar') {
+        setInteractionMode(() => 'orb');
+        setPreviewMood(null);
+    }
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(50);
+    }
+  }, [recordContribution, toast, interactionMode, setInteractionMode, setPreviewMood]);
   
   const handleDismissEmojiSelector = useCallback(() => {
     setIsEmojiSelectorOpen(false);
@@ -146,44 +191,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
     // If the tap happens on the gradient bar, submit the mood.
     if (interactionMode === 'bar') {
       const mood = getMoodFromPosition(info.point.x);
-      
-      const now = Date.now();
-      const SUBMISSION_COOLDOWN = 10000;
-      if (now - lastSubmissionTimeRef.current < SUBMISSION_COOLDOWN) {
-        const secondsRemaining = Math.ceil((SUBMISSION_COOLDOWN - (now - lastSubmissionTimeRef.current)) / 1000);
-        toast({
-            title: "A moment of reflection...",
-            description: `Please wait ${secondsRemaining} more second${secondsRemaining > 1 ? 's' : ''} before sharing again.`,
-            variant: "destructive",
-            duration: 3000,
-        });
-        return;
-      }
-      
-      recordContribution(mood, getOrbPosition());
-      lastSubmissionTimeRef.current = now;
-      
-      const { id: toastId, update: updateToast } = toast({
-        title: "Mood Submitted",
-        description: `Your feeling of "${mood.adjective}" has been added to the collective.`,
-        duration: 4000,
-      });
-
-      getMoodSuggestion({ moodAdjective: mood.adjective })
-        .then(suggestion => {
-          updateToast({ id: toastId, title: suggestion.title, description: suggestion.suggestion, duration: 10000 });
-        })
-        .catch(err => {
-          if (err.message !== 'Suggestion not needed for positive mood.') {
-            console.warn("Could not get mood suggestion:", err);
-          }
-        });
-
-      setInteractionMode('orb');
-      setPreviewMood(null);
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(50);
-      }
+      submitUserMood(mood, getOrbPosition());
     }
   };
 
@@ -197,43 +205,8 @@ const OrbButton: React.FC<OrbButtonProps> = ({
     setTimeout(() => { panActionOccurred.current = false; }, 50);
 
     const mood = getMoodFromPosition(info.point.x);
-    
-    const now = Date.now();
-    const SUBMISSION_COOLDOWN = 10000;
-    if (now - lastSubmissionTimeRef.current < SUBMISSION_COOLDOWN) {
-      const secondsRemaining = Math.ceil((SUBMISSION_COOLDOWN - (now - lastSubmissionTimeRef.current)) / 1000);
-      toast({
-          title: "A moment of reflection...",
-          description: `Please wait ${secondsRemaining} more second${secondsRemaining > 1 ? 's' : ''} before sharing again.`,
-          variant: "destructive",
-          duration: 3000,
-      });
-      setPreviewMood(null); // Clear preview even if submission is blocked
-      return;
-    }
-
-    recordContribution(mood, getOrbPosition());
-    lastSubmissionTimeRef.current = now;
-
-    const { id: toastId, update: updateToast } = toast({
-      title: "Mood Submitted",
-      description: `Your feeling of "${mood.adjective}" has been added to the collective.`,
-      duration: 4000,
-    });
-
-    getMoodSuggestion({ moodAdjective: mood.adjective })
-      .then(suggestion => {
-        updateToast({ id: toastId, title: suggestion.title, description: suggestion.suggestion, duration: 10000 });
-      })
-      .catch(err => {
-        if (err.message !== 'Suggestion not needed for positive mood.') {
-          console.warn("Could not get mood suggestion:", err);
-        }
-      });
-    
-    setInteractionMode('orb');
-    setPreviewMood(null);
-    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50);
+    submitUserMood(mood, getOrbPosition());
+    setPreviewMood(null); // Clear preview after submission
   };
 
 
@@ -242,7 +215,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
       if (e.key === 'Escape') {
         if (isEmojiSelectorOpen) handleDismissEmojiSelector();
         if (interactionMode === 'bar') {
-          setInteractionMode('orb');
+          setInteractionMode(() => 'orb');
           setPreviewMood(null);
         }
       }
@@ -253,41 +226,10 @@ const OrbButton: React.FC<OrbButtonProps> = ({
 
   useEffect(() => {
     if (!isCharging || !chargeData) return;
-    const now = Date.now();
-    const SUBMISSION_COOLDOWN = 10000; // 10 seconds
-    if (now - lastSubmissionTimeRef.current < SUBMISSION_COOLDOWN) {
-      const secondsRemaining = Math.ceil((SUBMISSION_COOLDOWN - (now - lastSubmissionTimeRef.current)) / 1000);
-      toast({
-        title: "A moment of reflection...",
-        description: `Please wait ${secondsRemaining} more second${secondsRemaining > 1 ? 's' : ''} before sharing again.`,
-        variant: "destructive",
-        duration: 3000,
-      });
-      setIsCharging(false);
-      setChargeData(null);
-      return;
-    }
+
     const chargeTimeout = setTimeout(() => {
       try {
-        recordContribution(chargeData.mood, getOrbPosition());
-        lastSubmissionTimeRef.current = now;
-        
-        const { id: toastId, update: updateToast } = toast({
-          title: "Mood Submitted",
-          description: `Your feeling of "${chargeData.mood.adjective}" has been added to the collective.`,
-          duration: 4000,
-        });
-
-        getMoodSuggestion({ moodAdjective: chargeData.mood.adjective })
-          .then(suggestion => {
-            updateToast({ id: toastId, title: suggestion.title, description: suggestion.suggestion, duration: 10000 });
-          })
-          .catch(err => {
-            if (err.message !== 'Suggestion not needed for positive mood.') {
-              console.warn("Could not get mood suggestion:", err);
-            }
-          });
-
+        submitUserMood(chargeData.mood, getOrbPosition());
       } catch (error) {
         console.error('Error during charging sequence:', error);
         toast({ title: "Feeling Lost", description: "Your mood couldn't be submitted to the collective. Please try again.", variant: "destructive" });
@@ -297,7 +239,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
       }
     }, 500);
     return () => clearTimeout(chargeTimeout);
-  }, [isCharging, chargeData, recordContribution, toast, setIsCharging, getOrbPosition]);
+  }, [isCharging, chargeData, submitUserMood, getOrbPosition, toast, setIsCharging]);
 
   const morphTransition = { type: 'spring', stiffness: 350, damping: 35 };
 
