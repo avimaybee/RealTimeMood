@@ -1,14 +1,13 @@
 
 "use client";
 import React, { useState, useEffect } from 'react';
-import { summarizeTrends } from '@/ai/flows/summarize-mood-trends';
-import type { SummarizeTrendsInput, SummarizeTrendsOutput } from '@/ai/flows/summarize-mood-trends';
+// AI dependencies removed - using mock implementation
 import { useTypewriter } from '@/hooks/useTypewriter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle } from 'lucide-react';
 
 interface TrendSummaryDisplayProps {
-  historyData: SummarizeTrendsInput['historyData'];
+  historyData: { date: string; hue: number }[];
 }
 
 const TrendSummaryDisplay: React.FC<TrendSummaryDisplayProps> = ({ historyData }) => {
@@ -24,16 +23,23 @@ const TrendSummaryDisplay: React.FC<TrendSummaryDisplayProps> = ({ historyData }
         setIsLoading(true);
         setError(null);
         setResult(null); // Clear previous result
-        const aiResult = await summarizeTrends({ historyData });
-        setResult(aiResult);
+
+        // Generate mock summary based on data
+        if (historyData && historyData.length > 0) {
+          const avgHue = historyData.reduce((sum, item) => sum + item.hue, 0) / historyData.length;
+          const trend = avgHue > 180 ? "positive" : "reflective";
+          const mockSummary = `Your mood trend shows a ${trend} pattern with an average emotional tone around ${Math.round(avgHue)}° on the color wheel. This suggests ${trend === 'positive' ? 'higher energy and optimism' : 'deeper contemplation and calm'}.`;
+
+          setResult({ summary: mockSummary });
+        }
       } catch (e) {
-        console.error("Failed to get trend summary:", e);
+        console.error("Failed to generate trend summary:", e);
         setError("Could not generate mood analysis at this time.");
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     if (historyData && historyData.length > 0) {
       getSummary();
     } else {

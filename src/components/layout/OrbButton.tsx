@@ -12,9 +12,36 @@ import { cn } from '@/lib/utils';
 import { motion, type PanInfo, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { usePlatform } from '@/contexts/PlatformContext';
-import { getMoodSuggestion } from '@/ai/flows/mood-suggestion-flow';
+// AI dependency removed - using mock implementation
 
 const MoodSelectionButtons = dynamic(() => import('@/components/features/MoodSelectionButtons'), { ssr: false });
+
+// Mock mood suggestion function
+const getMoodSuggestion = async ({ moodAdjective }: { moodAdjective: string }) => {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
+
+  const suggestions = [
+    {
+      title: "A gentle reminder",
+      suggestion: `Your "${moodAdjective}" feeling is beautiful. Remember that emotions are like waves - they rise and fall naturally.`
+    },
+    {
+      title: "Mindful moment",
+      suggestion: `This "${moodAdjective}" energy you're experiencing is a gift. Take a deep breath and let it flow through you.`
+    },
+    {
+      title: "Collective wisdom",
+      suggestion: `Your "${moodAdjective}" contribution adds to the beautiful tapestry of human emotion we're creating together.`
+    },
+    {
+      title: "Inner peace",
+      suggestion: `In this "${moodAdjective}" space, remember that every feeling is valid and every emotion has its purpose.`
+    }
+  ];
+
+  return suggestions[Math.floor(Math.random() * suggestions.length)];
+};
 
 interface OrbButtonProps {
   isEmojiSelectorOpen: boolean;

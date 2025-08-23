@@ -14,9 +14,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { findClosestMood } from '@/lib/colorUtils';
 import { usePlatform } from '@/contexts/PlatformContext';
-import { archiveCollectiveMoodIfNeeded } from '@/lib/archiving-service';
-import { db } from '@/lib/firebase';
-import { collection, query, where, orderBy, getDocs, Timestamp } from 'firebase/firestore';
+// Firebase dependencies removed - using mock implementations
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
@@ -97,54 +95,57 @@ const HistoryPageContent = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const generateMockHistoricalData = useCallback((range: number) => {
+    const data = [];
+    const now = new Date();
+    const days = range === 1 ? 24 : range; // 24 hours or N days
+
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(now);
+      if (range === 1) {
+        date.setHours(now.getHours() - i);
+      } else {
+        date.setDate(now.getDate() - i);
+      }
+
+      // Generate realistic mood data with some variation
+      const baseHue = 200 + Math.sin(i * 0.3) * 50; // Base blue with wave
+      const hue = Math.max(0, Math.min(360, baseHue + (Math.random() - 0.5) * 60));
+      const emotionalValue = 40 + Math.sin(i * 0.2) * 30 + Math.random() * 20;
+
+      const formattedDate = range === 1
+        ? date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+        : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+      data.push({
+        date: formattedDate,
+        hue: hue,
+        emotionalValue: emotionalValue
+      });
+    }
+
+    return data;
+  }, []);
+
   const fetchHistoricalData = useCallback(async (range: number) => {
     setIsLoading(true);
     setError(null);
     setChartData([]); // Clear previous data
 
-    // First, run the archiving logic. Await it to ensure it completes before fetching.
-    // This solves the race condition where data is fetched before the first snapshot is created.
-    await archiveCollectiveMoodIfNeeded();
-
     try {
-      const now = new Date();
-      const startDate = new Date();
-      if (range === 1) { // 24 hours
-        startDate.setDate(now.getDate() - 1);
-      } else { // 7 or 30 days
-        startDate.setDate(now.getDate() - range);
-      }
-      
-      const snapshotsCollection = collection(db, 'moodSnapshots');
-      const q = query(
-        snapshotsCollection, 
-        where('timestamp', '>=', startDate), 
-        orderBy('timestamp', 'asc')
-      );
-      
-      const querySnapshot = await getDocs(q);
-      const fetchedData = querySnapshot.docs.map(doc => {
-        const data = doc.data() as HistoricalMoodSnapshot;
-        const date = (data.timestamp as Timestamp).toDate();
-        const formattedDate = range === 1
-          ? date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-          : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        
-        return {
-          date: formattedDate,
-          hue: data.hue,
-          emotionalValue: mapHueToEmotionalScale(data.hue),
-        };
-      });
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
 
-      setChartData(fetchedData);
+      // Generate mock historical data
+      const mockData = generateMockHistoricalData(range);
+      setChartData(mockData);
     } catch (err) {
-      console.error("Error fetching historical data: ", err);
-      setError("The past is a bit hazy right now. Please try again later.");
+      console.error("Error generating mock historical data: ", err);
+      setError("Unable to generate historical data at this time.");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [generateMockHistoricalData]);
 
   useEffect(() => {
     fetchHistoricalData(timeRange);

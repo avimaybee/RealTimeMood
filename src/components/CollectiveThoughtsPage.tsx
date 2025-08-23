@@ -10,15 +10,10 @@ import type { CommunityQuote } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
-import { usePlatform } from '@/contexts/PlatformContext';
-import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, Timestamp, limitToLast, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { formatDistanceToNow } from 'date-fns';
 import DynamicBackground from '@/components/ui-fx/DynamicBackground';
-import { incrementLike, decrementLike, setTypingStatus, clearTypingStatus } from '@/lib/thoughts-service';
+import { usePlatform } from '@/contexts/PlatformContext';
+// Firebase dependencies removed - using mock implementations
 import { useMood } from '@/contexts/MoodContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PREDEFINED_MOODS } from '@/lib/colorUtils';
@@ -31,7 +26,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useAuth } from '@/hooks/useAuth';
+ import { useAuth } from '@/hooks/useAuth';
+import { cn } from '@/lib/utils';
 
 
 const MAX_THOUGHT_LENGTH = 300;
@@ -121,28 +117,23 @@ const CollectiveThoughtsPage = () => {
         setPlaceholder(thoughtPrompts[Math.floor(Math.random() * thoughtPrompts.length)]);
     }, []);
 
-    // Listener for who is typing
+    // Mock typing status - simulate random typing activity
     useEffect(() => {
         if (!user) return;
 
-        const TYPING_TIMEOUT_MS = 5000; // Consider users stale after 5 seconds
-        const q = query(
-            collection(db, 'typingUsers'),
-            where('lastTyped', '>', new Date(Date.now() - TYPING_TIMEOUT_MS))
-        );
+        const simulateTypingActivity = () => {
+            // Randomly simulate 0-3 other users typing
+            const randomTypingCount = Math.floor(Math.random() * 4);
+            setTypingUserCount(randomTypingCount);
+        };
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const typingIds = snapshot.docs.map(doc => doc.id);
-            // Exclude the current user from the count
-            const otherTypingUsersCount = typingIds.filter(id => id !== user.uid).length;
-            setTypingUserCount(otherTypingUsersCount);
-        });
-        
-        // When the component unmounts, make sure to clear the user's typing status
+        // Update typing count every few seconds
+        const intervalId = setInterval(simulateTypingActivity, 3000 + Math.random() * 4000);
+
         return () => {
-            unsubscribe();
+            clearInterval(intervalId);
             if (user.uid) {
-                clearTypingStatus(user.uid);
+                // Mock clear typing status - no-op
             }
         };
     }, [user]);
@@ -236,43 +227,66 @@ const CollectiveThoughtsPage = () => {
         }
     }, [quotes]);
 
-    // Real-time listener for thoughts
+    // Mock quotes data generation
     useEffect(() => {
         setIsLoading(true);
-        const quotesCollection = collection(db, 'communityQuotes');
-        const q = query(
-            quotesCollection,
-            orderBy('submittedAt', 'asc'),
-            limitToLast(50)
-        );
 
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            querySnapshot.docChanges().forEach((change) => {
-                if (change.type === "added") {
-                    const newId = change.doc.id;
-                    if (!animatedQuotesRef.current.has(newId)) {
-                        setNewestQuoteId(newId);
-                        animatedQuotesRef.current.add(newId);
-                    }
-                }
-            });
+        // Generate mock quotes
+        const mockQuotes: (CommunityQuote & { id: string })[] = [
+            {
+                id: "1",
+                text: "Every day is a new beginning filled with endless possibilities.",
+                submittedAt: new Date(Date.now() - 3600000), // 1 hour ago
+                likes: 12,
+                authorHue: 220,
+                authorAdjective: "Calm",
+                authorId: "user1"
+            },
+            {
+                id: "2",
+                text: "The present moment is where life happens. Embrace it fully.",
+                submittedAt: new Date(Date.now() - 1800000), // 30 minutes ago
+                likes: 8,
+                authorHue: 45,
+                authorAdjective: "Joyful",
+                authorId: "user2"
+            },
+            {
+                id: "3",
+                text: "Small acts of kindness create ripples of positive change.",
+                submittedAt: new Date(Date.now() - 900000), // 15 minutes ago
+                likes: 15,
+                authorHue: 120,
+                authorAdjective: "Peaceful",
+                authorId: "user3"
+            },
+            {
+                id: "4",
+                text: "Your thoughts shape your reality. Choose them wisely.",
+                submittedAt: new Date(Date.now() - 300000), // 5 minutes ago
+                likes: 6,
+                authorHue: 300,
+                authorAdjective: "Reflective",
+                authorId: "user4"
+            },
+            {
+                id: "5",
+                text: "Gratitude turns ordinary moments into extraordinary memories.",
+                submittedAt: new Date(Date.now() - 120000), // 2 minutes ago
+                likes: 9,
+                authorHue: 60,
+                authorAdjective: "Hopeful",
+                authorId: "user5"
+            }
+        ];
 
-            const fetchedQuotes = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-            } as CommunityQuote & { id: string }));
-            
-            setQuotes(fetchedQuotes);
-            if (isLoading) setIsLoading(false);
-            if (error) setError(null);
-
-        }, (err) => {
-            console.error("Error fetching quotes: ", err);
-            setError("The collective consciousness is quiet right now. Please try again later.");
+        // Simulate loading delay
+        setTimeout(() => {
+            setQuotes(mockQuotes);
             setIsLoading(false);
-        });
+            if (error) setError(null);
+        }, 1000);
 
-        return () => unsubscribe();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Effect to detect which quotes are clamped after they have rendered
@@ -371,11 +385,10 @@ const CollectiveThoughtsPage = () => {
         );
 
         try {
-            if (isLiked) {
-                await decrementLike(quoteId);
-            } else {
-                await incrementLike(quoteId);
-            }
+            // Mock like functionality - simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 300));
+
+            // Mock success - no actual Firebase call needed
         } catch (error) {
             toast({
                 title: "Connection Error",
@@ -418,19 +431,29 @@ const CollectiveThoughtsPage = () => {
         }
 
         try {
-            await addDoc(collection(db, 'communityQuotes'), {
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
+
+            // Create mock quote
+            const newQuote: CommunityQuote & { id: string } = {
+                id: crypto.randomUUID(),
                 text: thoughtText,
-                submittedAt: serverTimestamp(),
+                submittedAt: new Date(),
                 likes: 0,
                 authorHue: currentMood.hue,
                 authorAdjective: currentMood.adjective,
                 authorId: user ? user.uid : null,
-            });
-            
+            };
+
+            // Add to quotes list
+            setQuotes(prev => [...prev, newQuote]);
+            setNewestQuoteId(newQuote.id);
+            animatedQuotesRef.current.add(newQuote.id);
+
             lastSubmissionTimeRef.current = now;
 
             if (typeof navigator !== 'undefined' && navigator.vibrate) {
-                navigator.vibrate(100); 
+                navigator.vibrate(100);
             }
             toast({
                 title: "Thought Submitted",

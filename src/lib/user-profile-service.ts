@@ -1,25 +1,18 @@
 
-'use server';
-
-import { db } from '@/lib/firebase';
-import { doc, getDoc, type Transaction } from 'firebase/firestore';
 import type { UserProfile } from '@/types';
 import { format, subDays } from 'date-fns';
 
-const USER_PROFILES_COLLECTION = 'userProfiles';
-
 /**
- * Fetches a user's profile from Firestore.
+ * Fetches a user's profile from localStorage.
  * @param userId The UID of the user.
  * @returns A promise that resolves to the user's profile or null if not found.
  */
 export async function fetchUserProfile(userId: string): Promise<UserProfile | null> {
   if (!userId) return null;
   try {
-    const profileRef = doc(db, USER_PROFILES_COLLECTION, userId);
-    const docSnap = await getDoc(profileRef);
-    if (docSnap.exists()) {
-      return docSnap.data() as UserProfile;
+    const stored = localStorage.getItem(`userProfile_${userId}`);
+    if (stored) {
+      return JSON.parse(stored) as UserProfile;
     }
     return null;
   } catch (error) {
@@ -29,50 +22,51 @@ export async function fetchUserProfile(userId: string): Promise<UserProfile | nu
 }
 
 /**
- * Updates a user's mood streak within a Firestore transaction.
- * This function should be called by another service that already initiated a transaction.
- * @param transaction The active Firestore transaction.
+ * Mock function to update a user's mood streak.
+ * @param transaction Mock transaction parameter (not used).
  * @param userId The UID of the user.
  */
-export async function updateUserStreak(transaction: Transaction, userId: string): Promise<void> {
+export async function updateUserStreak(transaction: any, userId: string): Promise<void> {
   const today = new Date();
   const todayStr = format(today, 'yyyy-MM-dd');
   const yesterdayStr = format(subDays(today, 1), 'yyyy-MM-dd');
 
-  const profileRef = doc(db, USER_PROFILES_COLLECTION, userId);
-  const profileDoc = await transaction.get(profileRef);
+  try {
+    const existing = localStorage.getItem(`userProfile_${userId}`);
+    let userProfile: UserProfile;
 
-  if (!profileDoc.exists()) {
-    // First contribution ever for this user.
-    const newUserProfile: UserProfile = {
-      uid: userId,
-      currentStreak: 1,
-      lastContributionDate: todayStr,
-    };
-    transaction.set(profileRef, newUserProfile);
-  } else {
-    const userProfile = profileDoc.data() as UserProfile;
-    const lastDate = userProfile.lastContributionDate;
-
-    if (lastDate === todayStr) {
-      // Multiple contributions on the same day, do nothing to the streak.
-      return;
-    }
-
-    let newStreak = userProfile.currentStreak;
-
-    if (lastDate === yesterdayStr) {
-      // Contribution on a consecutive day, increment streak.
-      newStreak += 1;
+    if (!existing) {
+      // First contribution ever for this user.
+      userProfile = {
+        uid: userId,
+        currentStreak: 1,
+        lastContributionDate: todayStr,
+      };
     } else {
-      // Missed a day, reset streak to 1.
-      newStreak = 1;
+      userProfile = JSON.parse(existing);
+      const lastDate = userProfile.lastContributionDate;
+
+      if (lastDate === todayStr) {
+        // Multiple contributions on the same day, do nothing to the streak.
+        return;
+      }
+
+      let newStreak = userProfile.currentStreak;
+
+      if (lastDate === yesterdayStr) {
+        // Contribution on a consecutive day, increment streak.
+        newStreak += 1;
+      } else {
+        // Missed a day, reset streak to 1.
+        newStreak = 1;
+      }
+
+      userProfile.currentStreak = newStreak;
+      userProfile.lastContributionDate = todayStr;
     }
 
-    const updatedProfile: Partial<UserProfile> = {
-      currentStreak: newStreak,
-      lastContributionDate: todayStr,
-    };
-    transaction.update(profileRef, updatedProfile);
+    localStorage.setItem(`userProfile_${userId}`, JSON.stringify(userProfile));
+  } catch (error) {
+    console.error('Failed to update user streak:', error);
   }
 }

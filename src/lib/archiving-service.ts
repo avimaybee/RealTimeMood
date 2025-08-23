@@ -1,76 +1,72 @@
 
-import { db } from '@/lib/firebase';
-import {
-  doc,
-  collection,
-  getDoc,
-  addDoc,
-  query,
-  orderBy,
-  limit,
-  getDocs,
-  serverTimestamp,
-  Timestamp,
-} from 'firebase/firestore';
 import type { CollectiveMoodState, HistoricalMoodSnapshot } from '@/types';
 
-const COLLECTIVE_MOOD_DOC_PATH = 'appState/collectiveMood';
-const SNAPSHOTS_COLLECTION_PATH = 'moodSnapshots';
+const SNAPSHOTS_STORAGE_KEY = 'moodSnapshots';
 const ARCHIVE_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
 
 /**
+ * Fetches historical mood snapshots from localStorage.
+ * @returns A promise that resolves to an array of historical snapshots.
+ */
+export async function fetchHistoricalSnapshots(): Promise<HistoricalMoodSnapshot[]> {
+  try {
+    const stored = localStorage.getItem(SNAPSHOTS_STORAGE_KEY);
+    if (stored) {
+      // Parse and ensure timestamp is a Date object
+      const snapshots = JSON.parse(stored).map((s: any) => ({
+        ...s,
+        timestamp: new Date(s.timestamp),
+      }));
+      return snapshots.sort((a: HistoricalMoodSnapshot, b: HistoricalMoodSnapshot) => b.timestamp.getTime() - a.timestamp.getTime());
+    }
+    return [];
+  } catch (error) {
+    console.error("Failed to fetch historical snapshots:", error);
+    return [];
+  }
+}
+
+/**
  * Checks if a new historical mood snapshot is needed and creates one if so.
- * This function is designed to be called from the client-side, e.g., when a
- * user visits the history page.
+ * This function is designed to be called from the client-side.
  */
 export async function archiveCollectiveMoodIfNeeded(): Promise<void> {
   try {
-    const snapshotsCollection = collection(db, SNAPSHOTS_COLLECTION_PATH);
+    const snapshots = await fetchHistoricalSnapshots();
 
     // 1. Check when the last snapshot was taken
-    const latestSnapshotQuery = query(snapshotsCollection, orderBy('timestamp', 'desc'), limit(1));
-    const latestSnapshotDocs = await getDocs(latestSnapshotQuery);
-
-    if (!latestSnapshotDocs.empty) {
-      const lastSnapshot = latestSnapshotDocs.docs[0].data() as HistoricalMoodSnapshot;
-      if (lastSnapshot.timestamp) {
-         // Firestore timestamps need to be converted to JS Dates for comparison
-        const lastSnapshotTime = (lastSnapshot.timestamp as Timestamp).toMillis();
-        if (Date.now() - lastSnapshotTime < ARCHIVE_COOLDOWN_MS) {
-          console.log('Archiving is still on cooldown. Skipping.');
-          return; // It's not time yet
-        }
+    if (snapshots.length > 0) {
+      const lastSnapshotTime = snapshots[0].timestamp.getTime();
+      if (Date.now() - lastSnapshotTime < ARCHIVE_COOLDOWN_MS) {
+        console.log('Archiving is still on cooldown. Skipping.');
+        return; // It's not time yet
       }
     }
 
-    // 2. If it's time, fetch the current collective mood
+    // 2. If it's time, fetch the current collective mood from localStorage
     console.log('Archiving cooldown has passed. Creating a new snapshot.');
-    const collectiveMoodRef = doc(db, COLLECTIVE_MOOD_DOC_PATH);
-    const collectiveMoodDoc = await getDoc(collectiveMoodRef);
-
-    if (!collectiveMoodDoc.exists()) {
-      console.warn('Cannot create snapshot: Collective mood document does not exist.');
+    const collectiveMoodStr = localStorage.getItem('mockCollectiveMood');
+    if (!collectiveMoodStr) {
+      console.warn('Cannot create snapshot: Collective mood data not found in localStorage.');
       return;
     }
-
-    const moodData = collectiveMoodDoc.data() as CollectiveMoodState;
+    const moodData = JSON.parse(collectiveMoodStr) as CollectiveMoodState;
 
     // 3. Create and write the new snapshot document
-    const newSnapshot: Omit<HistoricalMoodSnapshot, 'timestamp'> & { timestamp: any } = {
-      timestamp: serverTimestamp(),
+    const newSnapshot: HistoricalMoodSnapshot = {
+      timestamp: new Date(),
       hue: moodData.h,
       saturation: moodData.s,
       lightness: moodData.l,
       moodAdjective: moodData.moodAdjective,
       contributionCount: moodData.totalContributions,
     };
-    
-    await addDoc(snapshotsCollection, newSnapshot);
+
+    const updatedSnapshots = [newSnapshot, ...snapshots];
+    localStorage.setItem(SNAPSHOTS_STORAGE_KEY, JSON.stringify(updatedSnapshots));
     console.log('Successfully created a new historical mood snapshot.');
 
   } catch (error) {
     console.error("Historical mood archiving failed:", error);
-    // We don't rethrow here because this is a background task that shouldn't
-    // interrupt the user's experience on the history page.
   }
 }

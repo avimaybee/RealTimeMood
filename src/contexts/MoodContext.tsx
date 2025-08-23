@@ -7,9 +7,7 @@ import type { AppState, Mood, CollectiveMoodState } from '@/types';
 import { PREDEFINED_MOODS, moodToHslString, findClosestMood } from '@/lib/colorUtils';
 import { submitMood, updateUserActivity } from '@/lib/mood-service';
 import { recordUserMood } from '@/lib/user-mood-service';
-import { onSnapshot, doc } from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
-import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
+// Firebase dependencies removed - using mock implementations
 
 const initialTotalUserCount = 8;
 const initialState: AppState = {
@@ -81,20 +79,9 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
   }, []);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
-        if (user) {
-            // User is signed in.
-            sessionIdRef.current = user.uid;
-        } else {
-            // User is signed out.
-            signInAnonymously(auth).catch(error => {
-                console.error("Anonymous sign-in failed:", error);
-            });
-        }
-    });
-
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
+    // Generate mock session ID for frontend-only mode
+    const newSessionId = crypto.randomUUID();
+    sessionIdRef.current = newSessionId;
   }, []);
 
   // Heartbeat effect for user activity tracking
@@ -170,7 +157,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     setLastContributorMoodColor(moodToHslString(mood));
     setLastContributionPosition(position);
 
-    const currentUser = auth.currentUser;
+    const currentUser = { uid: sessionIdRef.current, isAnonymous: true }; // Mock user
     if (currentUser) {
       // Submit to collective mood service (for all users)
       submitMood(mood, currentUser.uid).catch(error => {
@@ -179,8 +166,8 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
         setContributionCount(prev => prev - 1);
       });
 
-      // Record to personal history ONLY if user is NOT anonymous
-      if (!options?.isSimulated && !currentUser.isAnonymous) {
+      // Record to personal history - always record for mock users
+      if (!options?.isSimulated) {
           recordUserMood(currentUser.uid, mood);
       }
     }
@@ -264,38 +251,42 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     setCurrentMood(newMood);
   }, [triggerCollectiveShift]);
   
-  // Real-time listener for collective mood state
+  // Mock real-time simulation for collective mood state
   useEffect(() => {
     if (!isLivePage) return;
 
-    const collectiveMoodRef = doc(db, 'appState/collectiveMood');
+    const simulateRealTimeUpdates = () => {
+      // Get current collective mood from localStorage
+      const stored = localStorage.getItem('mockCollectiveMood');
+      if (stored) {
+        try {
+          const data = JSON.parse(stored) as CollectiveMoodState;
 
-    const unsubscribe = onSnapshot(collectiveMoodRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data() as CollectiveMoodState;
-        
-        const newMood: Mood = {
-          hue: data.h,
-          saturation: data.s,
-          lightness: data.l,
-          name: findClosestMood(data.h).name,
-          adjective: data.moodAdjective,
-        };
+          const newMood: Mood = {
+            hue: data.h,
+            saturation: data.s,
+            lightness: data.l,
+            name: findClosestMood(data.h).name,
+            adjective: data.moodAdjective,
+          };
 
-        // Use the memoized updateMood to handle state changes and shockwave triggers
-        updateMood(newMood);
-        setContributionCount(data.totalContributions);
-        setCelebratedMilestones(data.celebratedMilestones || []);
-        // Note: userCount is intentionally simulated locally and not set from here.
-      } else {
-        console.warn("Collective mood document does not exist in Firestore. The app will use its initial state.");
+          // Use the memoized updateMood to handle state changes and shockwave triggers
+          updateMood(newMood);
+          setContributionCount(data.totalContributions);
+          setCelebratedMilestones(data.celebratedMilestones || []);
+        } catch (e) {
+          console.warn("Failed to parse stored collective mood:", e);
+        }
       }
-    }, (error) => {
-      console.error("Error listening to collective mood changes:", error);
-    });
+    };
 
-    // Cleanup listener on component unmount
-    return () => unsubscribe();
+    // Initial simulation
+    simulateRealTimeUpdates();
+
+    // Set up periodic updates to simulate real-time changes
+    const intervalId = setInterval(simulateRealTimeUpdates, 2000);
+
+    return () => clearInterval(intervalId);
   }, [isLivePage, updateMood]);
 
   const contextValue = useMemo(() => ({
