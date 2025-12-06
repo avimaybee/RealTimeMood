@@ -36,6 +36,7 @@ type MoodContextType = {
   isCollectiveShifting: boolean;
   lastUserContribution: Mood | null;
   celebratedMilestones: number[];
+  isInitialized: boolean;
 };
 
 const MoodContext = createContext<MoodContextType | undefined>(undefined);
@@ -57,10 +58,11 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
   const [lastContributorMoodColor, setLastContributorMoodColor] = useState<string | null>(initialState.lastContributorMoodColor);
   const [lastContributionPosition, setLastContributionPosition] = useState<{ x: number; y: number } | null>(initialState.lastContributionPosition);
   const [recentContributions, setRecentContributions] = useState<Mood[]>(initialState.recentContributions || []);
-  
+
   const [isCollectiveShifting, setIsCollectiveShifting] = useState(false);
   const [previewMood, setPreviewMood] = useState<Mood | null>(null);
   const [lastUserContribution, setLastUserContribution] = useState<Mood | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   const lastPulsedHueRef = useRef<number>(initialState.currentMood.hue);
   const sessionIdRef = useRef<string | null>(null);
   const lastHeartbeatTimeRef = useRef<number>(0);
@@ -133,16 +135,16 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     if (!options?.isSimulated) {
       setLastUserContribution(mood);
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(50); 
+        navigator.vibrate(50);
       }
-      
+
       // Track local user contributions for PWA prompt
       if (typeof window !== 'undefined' && window.localStorage) {
         try {
           const currentCount = parseInt(localStorage.getItem('userContributionCount') || '0', 10);
           const newCount = currentCount + 1;
           localStorage.setItem('userContributionCount', newCount.toString());
-          
+
           // Dispatch event for other components to listen to
           window.dispatchEvent(new CustomEvent('userContribution', { detail: { count: newCount } }));
         } catch (e) {
@@ -150,7 +152,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
         }
       }
     }
-    
+
     setContributionCount(prev => prev + 1);
     setLastContributionTime(Date.now());
     setLastContributorMoodColor(moodToHslString(mood));
@@ -167,7 +169,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
 
       // Record to personal history - always record for mock users
       if (!options?.isSimulated) {
-          recordUserMood(currentUser.uid, mood);
+        recordUserMood(currentUser.uid, mood);
       }
     }
 
@@ -216,12 +218,12 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
             const randomX = window.innerWidth * (0.2 + Math.random() * 0.6);
             const randomY = window.innerHeight * (0.2 + Math.random() * 0.6);
             const randomMood = PREDEFINED_MOODS[Math.floor(Math.random() * PREDEFINED_MOODS.length)];
-            
+
             recordContribution(randomMood, { x: randomX, y: randomY }, { isSimulated: true });
           }, 0);
         }
       }
-      
+
       // Finally, update the state for the UI
       setUserCount(newCount);
     };
@@ -244,17 +246,37 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
   const updateMood = useCallback((newMood: Mood) => {
     const hueDifference = Math.abs(newMood.hue - lastPulsedHueRef.current);
     const wrappedHueDifference = Math.min(hueDifference, 360 - hueDifference);
-    
+
     if (wrappedHueDifference > 15) {
       triggerCollectiveShift();
       lastPulsedHueRef.current = newMood.hue;
     }
     setCurrentMood(newMood);
   }, [triggerCollectiveShift]);
-  
+
   // Mock real-time simulation for collective mood state
   useEffect(() => {
     if (!isLivePage) return;
+
+    // Initialize mock data if not present
+    const initializeMockData = () => {
+      const stored = localStorage.getItem('mockCollectiveMood');
+      if (!stored) {
+        // Create initial mock collective mood data
+        const initialMood = PREDEFINED_MOODS[Math.floor(Math.random() * PREDEFINED_MOODS.length)];
+        const mockData: CollectiveMoodState = {
+          h: initialMood.hue,
+          s: initialMood.saturation,
+          l: initialMood.lightness,
+          moodAdjective: initialMood.adjective || initialMood.name,
+          totalContributions: 13 + Math.floor(Math.random() * 20),
+          celebratedMilestones: [],
+        };
+        localStorage.setItem('mockCollectiveMood', JSON.stringify(mockData));
+        return mockData;
+      }
+      return JSON.parse(stored) as CollectiveMoodState;
+    };
 
     const simulateRealTimeUpdates = () => {
       // Get current collective mood from localStorage
@@ -275,13 +297,19 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
           updateMood(newMood);
           setContributionCount(data.totalContributions);
           setCelebratedMilestones(data.celebratedMilestones || []);
+
+          // Mark as initialized after first successful data load
+          setIsInitialized(true);
         } catch (e) {
           console.warn("Failed to parse stored collective mood:", e);
         }
       }
     };
 
-    // Initial simulation
+    // Initialize mock data first, then start simulation
+    initializeMockData();
+
+    // Initial simulation - runs immediately and sets isInitialized
     simulateRealTimeUpdates();
 
     // Set up periodic updates to simulate real-time changes
@@ -306,6 +334,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     triggerCollectiveShift,
     isCollectiveShifting,
     lastUserContribution,
+    isInitialized,
   }), [
     currentMood,
     userCount,
@@ -321,6 +350,7 @@ export const MoodProvider = ({ children, isLivePage = false }: { children: React
     triggerCollectiveShift,
     isCollectiveShifting,
     lastUserContribution,
+    isInitialized,
   ]);
 
   return (

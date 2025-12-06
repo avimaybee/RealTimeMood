@@ -52,8 +52,8 @@ interface OrbButtonProps {
   setInteractionMode: (mode: 'orb' | 'bar' | ((prev: 'orb' | 'bar') => 'orb' | 'bar')) => void;
 }
 
-const OrbButton: React.FC<OrbButtonProps> = ({ 
-  isEmojiSelectorOpen, 
+const OrbButton: React.FC<OrbButtonProps> = ({
+  isEmojiSelectorOpen,
   setIsEmojiSelectorOpen,
   isCharging,
   setIsCharging,
@@ -75,14 +75,14 @@ const OrbButton: React.FC<OrbButtonProps> = ({
   useEffect(() => {
     setIsClient(true);
   }, []);
-  
+
   const getOrbPosition = useCallback(() => {
     if (orbContainerRef.current) {
-        const rect = orbContainerRef.current.getBoundingClientRect();
-        return {
-            x: rect.left + rect.width / 2,
-            y: rect.top + rect.height / 2,
-        };
+      const rect = orbContainerRef.current.getBoundingClientRect();
+      return {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+      };
     }
     // Fallback to a reasonable default if the ref isn't ready
     return { x: window.innerWidth / 2, y: window.innerHeight - 120 };
@@ -156,19 +156,19 @@ const OrbButton: React.FC<OrbButtonProps> = ({
       });
 
     if (interactionMode === 'bar') {
-        setInteractionMode(() => 'orb');
-        setPreviewMood(null);
+      setInteractionMode(() => 'orb');
+      setPreviewMood(null);
     }
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(50);
+      navigator.vibrate(50);
     }
   }, [recordContribution, toast, interactionMode, setInteractionMode, setPreviewMood]);
-  
+
   const handleDismissEmojiSelector = useCallback(() => {
     setIsEmojiSelectorOpen(false);
     setPreviewMood(null);
   }, [setPreviewMood, setIsEmojiSelectorOpen]);
-  
+
   const getMoodFromPosition = (x: number): Mood => {
     if (!barRef.current) return PREDEFINED_MOODS[0];
     const { left, width } = barRef.current.getBoundingClientRect();
@@ -180,7 +180,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
 
   const handleTap = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (panActionOccurred.current) return;
-    
+
     // If the bar was just opened, this tap event is the one that triggered it.
     // Reset the flag and ignore the event to prevent an instant submission.
     if (justToggledRef.current) {
@@ -198,11 +198,12 @@ const OrbButton: React.FC<OrbButtonProps> = ({
   const handlePan = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const mood = getMoodFromPosition(info.point.x);
     setPreviewMood(mood);
+    panActionOccurred.current = true; // Mark that a pan action is in progress
   };
 
   const handlePanEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    panActionOccurred.current = true;
-    setTimeout(() => { panActionOccurred.current = false; }, 50);
+    // Extend the timeout to prevent tap from firing after pan
+    setTimeout(() => { panActionOccurred.current = false; }, 200);
 
     const mood = getMoodFromPosition(info.point.x);
     submitUserMood(mood, getOrbPosition());
@@ -246,7 +247,7 @@ const OrbButton: React.FC<OrbButtonProps> = ({
   const orbVariants = {
     orb: {
       width: '80px', height: '80px', borderRadius: '9999px',
-      background: 'rgba(255, 255, 255, 0.1)', 
+      background: 'rgba(255, 255, 255, 0.1)',
       backdropFilter: 'blur(12px)', scale: 1, opacity: 1,
       transition: { ...morphTransition }
     },
@@ -297,21 +298,25 @@ const OrbButton: React.FC<OrbButtonProps> = ({
         <AnimatePresence>
           {interactionMode === 'bar' && (
             <motion.div
-              className="text-white/80 text-sm font-medium pointer-events-none h-5" // Fixed height to prevent layout shifts
-              style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0, transition: { delay: 0.3 } }}
-              exit={{ opacity: 0, y: 5, transition: { duration: 0.1 } }}
+              className="absolute -bottom-10 left-0 right-0 text-center text-white/70 text-sm font-medium pointer-events-none"
+              style={{ textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0, transition: { delay: 0.4 } }}
+              exit={{ opacity: 0, y: -5, transition: { duration: 0.1 } }}
             >
               <AnimatePresence mode="wait">
                 <motion.p
-                  key={previewMood ? previewMood.adjective : 'default'}
+                  key={previewMood ? previewMood.adjective : 'instruction'}
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -5 }}
                   transition={{ duration: 0.15 }}
                 >
-                  {previewMood ? previewMood.adjective : 'Tap or slide to share your mood'}
+                  {previewMood ? (
+                    <span style={{ color: `hsl(${previewMood.hue}, 80%, 70%)` }}>{previewMood.adjective}</span>
+                  ) : (
+                    'Drag to select • Tap to submit'
+                  )}
                 </motion.p>
               </AnimatePresence>
             </motion.div>
@@ -319,26 +324,26 @@ const OrbButton: React.FC<OrbButtonProps> = ({
         </AnimatePresence>
 
         <div className="relative flex items-center justify-center">
-            <AnimatePresence>
-              {isClient && animationState === 'orb' && (
-                <motion.div
-                  key="aurora-effect"
-                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.5, transition: { delay: 0.3, duration: 0.5 } }}
-                  exit={{ opacity: 0 }}
-                >
-                  <div
-                    className="h-28 w-28 animate-aurora-spin bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500"
-                    style={{ filter: 'blur(40px)' }}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <AnimatePresence>
+            {isClient && animationState === 'orb' && (
+              <motion.div
+                key="aurora-effect"
+                className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.5, transition: { delay: 0.3, duration: 0.5 } }}
+                exit={{ opacity: 0 }}
+              >
+                <div
+                  className="h-28 w-28 animate-aurora-spin bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500"
+                  style={{ filter: 'blur(40px)' }}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
           <motion.div
             ref={barRef}
             variants={orbVariants}
-            initial="orb" 
+            initial="orb"
             animate={animationState}
             onPointerDown={handlePointerDown}
             onPointerUp={handlePointerUp}
@@ -353,10 +358,10 @@ const OrbButton: React.FC<OrbButtonProps> = ({
             <motion.div variants={iconVariants} animate={animationState}>
               <Plus className="w-10 h-10 text-white" strokeWidth={isIos ? 1.5 : 2} />
             </motion.div>
-            
+
             <AnimatePresence>
               {interactionMode === 'bar' && (
-                <motion.div 
+                <motion.div
                   className="absolute inset-0 p-2"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1, transition: { delay: 0.2 } }}
@@ -365,13 +370,13 @@ const OrbButton: React.FC<OrbButtonProps> = ({
                   <div className="w-full h-full rounded-full" style={{
                     background: 'linear-gradient(to right, hsl(0, 80%, 60%), hsl(60, 80%, 60%), hsl(120, 80%, 60%), hsl(180, 80%, 60%), hsl(240, 80%, 60%), hsl(300, 80%, 60%), hsl(360, 80%, 60%))'
                   }} />
-                  
+
                   {previewMood && (
-                    <div className="absolute top-0 left-0 h-full flex items-center" style={{ 
+                    <div className="absolute top-0 left-0 h-full flex items-center" style={{
                       transform: `translateX(${((previewMood.hue / 360) * barRef.current!.offsetWidth) - 16}px) translateX(-50%)`,
                       left: '16px'
                     }}>
-                        <div className="w-8 h-8 rounded-full bg-white/80 shadow-lg ring-4 ring-white/30" />
+                      <div className="w-8 h-8 rounded-full bg-white/80 shadow-lg ring-4 ring-white/30" />
                     </div>
                   )}
                 </motion.div>

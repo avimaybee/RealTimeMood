@@ -15,6 +15,9 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   title: 'RealTimeMood',
   description: 'Experience the collective global mood, dynamically visualized.',
+  icons: {
+    icon: '/icon.svg',
+  },
 };
 
 export default function RootLayout({
@@ -25,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        
+
         <meta name="theme-color" content="#1F1F1F" />
       </head>
       <body className={cn("antialiased font-sans", manrope.variable)}>

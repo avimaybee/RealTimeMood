@@ -5,7 +5,7 @@ import { ArrowLeft, History, AlertCircle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer } from '@/components/ui/chart';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { useDynamicColors } from '@/hooks/useDynamicColors';
 import type { Mood, HistoricalMoodSnapshot } from '@/types';
 import LivingParticles from '@/components/ui-fx/LivingParticles';
@@ -58,11 +58,11 @@ const mapHueToEmotionalScale = (hue: number): number => {
   if (!startPoint || !endPoint) {
     return moodScalePoints[0][1];
   }
-  
+
   // Linear interpolation
   const [hue1, score1] = startPoint;
   const [hue2, score2] = endPoint;
-  
+
   if (hue1 === hue2) return score1; // Avoid division by zero
 
   const t = (hue - hue1) / (hue2 - hue1);
@@ -76,11 +76,15 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     const mood = findClosestMood(hue);
     const moodColor = `hsl(${hue}, 80%, 60%)`;
     return (
-      <div className="p-2 rounded-lg shadow-soft frosted-glass">
-        <p className="label">{`Time: ${label}`}</p>
-        <p className="intro" style={{ color: moodColor }}>
-          {`Mood: ${mood.adjective} (Hue: ${hue}°)`}
+      <div
+        className="p-3 rounded-xl shadow-lg frosted-glass border border-white/20"
+        style={{ boxShadow: `0 0 20px ${moodColor}40` }}
+      >
+        <p className="text-sm font-medium opacity-80">{label}</p>
+        <p className="text-lg font-semibold" style={{ color: moodColor }}>
+          {mood.adjective}
         </p>
+        <p className="text-xs opacity-60">Hue: {Math.round(hue)}°</p>
       </div>
     );
   }
@@ -184,91 +188,97 @@ const HistoryPageContent = () => {
     if (isLoading) {
       return (
         <div className="h-[300px] sm:h-[400px] w-full flex items-center justify-center">
-            <Skeleton className="h-full w-full" />
+          <Skeleton className="h-full w-full" />
         </div>
       );
     }
 
     if (error) {
-        return (
-            <div className="h-[300px] sm:h-[400px] w-full flex flex-col items-center justify-center text-destructive">
-                <AlertCircle className="h-10 w-10 mb-4" strokeWidth={isIos ? 1.5 : 2} />
-                <p className="font-semibold">History Unavailable</p>
-                <p className="text-small">{error}</p>
-            </div>
-        );
+      return (
+        <div className="h-[300px] sm:h-[400px] w-full flex flex-col items-center justify-center text-destructive">
+          <AlertCircle className="h-10 w-10 mb-4" strokeWidth={isIos ? 1.5 : 2} />
+          <p className="font-semibold">History Unavailable</p>
+          <p className="text-small">{error}</p>
+        </div>
+      );
     }
-    
+
     if (chartData.length === 0) {
-        return (
-            <div className="h-[300px] sm:h-[400px] w-full flex flex-col items-center justify-center text-foreground/70">
-                <History className="h-10 w-10 mb-4" strokeWidth={isIos ? 1.5 : 2} />
-                <p className="font-semibold">Not Enough Data</p>
-                <p className="text-small">No historical mood data is available for this time range yet.</p>
-            </div>
-        );
+      return (
+        <div className="h-[300px] sm:h-[400px] w-full flex flex-col items-center justify-center text-foreground/70">
+          <History className="h-10 w-10 mb-4" strokeWidth={isIos ? 1.5 : 2} />
+          <p className="font-semibold">Not Enough Data</p>
+          <p className="text-small">No historical mood data is available for this time range yet.</p>
+        </div>
+      );
     }
 
     return (
-        <ChartContainer config={{}} className="h-[300px] sm:h-[400px] w-full">
-            <ResponsiveContainer>
-              <LineChart
-                data={chartData}
-                margin={{
-                  top: 5,
-                  right: 30,
-                  left: 20,
-                  bottom: 5,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
-                <XAxis 
-                  dataKey="date" 
-                  stroke="hsl(var(--foreground) / 0.8)" 
-                  tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
-                  tickLine={{ stroke: 'hsl(var(--foreground) / 0.5)' }}
-                  interval={Math.floor(chartData.length / 10)} // Adjust tick density
-                />
-                <YAxis 
-                  domain={[0, 100]} 
-                  stroke="hsl(var(--foreground) / 0.8)"
-                  ticks={yAxisTicks}
-                  tickFormatter={yAxisTickFormatter}
-                  tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
-                  tickLine={{ stroke: 'hsl(var(--foreground) / 0.5)' }}
-                  label={{ value: 'Emotional Tone', angle: -90, position: 'insideLeft', fill: 'hsl(var(--foreground))', fontSize: 12, dy: -10 }}
-                />
-                <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, strokeDasharray: '3 3' }} />
-                <defs>
-                  <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-                    {chartData.map((entry, index) => (
-                      <stop
-                        key={index}
-                        offset={`${(index / (chartData.length > 1 ? chartData.length - 1 : 1)) * 100}%`}
-                        stopColor={`hsl(${entry.hue}, 80%, 60%)`}
-                      />
-                    ))}
-                  </linearGradient>
-                </defs>
-                <Line
-                  type="monotone"
-                  dataKey="emotionalValue"
-                  stroke="url(#lineGradient)"
-                  strokeWidth={3}
-                  dot={false}
-                  activeDot={{
-                    r: 8,
-                    style: {
-                      fill: 'hsl(var(--primary))',
-                      stroke: 'hsl(var(--background))',
-                      strokeWidth: 2,
-                      filter: 'drop-shadow(0 0 4px hsl(var(--primary)))',
-                    },
-                  }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-        </ChartContainer>
+      <ChartContainer config={{}} className="h-[300px] sm:h-[400px] w-full">
+        <ResponsiveContainer>
+          <AreaChart
+            data={chartData}
+            margin={{
+              top: 5,
+              right: 30,
+              left: 20,
+              bottom: 5,
+            }}
+          >
+            <defs>
+              <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
+                {chartData.map((entry, index) => (
+                  <stop
+                    key={index}
+                    offset={`${(index / (chartData.length > 1 ? chartData.length - 1 : 1)) * 100}%`}
+                    stopColor={`hsl(${entry.hue}, 80%, 60%)`}
+                  />
+                ))}
+              </linearGradient>
+              <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--primary-hsl))" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="hsl(var(--primary-hsl))" stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.3)" />
+            <XAxis
+              dataKey="date"
+              stroke="hsl(var(--foreground) / 0.6)"
+              tick={{ fill: 'hsl(var(--foreground) / 0.8)', fontSize: 11 }}
+              tickLine={{ stroke: 'hsl(var(--foreground) / 0.3)' }}
+              interval={Math.floor(chartData.length / 8)}
+              axisLine={{ stroke: 'hsl(var(--foreground) / 0.2)' }}
+            />
+            <YAxis
+              domain={[0, 100]}
+              stroke="hsl(var(--foreground) / 0.6)"
+              ticks={yAxisTicks}
+              tickFormatter={yAxisTickFormatter}
+              tick={{ fill: 'hsl(var(--foreground) / 0.8)', fontSize: 11 }}
+              tickLine={{ stroke: 'hsl(var(--foreground) / 0.3)' }}
+              axisLine={{ stroke: 'hsl(var(--foreground) / 0.2)' }}
+            />
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, strokeDasharray: '5 5' }} />
+            <Area
+              type="monotone"
+              dataKey="emotionalValue"
+              stroke="url(#lineGradient)"
+              strokeWidth={3}
+              fill="url(#areaGradient)"
+              dot={false}
+              activeDot={{
+                r: 6,
+                style: {
+                  fill: 'hsl(var(--primary))',
+                  stroke: 'hsl(var(--background))',
+                  strokeWidth: 3,
+                  filter: 'drop-shadow(0 0 8px hsl(var(--primary)))',
+                },
+              }}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </ChartContainer>
     );
   }
 
@@ -304,7 +314,7 @@ const HistoryPageContent = () => {
       </motion.header>
 
       <motion.div
-        className="min-h-screen w-full flex flex-col items-center p-4 md:p-6 pt-24"
+        className="min-h-screen w-full flex flex-col items-center p-4 md:p-6 pt-28"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
@@ -320,8 +330,14 @@ const HistoryPageContent = () => {
                       key={range.value}
                       variant={timeRange === range.value ? 'default' : 'outline'}
                       onClick={() => setTimeRange(range.value)}
-                      className="rounded-full px-4 text-xs"
+                      className={cn(
+                        "rounded-full px-4 text-xs transition-all duration-300",
+                        timeRange === range.value && "shadow-lg ring-2 ring-primary/30"
+                      )}
                       size="sm"
+                      style={timeRange === range.value ? {
+                        boxShadow: '0 0 15px hsla(var(--primary-hsl), 0.4)'
+                      } : {}}
                     >
                       {range.label}
                     </Button>
@@ -337,15 +353,27 @@ const HistoryPageContent = () => {
             </CardContent>
           </Card>
 
-          <Card className="w-full max-w-5xl frosted-glass rounded-2xl">
-            <CardHeader>
-              <CardTitle className="text-xl flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-primary" strokeWidth={isIos ? 1.5 : 2} />
-                 AI Trend Analysis
+          <Card
+            className="w-full max-w-5xl frosted-glass rounded-2xl overflow-hidden"
+            style={{ boxShadow: '0 0 30px hsla(var(--primary-hsl), 0.15)' }}
+          >
+            <CardHeader className="relative">
+              <div
+                className="absolute inset-0 opacity-20"
+                style={{ background: 'linear-gradient(135deg, hsla(var(--primary-hsl), 0.2) 0%, transparent 50%)' }}
+              />
+              <CardTitle className="text-xl flex items-center gap-2 relative">
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                >
+                  <Sparkles className="w-5 h-5 text-primary" strokeWidth={isIos ? 1.5 : 2} />
+                </motion.div>
+                AI Trend Analysis
               </CardTitle>
             </CardHeader>
             <CardContent>
-                <TrendSummaryDisplay historyData={historyDataForAI} />
+              <TrendSummaryDisplay historyData={historyDataForAI} />
             </CardContent>
           </Card>
         </main>

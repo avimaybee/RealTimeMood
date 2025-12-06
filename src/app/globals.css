@@ -1,3 +1,5 @@
+/* Import distinctive display font - Bricolage Grotesque for headlines */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -12,29 +14,29 @@
 
     /* Page Background: Dark, but with a subtle mood color tint */
     --background-hsl: var(--mood-hue) 25% 10%;
-    
+
     /* Card Background: Slightly lighter and more saturated than the page background */
     --card-hsl: var(--mood-hue) 25% 15%;
 
-    /* Text: Consistently light off-white for high contrast */
-    --foreground-hsl: 210 20% 95%;
+    /* Text: High contrast light for readability */
+    --foreground-hsl: 210 20% 98%;
 
     /* Accent/Primary: Vibrant, saturated version of the mood color */
     --primary-hsl: var(--mood-hue) 90% 65%;
-    
+
     /* Accent/Primary Text: Dark version of accent color for contrast on buttons */
     --primary-foreground-hsl: var(--mood-hue) 25% 10%;
 
     /* --- Mapping to Shadcn/Tailwind Variables --- */
     --background: var(--background-hsl);
     --foreground: var(--foreground-hsl);
-    
+
     --card: var(--card-hsl);
     --card-foreground: var(--foreground-hsl);
-    
+
     --popover: var(--card-hsl);
     --popover-foreground: var(--foreground-hsl);
-    
+
     --primary: var(--primary-hsl);
     --primary-foreground: var(--primary-foreground-hsl);
 
@@ -44,8 +46,9 @@
 
     --muted-hsl: var(--mood-hue) 15% 25%;
     --muted: var(--muted-hsl);
-    --muted-foreground: 210 15% 65%; /* Lighter muted text */
-    
+    --muted-foreground: 210 15% 65%;
+    /* Lighter muted text */
+
     --accent: var(--primary-hsl);
     --accent-foreground: var(--primary-foreground-hsl);
 
@@ -57,7 +60,7 @@
     --input-hsl: var(--mood-hue) 15% 20%;
     --input: var(--input-hsl);
     --ring: var(--primary-hsl);
-    
+
     --radius: 1rem;
 
     --chart-1: 12 76% 61%;
@@ -69,16 +72,21 @@
 }
 
 @layer base {
-  html, body, #__next {
+
+  html,
+  body,
+  #__next {
     height: 100%;
     margin: 0;
     padding: 0;
     /* overflow: hidden has been removed to allow scrolling on history page */
   }
+
   * {
     @apply border-border;
     -webkit-tap-highlight-color: transparent;
   }
+
   body {
     @apply bg-background text-foreground font-sans;
     transition: background-color 0.8s ease-in-out;
@@ -89,7 +97,7 @@
   .grid-cols-53 {
     grid-template-columns: repeat(53, minmax(0, 1fr));
   }
-  
+
   .frosted-glass {
     background-color: hsla(var(--card-hsl), 0.7);
     @apply backdrop-blur-lg border border-white/10;
@@ -100,52 +108,156 @@
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
     border: 1px solid hsla(var(--foreground-hsl), 0.1);
-    transition: all ease 0.3s;
+    transition: all ease 0.35s, transform ease 0.25s;
+    position: relative;
   }
+
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, hsla(var(--primary-hsl), 0) 0%, hsla(var(--primary-hsl), 0.3) 50%, hsla(var(--primary-hsl), 0) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+  }
+
   .glass-card:hover {
-    box-shadow: 0px 0px 20px 1px hsla(var(--primary), 0.25);
-    border: 1px solid hsla(var(--foreground-hsl), 0.2);
+    box-shadow: 0px 0px 30px 2px hsla(var(--primary-hsl), 0.35), inset 0 0 20px hsla(var(--primary-hsl), 0.05);
+    border: 1px solid hsla(var(--foreground-hsl), 0.25);
+    transform: translateY(-2px) scale(1.01);
+  }
+
+  .glass-card:hover::before {
+    opacity: 1;
+  }
+
+  .glass-card:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--primary-hsl)), 0px 0px 20px 1px hsla(var(--primary-hsl), 0.3);
   }
 
   .content-auto {
-    content: ""; /* for pseudo-elements */
+    content: "";
+    /* for pseudo-elements */
   }
 
-  /* Vignette is now more subtle on a dark theme */
+  /* Vignette - more pronounced for atmospheric depth */
   .vignette-overlay {
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%);
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, 0.55) 100%);
     pointer-events: none;
-    z-index: 1; /* Above background, below particles */
+    z-index: 1;
   }
 
-  /* For noise texture */
+  /* Animated noise texture for organic feel */
   .noise-overlay {
     position: fixed;
     inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    opacity: 0.03; /* More subtle noise on dark bg */
+    opacity: 0.04;
     pointer-events: none;
-    z-index: 1; /* Same level as vignette or just above */
+    z-index: 1;
+    animation: grain-shift 8s steps(10) infinite;
+  }
+
+  @keyframes grain-shift {
+
+    0%,
+    100% {
+      transform: translate(0, 0);
+    }
+
+    10% {
+      transform: translate(-2%, -2%);
+    }
+
+    20% {
+      transform: translate(2%, 2%);
+    }
+
+    30% {
+      transform: translate(-1%, 2%);
+    }
+
+    40% {
+      transform: translate(2%, -1%);
+    }
+
+    50% {
+      transform: translate(-2%, 1%);
+    }
+
+    60% {
+      transform: translate(1%, -2%);
+    }
+
+    70% {
+      transform: translate(-1%, -1%);
+    }
+
+    80% {
+      transform: translate(2%, 1%);
+    }
+
+    90% {
+      transform: translate(-2%, 2%);
+    }
+  }
+
+  /* Text glow effect for mood adjectives */
+  .text-glow {
+    text-shadow: 0px 4px 12px rgba(0, 0, 0, 0.4), 0 0 20px hsla(var(--primary-hsl), 0.5);
+  }
+
+  /* Ambient glow behind main content */
+  .ambient-glow {
+    position: relative;
+  }
+
+  .ambient-glow::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120%;
+    height: 120%;
+    background: radial-gradient(circle, hsla(var(--primary-hsl), 0.15) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* Display font class */
+  .font-display {
+    font-family: 'Bricolage Grotesque', system-ui, sans-serif;
   }
 
   .interactive-glow {
     @apply transition-all duration-300;
   }
+
   .interactive-glow:hover,
   .interactive-glow:focus-visible {
     filter: drop-shadow(0 0 8px hsl(var(--primary)));
-    transform: scale(1.05); /* slightly less pop */
+    transform: scale(1.05);
+    /* slightly less pop */
   }
 
   /* When the emoji selector or gradient bar is active, recede the page content */
-  .emoji-selector-active-page > header,
-  .emoji-selector-active-page > main,
-  .emoji-selector-active-page > footer,
-  .bar-mode-active-page > header,
-  .bar-mode-active-page > main,
-  .bar-mode-active-page > footer {
+  .emoji-selector-active-page>header,
+  .emoji-selector-active-page>main,
+  .emoji-selector-active-page>footer,
+  .bar-mode-active-page>header,
+  .bar-mode-active-page>main,
+  .bar-mode-active-page>footer {
     transition: opacity 0.4s ease-in-out, filter 0.4s ease-in-out;
     opacity: 0.2;
     filter: blur(8px);
@@ -153,9 +265,10 @@
   }
 
   /* When the footer menu is active, recede the page content (Android/Default) */
-  .menu-open-recede-children > header,
-  .menu-open-recede-children > main,
-  .menu-open-recede-children > [data-orb-button-container] {
+  /* Base state - ensures smooth transition back when menu closes */
+  .menu-open-recede-children>header,
+  .menu-open-recede-children>main,
+  .menu-open-recede-children>[data-orb-button-container] {
     transition: opacity 0.4s ease-in-out, filter 0.4s ease-in-out, transform 0.4s ease-in-out;
     opacity: 0.2;
     filter: blur(8px);
@@ -164,21 +277,28 @@
   }
 
   /* More pronounced effect for iOS */
-  .ios-menu-open-recede-children > header,
-  .ios-menu-open-recede-children > main,
-  .ios-menu-open-recede-children > [data-orb-button-container] {
+  .ios-menu-open-recede-children>header,
+  .ios-menu-open-recede-children>main,
+  .ios-menu-open-recede-children>[data-orb-button-container] {
     transition: opacity 0.5s ease-in-out, filter 0.5s ease-in-out, transform 0.5s ease-in-out;
     opacity: 0.1;
     filter: blur(16px);
     transform: scale(0.92);
     pointer-events: none;
   }
-  
+
+  /* Smoothly transition BACK from blur when menu closes */
+  :not(.menu-open-recede-children):not(.ios-menu-open-recede-children)>header,
+  :not(.menu-open-recede-children):not(.ios-menu-open-recede-children)>main,
+  :not(.menu-open-recede-children):not(.ios-menu-open-recede-children)>[data-orb-button-container] {
+    transition: opacity 0.35s ease-out, filter 0.35s ease-out, transform 0.35s ease-out;
+  }
+
   /* When Ambient Mode is active, fade out all UI */
-  .ambient-mode-active-page > header,
-  .ambient-mode-active-page > main,
-  .ambient-mode-active-page > footer,
-  .ambient-mode-active-page > [data-orb-button-container] {
+  .ambient-mode-active-page>header,
+  .ambient-mode-active-page>main,
+  .ambient-mode-active-page>footer,
+  .ambient-mode-active-page>[data-orb-button-container] {
     transition: opacity 1s ease-in-out;
     opacity: 0;
     pointer-events: none;
@@ -187,38 +307,79 @@
   /* New class to prevent scrolling and text selection during drag interactions */
   .no-scroll-select {
     overflow: hidden !important;
-    -webkit-user-select: none; /* Safari */
-    -moz-user-select: none; /* Firefox */
-    -ms-user-select: none; /* IE10+/Edge */
-    user-select: none; /* Standard */
+    -webkit-user-select: none;
+    /* Safari */
+    -moz-user-select: none;
+    /* Firefox */
+    -ms-user-select: none;
+    /* IE10+/Edge */
+    user-select: none;
+    /* Standard */
   }
 
 
   @keyframes logo-calm {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.02); }
+
+    0%,
+    100% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.02);
+    }
   }
+
   @keyframes logo-joyful {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-1px) scale(1.05); }
+
+    0%,
+    100% {
+      transform: translateY(0) scale(1);
+    }
+
+    50% {
+      transform: translateY(-1px) scale(1.05);
+    }
   }
+
   @keyframes logo-anxious {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    10% { transform: translate(-1px, 1px) scale(1.01); }
-    30% { transform: translate(1px, -1px) scale(0.99); }
-    50% { transform: translate(-1px, -1px) scale(1.02); }
-    70% { transform: translate(1px, 1px) scale(1); }
-    90% { transform: translate(0, 0) scale(0.98); }
+
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+
+    10% {
+      transform: translate(-1px, 1px) scale(1.01);
+    }
+
+    30% {
+      transform: translate(1px, -1px) scale(0.99);
+    }
+
+    50% {
+      transform: translate(-1px, -1px) scale(1.02);
+    }
+
+    70% {
+      transform: translate(1px, 1px) scale(1);
+    }
+
+    90% {
+      transform: translate(0, 0) scale(0.98);
+    }
   }
-  
+
   /* Scrollbar styling - now only one dark mode style is needed */
   ::-webkit-scrollbar {
     width: 5px;
     height: 5px;
   }
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }
+
   ::-webkit-scrollbar-thumb {
     background-color: rgba(255, 255, 255, 0.2);
     border-radius: 10px;
@@ -229,16 +390,19 @@
   .android ::-webkit-scrollbar {
     width: 8px;
   }
+
   .android ::-webkit-scrollbar-thumb {
     background-color: hsla(var(--foreground-hsl), 0.3);
     border-radius: 10px;
   }
+
   .android ::-webkit-scrollbar-thumb:hover {
     background-color: hsla(var(--foreground-hsl), 0.5);
   }
 }
 
 @layer utilities {
+
   /* Platform-specific input styles to prevent hydration errors */
   .android .platform-input,
   .android .platform-textarea {
@@ -248,5 +412,76 @@
   .android .platform-input:focus-visible,
   .android .platform-textarea:focus-visible {
     @apply border-b-2 border-primary ring-0 ring-offset-0;
+  }
+}
+
+/* Animation keyframes for orb and aurora effects */
+@keyframes aurora-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orb-breathe {
+
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px 5px hsla(var(--primary-hsl), 0.2);
+  }
+
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 0 30px 10px hsla(var(--primary-hsl), 0.35);
+  }
+}
+
+.animate-aurora-spin {
+  animation: aurora-spin 8s linear infinite;
+}
+
+.animate-orb-breathe {
+  animation: orb-breathe 3s ease-in-out infinite;
+}
+
+/* Mood-colored skeleton shimmer */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg,
+      hsla(var(--card-hsl), 0.5) 25%,
+      hsla(var(--primary-hsl), 0.15) 50%,
+      hsla(var(--card-hsl), 0.5) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .animate-aurora-spin,
+  .animate-orb-breathe,
+  .skeleton-shimmer {
+    animation: none;
   }
 }
